@@ -37,7 +37,7 @@ a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
   if (!list.length){ box.innerHTML = '<div class="card">Уроків поки немає.</div>'; return; }
   box.innerHTML = list.map(function(l){
     return '<a class="lesson" href="lessons/' + encodeURIComponent(l.folder) + '/index.html">' +
-      '<span class="num">Заняття ' + esc(l.num) + (l.grade ? " · " + esc(l.grade) : "") + '</span>' +
+      '<span class="num">' + esc(l.label || "Заняття " + l.num) + (l.grade ? " · " + esc(l.grade) : "") + '</span>' +
       '<h2>' + esc(l.title) + '</h2><p>' + esc(l.desc || "") + '</p>' +
       (l.tags && l.tags.length ? '<div class="tags">' + l.tags.map(function(t){ return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
       "</a>";
