@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ЗАМІНИ: коротка назва уроку (видно у вкладці браузера) -->
+<title>Назва уроку</title>
+<meta name="description" content="Короткий опис інтерактиву.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  /* Колір шапки цього уроку. Інші варіанти: var(--yellow) var(--sky) var(--pink) var(--orange) */
+  :root{ --accent: var(--sky); }
+  /* Тут можна додати стилі лише для цього уроку */
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../index.html">← Усі уроки</a>
+
+<header class="hero">
+  <small>Заняття N · Інформатика · 10–12 класи</small>
+  <h1>Назва уроку</h1>
+  <p>Одне-два речення: що учень зробить і чого навчиться.</p>
+  <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+</header>
+
+<!-- Вкладки: data-tab має збігатися з id розділу нижче. Зайві можна видалити. -->
+<nav class="tabs" aria-label="Розділи">
+  <button data-tab="theory">1. Теорія</button>
+  <button data-tab="quiz-tab">2. Вікторина</button>
+  <button data-tab="match-tab">3. Відповідність</button>
+  <button data-tab="sort-tab">4. Сортування</button>
+  <button data-tab="final">Підсумок</button>
+</nav>
+
+<!-- 1. ТЕОРІЯ: звичайний HTML -->
+<section class="panel" id="theory">
+  <div class="card">
+    <h2>Головна ідея</h2>
+    <p class="lead">Коротке пояснення теми.</p>
+    <ul class="tight">
+      <li>Пункт перший</li>
+      <li>Пункт другий</li>
+    </ul>
+    <div class="tip"><b>Порада:</b> виділений блок для важливої думки.</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Приклад 1</h3><div class="code">код, промпт чи цитата</div></div>
+    <div class="card"><h3>Приклад 2</h3><div class="code">ще один приклад</div></div>
+  </div>
+</section>
+
+<!-- 2. ВІКТОРИНА: питання задаються у скрипті внизу -->
+<section class="panel" id="quiz-tab">
+  <div class="card">
+    <h2>Вікторина</h2>
+    <p class="lead">Обери правильну відповідь.</p>
+    <div id="quiz"></div>
+  </div>
+</section>
+
+<!-- 3. ВІДПОВІДНІСТЬ -->
+<section class="panel" id="match-tab">
+  <div class="card">
+    <h2>Установи відповідність</h2>
+    <div id="match"></div>
+  </div>
+</section>
+
+<!-- 4. СОРТУВАННЯ ЗА КАТЕГОРІЯМИ -->
+<section class="panel" id="sort-tab">
+  <div class="card">
+    <h2>До якої категорії належить?</h2>
+    <p class="lead">Для кожного прикладу обери категорію.</p>
+  </div>
+  <div id="sort"></div>
+</section>
+
+<!-- ПІДСУМОК: бали підставляються самі -->
+<section class="panel" id="final">
+  <div class="card final">
+    <h2>Твій результат</h2>
+    <div class="big"><span data-score>0</span> / <span data-max>0</span></div>
+    <p class="lead" style="margin-top:8px" data-final-msg></p>
+  </div>
+  <div class="card">
+    <h3>Рефлексія</h3>
+    <ul class="tight">
+      <li>Що нового я дізнався?</li>
+      <li>Що було найскладніше?</li>
+    </ul>
+  </div>
+</section>
+
+<footer>Навчальний інтерактив · працює без реєстрації і не збирає даних</footer>
+</div>
+
+<script src="../../assets/lesson.js"></script>
+<script>
+/* ===== ВІКТОРИНА =====
+   a — номер правильного варіанта, рахуємо з 0 (перший варіант = 0).
+   ctx і prompt необов'язкові: їх можна видалити з питання. */
+Lesson.quiz("#quiz", [
+  {ctx:"Опис ситуації.", prompt:"Текст у рамці (код, промпт, цитата)", q:"Питання 1?",
+   o:["Правильний варіант","Хибний варіант","Ще хибний"], a:0,
+   e:"Пояснення, чому так."},
+  {q:"Питання 2 без ситуації?",
+   o:["Хибний","Правильний","Хибний"], a:1,
+   e:"Пояснення."}
+]);
+
+/* ===== ВІДПОВІДНІСТЬ =====
+   options — що учень обирає у списку; a — номер правильного пункту з options (з 0). */
+Lesson.match("#match", {
+  options: ["Поняття А","Поняття Б","Поняття В"],
+  items: [
+    {s:"Опис, що відповідає А", a:0, e:"Пояснення."},
+    {s:"Опис, що відповідає Б", a:1, e:"Пояснення."},
+    {s:"Опис, що відповідає В", a:2, e:"Пояснення."}
+  ]
+});
+
+/* ===== СОРТУВАННЯ =====
+   choices — категорії-кнопки; a — номер правильної категорії (з 0). */
+Lesson.sort("#sort", {
+  choices: ["Категорія 1","Категорія 2","Категорія 3"],
+  items: [
+    {s:"Приклад, що належить до категорії 1", a:0, e:"Пояснення."},
+    {s:"Приклад, що належить до категорії 3", a:2, e:"Пояснення."}
+  ]
+});
+
+/* Тексти підсумку (необов'язково):
+Lesson.messages.high = "…";  Lesson.messages.mid = "…";  Lesson.messages.low = "…";
+*/
+</script>
+</body>
+</html>

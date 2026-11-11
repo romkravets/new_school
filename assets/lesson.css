@@ -1,0 +1,93 @@
+/* Спільний стиль для всіх уроків-інтерактивів.
+   Змінюй тут: зміни застосуються до всіх уроків одразу. */
+:root{
+  --bg:#f6f7f2; --card:#ffffff; --ink:#15171a; --muted:#5c6470; --line:#e2e5dc;
+  --accent:#c3f77a;            /* колір шапки уроку; можна перевизначити в уроці */
+  --lime:#c3f77a; --yellow:#faef55; --blue:#2f6df6; --sky:#9ff6ff; --pink:#f27cf5; --orange:#ff9a3c;
+  --ok:#1f9d55; --okbg:#e6f7ec; --bad:#d6334a; --badbg:#fde8eb;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#121417;--card:#1b1e23;--ink:#eef0f3;--muted:#a3abb7;--line:#2c3138;--okbg:#12301f;--badbg:#3a1820;}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--blue)}
+.wrap{max-width:920px;margin:0 auto;padding:16px 16px 48px}
+
+/* Шапка */
+.back{display:inline-block;margin:0 0 10px;font-weight:700;font-size:14px;text-decoration:none;color:var(--muted)}
+.back:hover{color:var(--ink)}
+header.hero{background:var(--accent);color:#15171a;border-radius:var(--r);padding:22px 20px;margin-bottom:14px}
+.hero small{display:block;font-weight:600;opacity:.75;letter-spacing:.02em}
+.hero h1{margin:6px 0 8px;font-size:clamp(22px,4.6vw,34px);line-height:1.15;text-transform:uppercase;font-weight:900}
+.hero p{margin:0;max-width:640px}
+.score{display:inline-flex;gap:8px;align-items:center;margin-top:12px;background:#15171a;color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:14px}
+
+/* Вкладки */
+nav.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:thin;position:sticky;top:0;background:var(--bg);z-index:5}
+nav.tabs button{flex:0 0 auto;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+section.panel{display:none}
+section.panel.active{display:block}
+
+/* Картки й текст */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+h2{margin:0 0 6px;font-size:22px}
+h3{margin:0 0 6px;font-size:18px}
+.lead{color:var(--muted);margin:0 0 14px}
+.ctx{font-size:14px;color:var(--muted)}
+.grid{display:grid;gap:10px}
+@media(min-width:640px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+.chip{display:inline-block;border-radius:10px;padding:2px 8px;font-weight:700;font-size:13px;color:#15171a}
+.tip{border-left:4px solid var(--blue);padding:8px 12px;background:rgba(47,109,246,.08);border-radius:0 10px 10px 0;margin:10px 0 0}
+ul.tight{margin:6px 0 0;padding-left:20px}
+ul.tight li{margin:3px 0}
+.code{background:var(--bg);border:1px dashed var(--muted);border-radius:12px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;margin:8px 0;white-space:pre-wrap;word-break:break-word}
+
+/* Поля й кнопки */
+label.f{display:block;font-weight:700;font-size:14px;margin:0 0 4px}
+select,input[type=text],textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+select:focus,input:focus,textarea:focus,button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer;background:var(--blue);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.progress{font-size:14px;color:var(--muted);font-weight:700}
+
+/* Вікторина */
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt:disabled{cursor:default}
+.fb{margin-top:10px;border-radius:12px;padding:10px 12px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--okbg)}
+.fb.no{background:var(--badbg)}
+
+/* Відповідність */
+.match{display:grid;gap:10px}
+.match .item{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.match .item.ok{border-color:var(--ok);background:var(--okbg)}
+.match .item.no{border-color:var(--bad);background:var(--badbg)}
+.match .why{font-size:14px;margin-top:6px;display:none}
+.match .item.ok .why,.match .item.no .why{display:block}
+
+/* Сортування за категоріями */
+.sort{display:grid;gap:10px}
+.sort .item{margin:0}
+.sort .choices{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sort .choices button{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;cursor:pointer}
+.sort .choices button:disabled{cursor:default;opacity:.55}
+.sort .choices button.right{background:var(--ok);border-color:var(--ok);color:#fff;opacity:1}
+.sort .choices button.wrong{background:var(--bad);border-color:var(--bad);color:#fff;opacity:1}
+.sort .why{font-size:14px;margin-top:8px;display:none}
+.sort .item.done .why{display:block}
+
+/* Підсумок */
+.final{text-align:center}
+.final .big{font-size:44px;font-weight:900;line-height:1}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}

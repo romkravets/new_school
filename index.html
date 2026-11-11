@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Інтерактиви з інформатики</title>
+<meta name="description" content="Збірка навчальних інтерактивів з інформатики для старшої профільної школи.">
+<link rel="stylesheet" href="assets/lesson.css">
+<style>
+.lessons{display:grid;gap:12px}
+@media(min-width:640px){.lessons{grid-template-columns:1fr 1fr}}
+a.lesson{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:border-color .15s,transform .15s}
+a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
+.lesson .num{display:inline-block;background:var(--accent);color:#15171a;border-radius:10px;padding:2px 10px;font-weight:800;font-size:13px}
+.lesson h2{margin:10px 0 6px;font-size:20px}
+.lesson p{margin:0;color:var(--muted);font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tags span{font-size:12px;font-weight:700;border:1.5px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <small>Інформатика · старша профільна школа</small>
+    <h1>Інтерактиви з інформатики</h1>
+    <p>Обери урок. Усі інтерактиви працюють у браузері й на телефоні, без реєстрації і без збору даних.</p>
+  </header>
+  <main class="lessons" id="lessons"></main>
+  <footer>Навчальні інтерактиви</footer>
+</div>
+<script src="lessons.js"></script>
+<script>
+(function(){
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  var box = document.getElementById("lessons");
+  var list = (window.LESSONS || []).slice().sort(function(a, b){ return (a.num || 0) - (b.num || 0); });
+  if (!list.length){ box.innerHTML = '<div class="card">Уроків поки немає.</div>'; return; }
+  box.innerHTML = list.map(function(l){
+    return '<a class="lesson" href="lessons/' + encodeURIComponent(l.folder) + '/index.html">' +
+      '<span class="num">Заняття ' + esc(l.num) + (l.grade ? " · " + esc(l.grade) : "") + '</span>' +
+      '<h2>' + esc(l.title) + '</h2><p>' + esc(l.desc || "") + '</p>' +
+      (l.tags && l.tags.length ? '<div class="tags">' + l.tags.map(function(t){ return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
+      "</a>";
+  }).join("");
+})();
+</script>
+</body>
+</html>
