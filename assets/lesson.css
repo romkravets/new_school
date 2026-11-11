@@ -91,3 +91,5 @@ select:focus,input:focus,textarea:focus,button:focus-visible{outline:3px solid v
 .final{text-align:center}
 .final .big{font-size:44px;font-weight:900;line-height:1}
 footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+footer a{color:inherit;font-weight:700}
+footer a:hover{color:var(--ink)}
