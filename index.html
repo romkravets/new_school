@@ -9,6 +9,13 @@
 <style>
 .lessons{display:grid;gap:12px}
 @media(min-width:640px){.lessons{grid-template-columns:1fr 1fr}}
+.class-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 14px}
+.class-filter label{font-weight:800}
+.class-options{display:flex;flex-wrap:wrap;gap:8px}
+.class-options button{border:2px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);padding:8px 16px;font:inherit;font-weight:800;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.class-options button:hover{border-color:var(--ink)}
+.class-options button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.lesson-count{color:var(--muted);font-size:14px;margin:0 0 12px}
 a.lesson{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:border-color .15s,transform .15s}
 a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
 .lesson .num{display:inline-block;background:var(--accent);color:#15171a;border-radius:10px;padding:2px 10px;font-weight:800;font-size:13px}
@@ -25,6 +32,16 @@ a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
     <h1>Інтерактиви з інформатики</h1>
     <p>Обери урок. Усі інтерактиви працюють у браузері й на телефоні, без реєстрації і без збору даних.</p>
   </header>
+  <div class="class-filter">
+    <label id="grade-filter-label">Показати інтерактиви для:</label>
+    <div class="class-options" role="group" aria-labelledby="grade-filter-label">
+      <button type="button" data-grade="all" aria-pressed="true">Усі класи</button>
+      <button type="button" data-grade="10" aria-pressed="false">10 клас</button>
+      <button type="button" data-grade="11" aria-pressed="false">11 клас</button>
+      <button type="button" data-grade="12" aria-pressed="false">12 клас</button>
+    </div>
+  </div>
+  <p class="lesson-count" id="lesson-count" aria-live="polite"></p>
   <main class="lessons" id="lessons"></main>
   <footer>Навчальні інтерактиви · <a href="https://github.com/romkravets" target="_blank" rel="noopener">GitHub: romkravets</a></footer>
 </div>
@@ -33,15 +50,37 @@ a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
 (function(){
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
   var box = document.getElementById("lessons");
+  var gradeOptions = document.querySelector(".class-options");
+  var lessonCount = document.getElementById("lesson-count");
+  var selectedGrade = "all";
   var list = (window.LESSONS || []).slice().sort(function(a, b){ return (a.num || 0) - (b.num || 0); });
-  if (!list.length){ box.innerHTML = '<div class="card">Уроків поки немає.</div>'; return; }
-  box.innerHTML = list.map(function(l){
-    return '<a class="lesson" href="lessons/' + encodeURIComponent(l.folder) + '/index.html">' +
+  function render(){
+    var visible = list.filter(function(l){
+      return selectedGrade === "all" || l.grades === "all" || (Array.isArray(l.grades) && l.grades.indexOf(Number(selectedGrade)) !== -1);
+    });
+    lessonCount.textContent = "Знайдено інтерактивів: " + visible.length;
+    if (!visible.length){
+      box.innerHTML = '<div class="card">Для цього класу інтерактивів поки немає.</div>';
+      return;
+    }
+    box.innerHTML = visible.map(function(l){
+      return '<a class="lesson" href="lessons/' + encodeURIComponent(l.folder) + '/index.html">' +
       '<span class="num">' + esc(l.label || "Заняття " + l.num) + (l.grade ? " · " + esc(l.grade) : "") + '</span>' +
       '<h2>' + esc(l.title) + '</h2><p>' + esc(l.desc || "") + '</p>' +
       (l.tags && l.tags.length ? '<div class="tags">' + l.tags.map(function(t){ return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
       "</a>";
-  }).join("");
+    }).join("");
+  }
+  gradeOptions.addEventListener("click", function(event){
+    var button = event.target.closest("button[data-grade]");
+    if (!button) return;
+    selectedGrade = button.getAttribute("data-grade");
+    Array.prototype.forEach.call(gradeOptions.querySelectorAll("button[data-grade]"), function(option){
+      option.setAttribute("aria-pressed", option === button ? "true" : "false");
+    });
+    render();
+  });
+  render();
 })();
 </script>
 </body>
