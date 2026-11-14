@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Презентації та візуалізація з ШІ</title>
+<meta name="description" content="Створення слайдів та інфографіки з допомогою ШІ: перевірка фактів, дизайн і запит.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+:root{--accent:var(--yellow)}
+.bad-slide{position:relative;min-height:320px;overflow:hidden;border:3px solid #bb3d3d;border-radius:16px;background:repeating-linear-gradient(135deg,#fff3bd,#fff3bd 16px,#ffe9a5 16px,#ffe9a5 32px);padding:24px;color:#1b1712}
+.bad-slide h3{max-width:620px;font-size:clamp(28px,6vw,48px);line-height:1;text-align:center;text-shadow:3px 3px #f27cf5;margin:10px auto 18px}
+.bad-slide p{font-size:23px;font-weight:900;line-height:1.05}
+.bad-slide .fake-chart{height:92px;display:flex;align-items:end;gap:14px;padding:8px 18px;background:rgba(255,255,255,.55)}
+.fake-chart i{display:block;width:18%;background:#e84545}
+.fake-chart i:nth-child(1){height:30%}.fake-chart i:nth-child(2){height:88%}.fake-chart i:nth-child(3){height:52%}.fake-chart i:nth-child(4){height:100%}
+.fake-source{font-size:12px!important;font-weight:400!important}
+.slide-hotspot{position:absolute;z-index:1;width:36px;height:36px;border:3px solid #fff;border-radius:50%;background:#15171a;color:#fff;font:inherit;font-weight:900;cursor:pointer;box-shadow:0 0 0 2px #15171a}
+.slide-hotspot.found{background:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.slide-hotspot:disabled{cursor:default}
+.slide-hotspot[data-hotspot="1"]{top:5%;left:3%}
+.slide-hotspot[data-hotspot="2"]{top:20%;right:3%}
+.slide-hotspot[data-hotspot="3"]{top:43%;left:3%}
+.slide-hotspot[data-hotspot="4"]{top:71%;left:23%}
+.slide-hotspot[data-hotspot="5"]{top:71%;right:23%}
+.slide-hotspot[data-hotspot="6"]{bottom:4%;right:3%}
+.slide-errors{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:12px}
+.slide-errors button{min-height:52px;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:12px;color:var(--ink);padding:10px;font:inherit;cursor:pointer}
+.slide-errors button:hover:not(:disabled){border-color:var(--blue)}
+.slide-errors button:disabled{opacity:.7}
+.slide-errors button.found{border-color:var(--ok);background:var(--okbg)}
+.slide-output,.prompt-output{background:#15171a;color:#f2f2f2;border-radius:14px;padding:14px;white-space:pre-wrap;min-height:60px}
+.scene-box{min-height:160px;border-radius:14px;overflow:hidden}
+.scene-canvas{display:block;width:100%;height:auto}
+.scene-description{padding:10px 12px;background:var(--bg);border-radius:10px}
+.scene-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.scene-fallback{margin:0}
+.scene-fallback img{display:block;width:100%;height:auto;border-radius:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#ai">← До курсу ШІ</a>
+  <header class="hero">
+    <small>Заняття 11 · Штучний інтелект і суспільство · 10 клас</small>
+    <h1>Презентації та візуалізація з ШІ</h1>
+    <p>Підготуй структуру й чернетку з ШІ, але навчися перевіряти факти, добирати дані й робити слайди зрозумілими.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. ШІ та слайди</button>
+    <button data-tab="fix-slide" data-break="5">2. Виправ слайд</button>
+    <button data-tab="chart" data-break="5">3. Який графік?</button>
+    <button data-tab="builder">4. Конструктор запиту</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+  <section class="panel" id="theory">
+    <div class="card">
+      <h2>Що ШІ робить добре</h2>
+      <p class="lead">ШІ може швидко запропонувати чернетку, послідовність розділів і кілька способів пояснити матеріал. Це старт, а не готова робота.</p>
+      <ul class="tight">
+        <li>побудувати план під конкретну аудиторію;</li>
+        <li>переформулювати складний текст і запропонувати короткі тези;</li>
+        <li>порадити варіанти візуалізації або оформлення.</li>
+      </ul>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Лишається людині</h3><ul class="tight"><li>перевірити факти, числа, цитати й посилання;</li><li>визначити головну думку та прибрати зайве;</li><li>обрати приклади й відповідати за висновки.</li></ul></div>
+      <div class="card"><h3>Правило слайда</h3><p class="lead">Один слайд — одна думка. Заголовок має передавати висновок, а не просто тему. Діаграма повинна допомагати порівняти або побачити зміну.</p></div>
+    </div>
+    <div class="card">
+      <h3>Формула запиту на презентацію</h3>
+      <p class="formula"><span class="chip" style="background:var(--sky)">Тема й мета</span> + <span class="chip" style="background:var(--yellow)">Аудиторія</span> + <span class="chip" style="background:var(--pink)">Структура</span> + <span class="chip" style="background:var(--lime)">Формат</span> + <span class="chip" style="background:var(--orange)">Обмеження й перевірка</span></p>
+      <p class="lead">Попроси позначити місця, де потрібні джерела, і не вигадувати дані. Після генерації звір кожне твердження.</p>
+    </div>
+  </section>
+  <section class="panel" id="fix-slide">
+    <div class="card">
+      <h2>Знайди шість помилок</h2>
+      <p class="lead">Це навмисно поганий слайд. Знайди шість проблем: натискай пронумеровані позначки на ньому або пройди зони зі списку.</p>
+      <div class="bad-slide" aria-label="Приклад перевантаженого слайда з помилками">
+        <h3>НАША НЕЙМОВІРНА ПРЕЗЕНТАЦІЯ ПРО ДУЖЕ ВАЖЛИВУ ТЕМУ!!!</h3>
+        <p>ВСТУП: СЬОГОДНІ МИ РОЗКАЖЕМО ПРО ВСЕ, ЩО ВИ ХОТІЛИ ЗНАТИ І НАВІТЬ БІЛЬШЕ!!!</p>
+        <div class="fake-chart" aria-label="Діаграма без підписів"><i></i><i></i><i></i><i></i></div>
+        <p class="fake-source">ДЖЕРЕЛО: ІНТЕРНЕТ / ШІ (дані не перевірено)</p>
+        <button class="slide-hotspot" type="button" data-hotspot="1" data-error="0" aria-label="Перевір зона 1: заголовок">1</button>
+        <button class="slide-hotspot" type="button" data-hotspot="2" data-error="1" aria-label="Перевір зона 2: заголовок">2</button>
+        <button class="slide-hotspot" type="button" data-hotspot="3" data-error="2" aria-label="Перевір зона 3: текст">3</button>
+        <button class="slide-hotspot" type="button" data-hotspot="4" data-error="3" aria-label="Перевір зона 4: діаграма">4</button>
+        <button class="slide-hotspot" type="button" data-hotspot="5" data-error="4" aria-label="Перевір зона 5: категорії діаграми">5</button>
+        <button class="slide-hotspot" type="button" data-hotspot="6" data-error="5" aria-label="Перевір зона 6: джерело">6</button>
+      </div>
+      <div class="slide-errors" id="slide-errors" aria-label="Помилки у слайді"></div>
+      <div class="row" style="margin-top:10px"><button class="btn ghost" type="button" id="slide-reset">Спробувати ще раз</button></div>
+      <p class="progress" id="slide-progress" aria-live="polite"></p>
+      <div class="fb" id="slide-feedback" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="panel" id="chart">
+    <div class="card">
+      <h2>Який графік обрати?</h2>
+      <p class="lead">Для кожного завдання обери найзрозуміліший тип візуалізації.</p>
+      <div id="chart-sort"></div>
+    </div>
+  </section>
+  <section class="panel" id="builder">
+    <div class="card">
+      <h2>Конструктор запиту на презентацію</h2>
+      <p class="lead">Не додавай приватних даних. Попроси ШІ залишити місця для перевірених джерел.</p>
+      <div class="grid g2">
+        <div><label class="f" for="presentation-topic">Тема й мета</label><textarea id="presentation-topic" placeholder="Пояснити, як заощаджувати електроенергію"></textarea></div>
+        <div><label class="f" for="presentation-audience">Аудиторія</label><textarea id="presentation-audience" placeholder="Учні 8 класу, 5 хвилин виступу"></textarea></div>
+        <div><label class="f" for="presentation-structure">Структура</label><textarea id="presentation-structure" placeholder="Вступ, 3 поради, приклад, висновок"></textarea></div>
+        <div><label class="f" for="presentation-style">Стиль і формат</label><textarea id="presentation-style" placeholder="6 слайдів, короткі тези, спокійний дизайн"></textarea></div>
+      </div>
+      <div style="margin-top:10px"><label class="f" for="presentation-check">Обмеження й перевірка</label><textarea id="presentation-check" placeholder="Не вигадуй статистику; познач твердження, для яких потрібне джерело"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="build-presentation" type="button">Зібрати запит</button><button class="btn ghost" id="copy-presentation" type="button">Копіювати</button></div>
+      <p class="prompt-output" id="presentation-output" aria-live="polite"></p>
+      <p class="fb" id="presentation-feedback" aria-live="polite"></p>
+    </div>
+  </section>
+  <section class="panel" id="quiz-tab">
+    <div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div>
+  </section>
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Що в презентації ти перевіриш самостійно?</li><li>Як зрозуміти, чи справді графік допомагає пояснити дані?</li></ul></div>
+  </section>
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · працює без реєстрації</footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script>
+Lesson.messages.high = "Чудово! Ти вмієш покращити слайд і критично працювати з чернеткою ШІ.";
+Lesson.messages.low = "Переглянь правило «один слайд — одна думка» і спробуй ще раз.";
+var slideScore = Lesson.register(6);
+var errors = [
+  ["Заголовок не передає висновок","Заміни загальну фразу на короткий висновок."],
+  ["Забагато великих літер і знаків оклику","Використовуй звичайний регістр і спокійне формулювання."],
+  ["На слайді кілька думок і довгий текст","Залиши одну тезу, решту перенеси в нотатки доповідача."],
+  ["Немає даних, одиниць і підписів до осей","Підпиши графік і поясни, що саме порівнюється."],
+  ["Колонки не мають легенди й категорій","Назви категорії та додай зрозуміле пояснення кольорів."],
+  ["Джерело не конкретне, дані не перевірено","Вкажи надійне джерело й дату або не показуй неперевірене число."]
+];
+var errorZones = ["Заголовок","Оформлення заголовка","Основний текст","Підписи діаграми","Категорії","Джерело"];
+var found = {};
+var errorBox = document.getElementById("slide-errors");
+function renderSlideErrors(){
+  errorBox.innerHTML = errorZones.map(function(zone,index){
+    return '<button type="button" data-error="' + index + '"' + (found[index] ? ' class="found" disabled' : '') + '>' +
+      (found[index] ? "✓ " : "") + "Зона " + (index + 1) + " · " + zone + '</button>';
+  }).join("");
+  document.querySelectorAll(".slide-hotspot").forEach(function(button){
+    button.disabled = !!found[button.dataset.error];
+    button.classList.toggle("found", !!found[button.dataset.error]);
+  });
+  document.getElementById("slide-progress").textContent = "Знайдено помилок: " + Object.keys(found).length + " із " + errors.length;
+}
+function markError(event){
+  var button = event.target.closest("button[data-error]");
+  if (!button) return;
+  var index = Number(button.dataset.error);
+  if (found[index]) return;
+  found[index] = true;
+  Lesson.addScore(slideScore);
+  var feedback = document.getElementById("slide-feedback");
+  feedback.className = "fb show ok";
+  feedback.textContent = errors[index][1];
+  renderSlideErrors();
+}
+errorBox.addEventListener("click", markError);
+document.querySelector(".bad-slide").addEventListener("click", markError);
+document.getElementById("slide-reset").addEventListener("click", function(){
+  found = {};
+  Lesson.setScore(slideScore,0);
+  var feedback = document.getElementById("slide-feedback");
+  feedback.className = "fb";
+  feedback.textContent = "";
+  renderSlideErrors();
+});
+renderSlideErrors();
+
+Lesson.sort("#chart-sort", {
+  choices:["Лінійний графік","Стовпчаста діаграма","Кругова діаграма","Точкова діаграма"],
+  items:[
+    {s:"Порівняти кількість книжок, прочитаних чотирма групами.",a:1,e:"Стовпчики дають змогу швидко порівняти окремі категорії."},
+    {s:"Показати, як змінювалася температура щодня протягом місяця.",a:0,e:"Лінія показує зміну показника в часі."},
+    {s:"Показати, яку частину всіх витрат становить кожна стаття бюджету.",a:2,e:"Кругова діаграма доречна для частин одного цілого з небагатьма категоріями."},
+    {s:"Перевірити, чи пов'язані зріст і розмах рук у групі.",a:3,e:"Точкова діаграма допомагає побачити зв'язок між двома числовими змінними."},
+    {s:"Порівняти кількість опадів у шести містах за один місяць.",a:1,e:"Окремі категорії найпростіше порівнювати стовпчиками."}
+  ]
+});
+Lesson.quiz("#quiz", [
+  {q:"Що найважливіше зробити з текстом, який згенерував ШІ для слайдів?",o:["Перевірити факти й джерела, прибрати зайве","Залишити все без змін","Додати більше анімацій"],a:0,e:"ШІ може помилятися або вигадувати джерела; відповідальність за зміст залишається в автора."},
+  {q:"Який заголовок краще передає головну думку слайда?",o:["Результати опитування","Більшість учнів обирає перерви на свіжому повітрі","Опитування, відповіді, результати та думки"],a:1,e:"Заголовок-висновок допомагає зрозуміти головну думку без довгого читання."},
+  {q:"Що зробити, якщо генератор додав статистику без джерела?",o:["Залишити, якщо виглядає правдоподібно","Перевірити в надійному джерелі або прибрати","Збільшити шрифт"],a:1,e:"Переконливе оформлення не гарантує правдивості даних."},
+  {q:"Який графік доречний для зміни кількості опадів за місяцями?",o:["Лінійний графік","Кругова діаграма без підписів","Декоративна ілюстрація"],a:0,e:"Лінійний графік показує зміну в часі."}
+]);
+function buildPresentation(){
+  var fields = [
+    ["Тема й мета", "presentation-topic"],
+    ["Аудиторія", "presentation-audience"],
+    ["Структура", "presentation-structure"],
+    ["Стиль і формат", "presentation-style"],
+    ["Обмеження й перевірка", "presentation-check"]
+  ];
+  var parts = fields.map(function(field){
+    return field[0] + ": " + document.getElementById(field[1]).value.trim();
+  }).filter(function(value){ return value.split(": ").slice(1).join(": ").trim(); });
+  document.getElementById("presentation-output").textContent =
+    "Створи план презентації.\n" + parts.join("\n") +
+    "\nНе вигадуй факти. Познач твердження, які потрібно перевірити, та запропонуй джерела для пошуку.";
+}
+document.getElementById("build-presentation").addEventListener("click", buildPresentation);
+document.getElementById("copy-presentation").addEventListener("click", function(){
+  var text = document.getElementById("presentation-output").textContent;
+  var feedback = document.getElementById("presentation-feedback");
+  if (!text){ feedback.className = "fb show no"; feedback.textContent = "Спершу збери запит."; return; }
+  if (!navigator.clipboard){
+    feedback.className = "fb show no";
+    feedback.textContent = "Копіювання недоступне в цьому браузері. Виділи текст і скопіюй його вручну.";
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function(){
+    feedback.className = "fb show ok";
+    feedback.textContent = "Запит скопійовано.";
+  }).catch(function(){
+    feedback.className = "fb show no";
+    feedback.textContent = "Браузер не дозволив копіювати. Виділи текст і скопіюй його вручну.";
+  });
+});
+</script>
+</body>
+</html>

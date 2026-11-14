@@ -1,0 +1,40 @@
+.teacher-page{max-width:980px}
+.teacher-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.teacher-section{margin:14px 0}
+.teacher-section h2{margin-bottom:10px}
+.teacher-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+.timeline{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.timeline-item{display:grid;grid-template-columns:66px 1fr;gap:12px;border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:12px;background:var(--card);padding:12px}
+.timeline-item.hook{border-left-color:var(--yellow)}
+.timeline-item.theory{border-left-color:var(--blue)}
+.timeline-item.break{border-left-color:var(--orange)}
+.timeline-item.practice{border-left-color:var(--ok)}
+.timeline-item.discuss{border-left-color:var(--pink)}
+.timeline-item.wrap{border-left-color:var(--muted)}
+.timeline-min{font-size:18px;font-weight:900}
+.timeline-item h3{margin:0 0 4px}
+.timeline-item p{margin:0;color:var(--muted)}
+.timeline-item a{display:inline-block;margin-top:6px;font-weight:800}
+.timeline-warning{margin-top:10px;border-radius:10px;padding:10px;background:var(--badbg);color:var(--bad);font-weight:800}
+.resource-list{display:grid;gap:8px}
+.resource{border:1px solid var(--line);border-radius:12px;padding:12px}
+.resource p{margin:4px 0 0;color:var(--muted)}
+.resource a{font-weight:800}
+.resource .verify{color:var(--muted);font-size:13px;font-weight:700}
+.teacher-homework{width:100%;min-height:110px;resize:vertical}
+.teacher-kicker{font-weight:800;color:var(--muted)}
+.teacher-note{color:var(--muted);font-size:14px}
+.teacher-error{border:1px solid var(--bad);border-radius:12px;padding:14px;background:var(--badbg);color:var(--bad)}
+.teacher-page footer{display:block}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff!important;color:#111!important;font-size:11pt}
+  .teacher-page{max-width:none;padding:0}
+  .teacher-page .back,.teacher-page footer,.teacher-actions,.no-print{display:none!important}
+  .teacher-page header.hero{padding:10mm;margin-bottom:8mm;break-inside:avoid}
+  .teacher-section{margin:6mm 0}
+  .card,.timeline-item,.resource{break-inside:avoid;box-shadow:none}
+  .teacher-grid{grid-template-columns:1fr 1fr}
+  .teacher-homework{border:0;padding:0;min-height:0}
+  a{color:inherit;text-decoration:none}
+}

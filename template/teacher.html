@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>План уроку</title>
+<link rel="stylesheet" href="../../assets/lesson.css">
+<link rel="stylesheet" href="../../assets/teacher.css">
+</head>
+<body>
+<main class="wrap teacher-page" id="teacher-app"></main>
+<script src="../../programs.js"></script>
+<script src="../../data/ai.js"></script>
+<script>
+window.TEACHER_PLAN = {
+  program: "ai",
+  num: 11,
+  duration: 45,
+  goals: ["Додай 3–5 вимірюваних результатів уроку."],
+  timeline: [
+    {min: 3, kind: "hook", title: "Цікавинка", text: "Додай короткий вступ."},
+    {min: 10, kind: "theory", title: "Теорія", text: "Ключова ідея.", link: "#theory"},
+    {min: 6, kind: "break", title: "Відступ", text: "Коротка активність.", link: "#activity", projector: true},
+    {min: 12, kind: "practice", title: "Практика", text: "Виконайте вправу.", link: "#quiz-tab"},
+    {min: 7, kind: "discuss", title: "Обговорення", text: "Питання класу."},
+    {min: 7, kind: "wrap", title: "Підсумок і ДЗ", text: "Підсумуйте урок."}
+  ],
+  hook: "Додай факт або запитання для початку уроку.",
+  resources: [],
+  discussion: ["Додай запитання для обговорення."],
+  mistakes: []
+};
+</script>
+<script src="../../assets/teacher.js"></script>
+</body>
+</html>

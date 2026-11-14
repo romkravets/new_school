@@ -4,83 +4,174 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Інтерактиви з інформатики</title>
-<meta name="description" content="Збірка навчальних інтерактивів з інформатики для старшої профільної школи.">
+<meta name="description" content="Календарні теми й навчальні інтерактиви з інформатики для учнів та вчителів.">
 <link rel="stylesheet" href="assets/lesson.css">
 <style>
-.lessons{display:grid;gap:12px}
-@media(min-width:640px){.lessons{grid-template-columns:1fr 1fr}}
-.class-filter{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 14px}
-.class-filter label{font-weight:800}
-.class-options{display:flex;flex-wrap:wrap;gap:8px}
-.class-options button{border:2px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);padding:8px 16px;font:inherit;font-weight:800;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
-.class-options button:hover{border-color:var(--ink)}
-.class-options button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.lesson-count{color:var(--muted);font-size:14px;margin:0 0 12px}
-a.lesson{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:border-color .15s,transform .15s}
-a.lesson:hover{border-color:var(--ink);transform:translateY(-2px)}
-.lesson .num{display:inline-block;background:var(--accent);color:#15171a;border-radius:10px;padding:2px 10px;font-weight:800;font-size:13px}
-.lesson h2{margin:10px 0 6px;font-size:20px}
-.lesson p{margin:0;color:var(--muted);font-size:15px}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tags span{font-size:12px;font-weight:700;border:1.5px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.top-links{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.top-links a,.course-back{font-weight:800;text-decoration:none}
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.filters strong{margin-right:4px}
+.filters button{border:2px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);padding:8px 14px;font:inherit;font-weight:800;cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+.course{display:block;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;text-decoration:none;transition:border-color .15s,transform .15s}
+.course:hover{border-color:var(--ink);transform:translateY(-2px)}
+.course h2{margin:8px 0;font-size:20px}
+.course p{margin:4px 0;color:var(--muted)}
+.course .grade{display:inline-block;background:var(--accent);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:800}
+.course .count{margin-top:12px;color:var(--ink);font-weight:800}
+.course-view[hidden],.course-list[hidden]{display:none}
+.course-heading{margin-bottom:14px}
+.course-heading h2{margin:8px 0}
+.topic-list{display:grid;gap:8px}
+.topic{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 14px;color:var(--ink);text-decoration:none}
+a.topic:hover{border-color:var(--ink)}
+.topic.planned{background:transparent;color:var(--muted)}
+.topic-num{font-size:18px;font-weight:900}
+.topic-title{font-weight:700}
+.semester{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);font-size:12px;font-weight:800}
+.status{display:inline-block;margin-top:3px;font-size:12px;font-weight:800;color:var(--ok)}
+.topic.planned .status{color:var(--muted)}
+.safety-topic{border-color:var(--accent)}
+.empty{color:var(--muted)}
+@media(max-width:520px){.topic{grid-template-columns:36px 1fr}.topic .semester{grid-column:2}.topic-num{font-size:16px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
-    <small>Інформатика · старша профільна школа</small>
+    <small>Навчальні матеріали · 8–10 класи</small>
     <h1>Інтерактиви з інформатики</h1>
-    <p>Обери урок. Усі інтерактиви працюють у браузері й на телефоні, без реєстрації і без збору даних.</p>
+    <p>Обери курс, щоб знайти тему за номером у календарному плані. Готові інтерактиви позначені кольором.</p>
   </header>
-  <div class="class-filter">
-    <label id="grade-filter-label">Показати інтерактиви для:</label>
-    <div class="class-options" role="group" aria-labelledby="grade-filter-label">
-      <button type="button" data-grade="all" aria-pressed="true">Усі класи</button>
-      <button type="button" data-grade="10" aria-pressed="false">10 клас</button>
-      <button type="button" data-grade="11" aria-pressed="false">11 клас</button>
-      <button type="button" data-grade="12" aria-pressed="false">12 клас</button>
-    </div>
+  <div class="top-links">
+    <a class="btn" href="teacher/index.html">Календарний план для вчителя →</a>
   </div>
-  <p class="lesson-count" id="lesson-count" aria-live="polite"></p>
-  <main class="lessons" id="lessons"></main>
-  <footer>Навчальні інтерактиви · <a href="https://github.com/romkravets" target="_blank" rel="noopener">GitHub: romkravets</a></footer>
+  <main>
+    <section class="course-list" id="course-list">
+      <div class="filters" role="group" aria-label="Фільтр за класом">
+        <strong>Клас:</strong>
+        <button type="button" data-grade="all" aria-pressed="true">Усі курси</button>
+        <button type="button" data-grade="8" aria-pressed="false">8 клас</button>
+        <button type="button" data-grade="9" aria-pressed="false">9 клас</button>
+        <button type="button" data-grade="10" aria-pressed="false">10 клас</button>
+      </div>
+      <div class="courses" id="courses"></div>
+    </section>
+    <section class="course-view" id="course-view" hidden></section>
+  </main>
+  <footer>Навчальні інтерактиви · без реєстрації і збору даних · <a href="https://github.com/romkravets" target="_blank" rel="noopener">GitHub: romkravets</a></footer>
 </div>
+<script src="programs.js"></script>
 <script src="lessons.js"></script>
+<script src="data/ai.js"></script>
+<script src="data/boards.js"></script>
+<script src="data/stem.js"></script>
+<script src="data/inf10.js"></script>
+<script src="data/inf10deep.js"></script>
+<script src="data/inf8.js"></script>
+<script src="data/inf9.js"></script>
+<script src="data/python.js"></script>
 <script>
 (function(){
-  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
-  var box = document.getElementById("lessons");
-  var gradeOptions = document.querySelector(".class-options");
-  var lessonCount = document.getElementById("lesson-count");
+  "use strict";
+  var programs = window.PROGRAMS || [];
+  var lessons = window.LESSONS || [];
+  var topicsByProgram = window.TOPICS || {};
+  var courses = document.getElementById("courses");
+  var courseList = document.getElementById("course-list");
+  var courseView = document.getElementById("course-view");
   var selectedGrade = "all";
-  var list = (window.LESSONS || []).slice().sort(function(a, b){ return (a.num || 0) - (b.num || 0); });
-  function render(){
-    var visible = list.filter(function(l){
-      return selectedGrade === "all" || l.grades === "all" || (Array.isArray(l.grades) && l.grades.indexOf(Number(selectedGrade)) !== -1);
+
+  function esc(value){
+    return String(value == null ? "" : value).replace(/[&<>"]/g, function(char){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[char];
     });
-    lessonCount.textContent = "Знайдено інтерактивів: " + visible.length;
-    if (!visible.length){
-      box.innerHTML = '<div class="card">Для цього класу інтерактивів поки немає.</div>';
-      return;
-    }
-    box.innerHTML = visible.map(function(l){
-      return '<a class="lesson" href="lessons/' + encodeURIComponent(l.folder) + '/index.html">' +
-      '<span class="num">' + esc(l.label || "Заняття " + l.num) + (l.grade ? " · " + esc(l.grade) : "") + '</span>' +
-      '<h2>' + esc(l.title) + '</h2><p>' + esc(l.desc || "") + '</p>' +
-      (l.tags && l.tags.length ? '<div class="tags">' + l.tags.map(function(t){ return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "") +
-      "</a>";
-    }).join("");
   }
-  gradeOptions.addEventListener("click", function(event){
+  function lessonMap(){
+    var map = {};
+    lessons.forEach(function(lesson){
+      if (lesson.program !== "all") map[lesson.program + ":" + lesson.num] = lesson;
+    });
+    return map;
+  }
+  function topicCount(program){
+    var topics = topicsByProgram[program.id] || [];
+    var ready = topics.filter(function(topic){
+      var lesson = lessonMap()[program.id + ":" + topic.num];
+      return lesson && lesson.status === "ready";
+    }).length;
+    return ready + " із " + topics.length;
+  }
+  function renderCourses(){
+    var visible = programs.filter(function(program){
+      return selectedGrade === "all" || (program.grade != null && String(program.grade) === selectedGrade);
+    });
+    courses.innerHTML = visible.map(function(program){
+      var groups = (program.groups || []).map(function(group){
+        return esc(group.name) + ": " + group.hours.s1 + "/" + group.hours.s2 + " год/тиж.";
+      });
+      var hours = program.hours ? program.hours.s1 + "/" + program.hours.s2 + " год/тиж. по семестрах" : "";
+      return '<a class="course" href="#' + encodeURIComponent(program.id) + '">' +
+        '<span class="grade">' + esc(program.grade == null ? "Клас не вказано" : program.grade + " клас") + '</span>' +
+        '<h2>' + esc(program.title) + '</h2>' +
+        '<p>' + esc(program.level || "") + '</p>' +
+        (groups.length ? '<p>' + groups.join("<br>") + '</p>' : '<p>' + esc(hours) + '</p>') +
+        (program.authors ? '<p>' + esc(program.authors) + '</p>' : '') +
+        '<p class="count">Готово тем: ' + esc(topicCount(program)) + '</p></a>';
+    }).join("") || '<p class="empty">Для цього класу курсів немає.</p>';
+  }
+  function renderProgram(program){
+    var topics = topicsByProgram[program.id] || [];
+    var map = lessonMap();
+    var safety = lessons.find(function(lesson){ return lesson.program === "all"; });
+    var rows = topics.map(function(topic){
+      var lesson = map[program.id + ":" + topic.num];
+      var ready = lesson && lesson.status === "ready";
+      var className = "topic" + (ready ? "" : " planned");
+      var label = ready ? "Готовий інтерактив" : lesson && lesson.status === "draft" ? "У розробці" : "Заплановано";
+      var title = '<span class="topic-num">' + topic.num + '</span><span><span class="topic-title">' +
+        esc(topic.title) + '</span><br><span class="status">' + label + '</span></span>' +
+        '<span class="semester">' + topic.semester + ' семестр</span>';
+      return ready
+        ? '<a class="' + className + '" href="lessons/' + encodeURIComponent(lesson.folder) + '/index.html">' + title + '</a>'
+        : '<div class="' + className + '">' + title + '</div>';
+    });
+    var safetyRow = safety
+      ? '<a class="topic safety-topic" href="lessons/' + encodeURIComponent(safety.folder) + '/index.html">' +
+        '<span class="topic-num">БЖД</span><span><span class="topic-title">Інструктаж з безпеки життєдіяльності</span><br><span class="status">Спільний вступний інтерактив</span></span>' +
+        '<span class="semester">Перед курсом</span></a>'
+      : "";
+    courseView.innerHTML =
+      '<div class="course-heading"><a class="course-back" href="#">← До курсів</a>' +
+      '<h2>' + esc(program.title) + '</h2><p>' + esc(program.level || "") + '</p>' +
+      '<a href="teacher/index.html#' + encodeURIComponent(program.id) + '">Відкрити календарний план учителя →</a></div>' +
+      '<div class="topic-list">' + safetyRow + rows.join("") + '</div>';
+  }
+  function renderRoute(){
+    var id = window.location.hash.slice(1);
+    var program = programs.find(function(item){ return item.id === id; });
+    if (program){
+      courseList.hidden = true;
+      courseView.hidden = false;
+      renderProgram(program);
+    }else{
+      courseView.hidden = true;
+      courseList.hidden = false;
+      renderCourses();
+    }
+  }
+  document.querySelector(".filters").addEventListener("click", function(event){
     var button = event.target.closest("button[data-grade]");
     if (!button) return;
-    selectedGrade = button.getAttribute("data-grade");
-    Array.prototype.forEach.call(gradeOptions.querySelectorAll("button[data-grade]"), function(option){
+    selectedGrade = button.dataset.grade;
+    document.querySelectorAll(".filters button[data-grade]").forEach(function(option){
       option.setAttribute("aria-pressed", option === button ? "true" : "false");
     });
-    render();
+    renderCourses();
   });
-  render();
+  window.addEventListener("hashchange", renderRoute);
+  renderRoute();
 })();
 </script>
 </body>

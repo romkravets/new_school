@@ -28,7 +28,7 @@
 <!-- Вкладки: data-tab має збігатися з id розділу нижче. Зайві можна видалити. -->
 <nav class="tabs" aria-label="Розділи">
   <button data-tab="theory">1. Теорія</button>
-  <button data-tab="quiz-tab">2. Вікторина</button>
+  <button data-tab="quiz-tab" data-break="5">2. Відступ · вікторина</button>
   <button data-tab="match-tab">3. Відповідність</button>
   <button data-tab="sort-tab">4. Сортування</button>
   <button data-tab="final">Підсумок</button>
@@ -131,7 +131,16 @@ Lesson.sort("#sort", {
   ]
 });
 
-/* Тексти підсумку (необов'язково):
+/* Для власної вправи можна під'єднати бали:
+   var id = Lesson.register(5);
+   Lesson.addScore(id);      // за правильну відповідь
+   Lesson.setScore(id, 0);   // скинути спробу
+
+   data-break="5" на кнопці вкладки додає бейдж тривалості.
+   Посилання index.html#quiz-tab відкриє вкладку напряму;
+   ?projector збільшить текст і сховає навігаційні елементи.
+
+   Тексти підсумку (необов'язково):
 Lesson.messages.high = "…";  Lesson.messages.mid = "…";  Lesson.messages.low = "…";
 */
 </script>

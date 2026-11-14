@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Календарний план для вчителя</title>
+<meta name="description" content="Календарні теми, домашні завдання та готові матеріали до уроків.">
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+.course-picker{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+.course-picker label{font-weight:800}
+.course-picker select{max-width:720px}
+.teacher-help{font-size:14px}
+.teacher-help ol{margin:8px 0 0;padding-left:22px}
+.course-meta{color:var(--muted)}
+.calendar-wrap{overflow-x:auto}
+.calendar{width:100%;border-collapse:collapse;min-width:860px;background:var(--card);border-radius:var(--r);overflow:hidden}
+.calendar th,.calendar td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--line)}
+.calendar th{background:var(--ink);color:var(--bg);font-size:13px}
+.calendar tr:last-child td{border-bottom:0}
+.calendar .num{font-weight:900;white-space:nowrap}
+.calendar .semester{white-space:nowrap;color:var(--muted)}
+.calendar .homework{min-width:220px;color:var(--muted);font-size:14px}
+.calendar .status{font-weight:800;color:var(--muted);white-space:nowrap}
+.calendar .status.ready{color:var(--ok)}
+.calendar-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:130px}
+.calendar-actions a{font-size:13px}
+.calendar-summary{font-weight:800;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← До інтерактивів</a>
+  <header class="hero">
+    <small>Учительський розділ</small>
+    <h1>Календарний план</h1>
+    <p>Теми й домашні завдання автоматично імпортовано з календарних планів для «Мрії».</p>
+  </header>
+  <section class="card teacher-help">
+    <b>Як оновлювати й доповнювати матеріали</b>
+    <ol>
+      <li>Оновіть файл календаря в <code>documents/</code>, потім запустіть <code>node scripts/import-mriya.mjs</code>.</li>
+      <li>Щоб додати інтерактив, скопіюйте <code>template/</code>, додайте запис до <code>lessons.js</code> і вкажіть номер уроку.</li>
+      <li>Учительські картки створюйте за <code>template/teacher.html</code>. Докладні правила — у <a href="../README.md">README</a>.</li>
+    </ol>
+  </section>
+  <section class="course-picker">
+    <label for="program-select">Оберіть курс</label>
+    <select id="program-select"></select>
+  </section>
+  <section id="course-summary" class="card"></section>
+  <div class="calendar-wrap" id="calendar"></div>
+  <p class="calendar-summary" id="calendar-summary"></p>
+  <footer>Календарні плани з Мрії · учительські матеріали · <a href="https://github.com/romkravets" target="_blank" rel="noopener">GitHub: romkravets</a></footer>
+</div>
+<script src="../programs.js"></script>
+<script src="../lessons.js"></script>
+<script src="../data/ai.js"></script>
+<script src="../data/boards.js"></script>
+<script src="../data/stem.js"></script>
+<script src="../data/inf10.js"></script>
+<script src="../data/inf10deep.js"></script>
+<script src="../data/inf8.js"></script>
+<script src="../data/inf9.js"></script>
+<script src="../data/python.js"></script>
+<script>
+(function(){
+  "use strict";
+  var programs = window.PROGRAMS || [];
+  var lessons = window.LESSONS || [];
+  var topics = window.TOPICS || {};
+  var select = document.getElementById("program-select");
+  var summary = document.getElementById("course-summary");
+  var calendar = document.getElementById("calendar");
+  var footer = document.getElementById("calendar-summary");
+
+  function esc(value){
+    return String(value == null ? "" : value).replace(/[&<>"]/g, function(char){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[char];
+    });
+  }
+  function findLesson(programId, number){
+    return lessons.find(function(lesson){ return lesson.program === programId && lesson.num === number; });
+  }
+  function groupSummary(program){
+    if (!program.groups || !program.groups.length) return "Розклад: " + program.hours.s1 + " год/тиж. у І семестрі, " + program.hours.s2 + " год/тиж. у ІІ.";
+    return program.groups.map(function(group){
+      return group.name + " — " + group.hours.s1 + "/" + group.hours.s2 + " год/тиж. (І/ІІ семестри)";
+    }).join("<br>");
+  }
+  function render(id){
+    var program = programs.find(function(item){ return item.id === id; }) || programs[0];
+    if (!program) return;
+    select.value = program.id;
+    var list = topics[program.id] || [];
+    var readyCount = list.filter(function(topic){
+      var lesson = findLesson(program.id, topic.num);
+      return lesson && lesson.status === "ready";
+    }).length;
+    var hoursLabel = program.grade == null ? "Клас не вказано" : program.grade + " клас";
+    summary.innerHTML = '<h2>' + esc(program.title) + '</h2><p class="course-meta">' +
+      esc(hoursLabel) + (program.level ? " · " + esc(program.level) : "") + '</p><p>' + groupSummary(program) + '</p>';
+    calendar.innerHTML = '<table class="calendar"><thead><tr><th>№</th><th>Семестр</th><th>Тема</th><th>ДЗ з Мрії</th><th>Статус</th><th>Матеріали</th></tr></thead><tbody>' +
+      list.map(function(topic){
+        var lesson = findLesson(program.id, topic.num);
+        var ready = lesson && lesson.status === "ready";
+        var teacherLink = ready && lesson.teacher ? '<a href="../lessons/' + encodeURIComponent(lesson.folder) + '/teacher.html">План</a>' : "";
+        var lessonLink = ready ? '<a href="../lessons/' + encodeURIComponent(lesson.folder) + '/index.html">Урок</a>' : "";
+        var status = ready ? "Готово" : lesson && lesson.status === "draft" ? "У розробці" : "Заплановано";
+        return '<tr><td class="num">' + topic.num + '</td><td class="semester">' + topic.semester + '</td>' +
+          '<td>' + esc(topic.title) + '</td><td class="homework">' + esc(topic.homework || "—") + '</td>' +
+          '<td class="status ' + (ready ? "ready" : "") + '">' + status + '</td>' +
+          '<td><div class="calendar-actions">' + teacherLink + lessonLink + '</div></td></tr>';
+      }).join("") + '</tbody></table>';
+    footer.textContent = "Занять у плані: " + list.length + " · готових інтерактивів: " + readyCount;
+    if (window.location.hash.slice(1) !== program.id) history.replaceState(null, "", "#" + program.id);
+  }
+  programs.forEach(function(program){
+    var option = document.createElement("option");
+    option.value = program.id;
+    option.textContent = (program.grade == null ? "Клас не вказано" : program.grade + " клас") + " · " + program.title;
+    select.appendChild(option);
+  });
+  select.addEventListener("change", function(){ render(select.value); });
+  window.addEventListener("hashchange", function(){ render(window.location.hash.slice(1)); });
+  render(window.location.hash.slice(1) || (programs[0] && programs[0].id));
+})();
+</script>
+</body>
+</html>

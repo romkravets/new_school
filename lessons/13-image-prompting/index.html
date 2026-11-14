@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Промптинг для зображень</title>
+<meta name="description" content="Інтерактив: генерація та редагування зображень, техніки промптингу. Конструктор промпту, тренажер, техніки редагування, етика.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Стилі лише цього уроку */
+.formula{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700}
+.formula .plus{color:var(--muted)}
+.lang{display:inline-flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:transparent;color:var(--ink);padding:6px 12px;font-weight:700;cursor:pointer}
+.lang button.on{background:var(--ink);color:var(--bg)}
+.out{background:#15171a;color:#f2f2f2;border-radius:14px;padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;white-space:pre-wrap;word-break:break-word;min-height:70px}
+.out .neg{color:#ffb4c0}
+.meter{height:10px;background:var(--line);border-radius:999px;overflow:hidden;margin:10px 0 4px}
+.meter i{display:block;height:100%;width:0;background:var(--bad);transition:width .25s,background .25s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../index.html#ai">← До курсу ШІ</a>
+
+<header class="hero">
+  <small>Заняття 13 · Штучний інтелект і суспільство · 10 клас</small>
+  <h1>Генерація та редагування зображень</h1>
+  <p>Навчись складати промпт, з яким ШІ малює саме те, що тобі потрібно, обирати техніку редагування і перевіряти, чи етично використовувати результат.</p>
+  <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+</header>
+
+<nav class="tabs" aria-label="Розділи">
+  <button data-tab="t1">1. Формула</button>
+  <button data-tab="t2" data-break="5">2. Конструктор</button>
+  <button data-tab="t3">3. Тренажер</button>
+  <button data-tab="t4">4. Редагування</button>
+  <button data-tab="t5">5. Етика</button>
+  <button data-tab="t6">Підсумок</button>
+</nav>
+
+<!-- 1. ФОРМУЛА -->
+<section class="panel" id="t1">
+  <div class="card">
+    <h2>Формула сильного промпту</h2>
+    <p class="lead">Модель не вгадує задум. Вона обирає найімовірніше, тому все, що ти не описав, вона додумає сама.</p>
+    <div class="formula">
+      <span class="chip" style="background:var(--lime)">Об'єкт</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--yellow)">Деталі / дія</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--sky)">Середовище</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--pink)">Стиль</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--orange)">Світло</span><span class="plus">+</span>
+      <span class="chip" style="background:#cfd8ff">Композиція</span><span class="plus">+</span>
+      <span class="chip" style="background:#ffd6e0">Палітра / настрій</span><span class="plus">+</span>
+      <span class="chip" style="background:#e3e3e3">Формат</span>
+    </div>
+    <div class="tip"><b>Порядок має значення:</b> головне ставимо на початок. Що важливіше для результату, то ближче до початку промпту.</div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Слабкий промпт</h3>
+      <div class="code">кіт у космосі</div>
+      <ul class="tight">
+        <li>ШІ сам обирає стиль, ракурс і настрій</li>
+        <li>щоразу виходить зовсім інше зображення</li>
+        <li>невідомо, для чого зображення і в якому форматі</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Сильний промпт</h3>
+      <div class="code">Рудий кіт в оранжевому скафандрі пливе в невагомості біля МКС, на тлі Землі, 3D-рендер у стилі анімаційного фільму, м'яке контрове світло, загальний план, теплі кольори, формат 16:9</div>
+      <ul class="tight">
+        <li>конкретний об'єкт і деталі</li>
+        <li>заданий стиль, світло і ракурс</li>
+        <li>формат підходить для слайда</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ще кілька технік</h3>
+    <ul class="tight">
+      <li><b>Негативний промпт</b>: чого не має бути на зображенні («без тексту, без водяних знаків»).</li>
+      <li><b>Референс</b>: зображення-зразок, щоб зберегти стиль чи персонажа.</li>
+      <li><b>Ітерації</b>: перша версія майже ніколи не фінальна. Змінюй одну деталь за раз і порівнюй результати.</li>
+      <li><b>Текст на зображенні</b> моделі досі часто спотворюють. Надійніше згенерувати фон, а напис додати в графічному редакторі.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2. КОНСТРУКТОР (логіка лише цього уроку, див. скрипт унизу) -->
+<section class="panel" id="t2">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h2>Конструктор промпту</h2>
+        <p class="lead" style="margin:0">Обери складники й подивись, як промпт стає сильнішим.</p>
+      </div>
+      <div class="lang" role="group" aria-label="Мова промпту">
+        <button type="button" data-lang="ua" class="on">UA</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid g2">
+      <div><label class="f" for="b-subject">Об'єкт</label>
+        <select id="b-subject"></select>
+        <input type="text" id="b-subject-own" placeholder="…або впиши свій об'єкт" style="margin-top:6px">
+      </div>
+      <div><label class="f" for="b-detail">Деталі / дія</label><select id="b-detail"></select></div>
+      <div><label class="f" for="b-env">Середовище</label><select id="b-env"></select></div>
+      <div><label class="f" for="b-style">Стиль</label><select id="b-style"></select></div>
+      <div><label class="f" for="b-light">Світло</label><select id="b-light"></select></div>
+      <div><label class="f" for="b-comp">Композиція</label><select id="b-comp"></select></div>
+      <div><label class="f" for="b-mood">Палітра / настрій</label><select id="b-mood"></select></div>
+      <div><label class="f" for="b-ratio">Формат</label><select id="b-ratio"></select></div>
+    </div>
+    <div style="margin-top:10px"><label class="f" for="b-neg">Негативний промпт (чого уникати)</label><select id="b-neg"></select></div>
+  </div>
+
+  <div class="card">
+    <h3>Твій промпт</h3>
+    <div class="out" id="out" aria-live="polite"></div>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+    <div class="row" style="justify-content:space-between">
+      <span class="progress" id="meterTxt"></span>
+      <div class="row">
+        <button class="btn ghost" type="button" id="randBtn">Випадковий</button>
+        <button class="btn" type="button" id="copyBtn">Копіювати</button>
+      </div>
+    </div>
+    <p class="ctx" style="margin:10px 0 0">Скопіюй промпт і спробуй його в будь-якому генераторі зображень, дозволеному в класі. Потім зміни <b>один</b> складник і порівняй результати.</p>
+  </div>
+</section>
+
+<!-- 3. ТРЕНАЖЕР -->
+<section class="panel" id="t3">
+  <div class="card">
+    <h2>Тренажер: що не так із промптом?</h2>
+    <p class="lead">Прочитай ситуацію і промпт. Обери, що найбільше покращить результат.</p>
+    <div id="quiz"></div>
+  </div>
+</section>
+
+<!-- 4. РЕДАГУВАННЯ -->
+<section class="panel" id="t4">
+  <div class="card">
+    <h2>Техніки редагування зображень</h2>
+    <p class="lead">Не завжди треба генерувати все з нуля. Добери до кожної ситуації техніку, яка розв'яже задачу найшвидше.</p>
+    <div class="grid g2" style="font-size:14px">
+      <div><b>Inpainting</b>: перемальовуємо виділену ділянку.</div>
+      <div><b>Outpainting</b>: домальовуємо зображення за межами кадру.</div>
+      <div><b>Image-to-image</b>: нове зображення на основі твого (ескіз, фото).</div>
+      <div><b>Варіації</b>: кілька схожих версій вдалого зображення.</div>
+      <div><b>Апскейлінг</b>: збільшення роздільності без втрати якості.</div>
+      <div><b>Референс персонажа</b>: один і той самий герой на різних зображеннях.</div>
+    </div>
+  </div>
+  <div class="card"><div id="match"></div></div>
+</section>
+
+<!-- 5. ЕТИКА -->
+<section class="panel" id="t5">
+  <div class="card">
+    <h2>Етика: допустимо чи ні?</h2>
+    <p class="lead">Те, що технічно можна згенерувати, не завжди етично використовувати. Перевір кожну ситуацію за п'ятьма питаннями: <b>згода, мета, приватність, ліцензія, вік</b>.</p>
+  </div>
+  <div id="ethics"></div>
+</section>
+
+<!-- 6. ПІДСУМОК -->
+<section class="panel" id="t6">
+  <div class="card final">
+    <h2>Твій результат</h2>
+    <div class="big"><span data-score>0</span> / <span data-max>0</span></div>
+    <p class="lead" style="margin-top:8px" data-final-msg></p>
+  </div>
+  <div class="card">
+    <h3>Рефлексія</h3>
+    <ul class="tight">
+      <li>Який складник промпту найсильніше змінював результат?</li>
+      <li>Що ти зробиш, якщо зображення майже вдале, але з однією помилкою?</li>
+      <li>Як ти позначиш, що зображення створено за допомогою ШІ?</li>
+    </ul>
+  </div>
+</section>
+
+<footer>Навчальний інтерактив · <a href="teacher.html">План уроку для вчителя</a> · працює без реєстрації і не збирає даних</footer>
+</div>
+
+<script src="../../assets/lesson.js"></script>
+<script>
+/* ===== Вправи на спільних компонентах ===== */
+
+Lesson.messages.high = "Чудово! Ти впевнено складаєш промпти й оцінюєш ризики. Спробуй свій промпт у генераторі та порівняй кілька ітерацій.";
+Lesson.messages.low  = "Це хороший початок. Повернись до розділу «Формула» і пройди тренажер ще раз.";
+
+Lesson.quiz("#quiz", [
+  {ctx:"Потрібна ілюстрація для слайда.", prompt:"Зроби гарну картинку для презентації", q:"Чого найбільше бракує?",
+   o:["Конкретного об'єкта: що саме має бути на зображенні","Негативного промпту","Згадки про роздільність 4K","Слова «будь ласка»"], a:0,
+   e:"Без об'єкта модель не знає, що малювати, тому видасть щось випадкове. «Гарну» — теж не опис: кожен розуміє його по-своєму."},
+  {ctx:"Зображення піде в шапку шкільного сайту (широка смуга вгорі сторінки).", prompt:"Маяк на скелі під час шторму, фотореалізм, драматичне освітлення", q:"Що треба додати?",
+   o:["Ще один стиль, наприклад акварель","Формат 16:9 або ширший","Більше прикметників: «дуже-дуже гарний»","Нічого, промпт ідеальний"], a:1,
+   e:"Без формату модель часто генерує квадрат, і для шапки сайту його доведеться обрізати, втрачаючи важливу частину кадру."},
+  {ctx:"Ілюстрація для дитячої книжки про роботів.", prompt:"Робот у бібліотеці тримає книжку, крупний план, формат 1:1", q:"Який складник найважливіший тут?",
+   o:["Стиль, наприклад «акварельна ілюстрація для дитячої книжки»","Технічні параметри камери","Негативний промпт «без людей»","Назва конкретного художника"], a:0,
+   e:"Без стилю модель може видати фотореалістичного чи навіть страшнуватого робота. Стиль задає, як саме буде намальовано, і має відповідати аудиторії."},
+  {ctx:"Постер до Дня науки з гаслом.", prompt:"Постер до Дня науки з написом «Наука — це круто!»", q:"Як найнадійніше отримати правильний напис?",
+   o:["Повторити напис у промпті тричі","Згенерувати фон без тексту, а напис додати в графічному редакторі","Писати промпт лише великими літерами","Попросити ШІ «не робити помилок»"], a:1,
+   e:"Моделі генерації досі часто спотворюють літери, особливо кирилицю. Надійніше зробити фон з місцем під текст і додати напис у Canva, Figma чи іншому редакторі."},
+  {ctx:"Зображення майже ідеальне, але в кота шість лап.", prompt:"(вдале зображення з однією помилкою)", q:"Що зробити найефективніше?",
+   o:["Переписати весь промпт з нуля","Виділити лапи і перегенерувати лише цю ділянку (inpainting)","Залишити як є, ніхто не помітить","Згенерувати 50 нових варіантів"], a:1,
+   e:"Inpainting змінює тільки виділену ділянку і зберігає все вдале. Перегенерація з нуля дасть зовсім інше зображення."},
+  {ctx:"Для звіту про екскурсію.", prompt:"Фото учнів 10-Б класу нашого ліцею в музеї", q:"Що тут не так?",
+   o:["Бракує стилю","ШІ не знає справжніх учнів, тож «фото» буде вигадкою. Краще справжнє фото зі згодою","Бракує формату","Усе гаразд"], a:1,
+   e:"Згенероване «фото» реальної події — це вигадка, яка може ввести в оману. Для звіту потрібне справжнє фото, а щоб його опублікувати, потрібна згода."},
+  {ctx:"Ілюстрація для власного проєкту.", prompt:"Пейзаж у стилі [ім'я сучасного художника]", q:"Як зробити це етичніше?",
+   o:["Описати ознаки стилю: техніку, палітру, настрій","Додати ще двох художників","Написати ім'я латиницею","Нічого не змінювати"], a:0,
+   e:"Копіювання стилю конкретного живого автора викликає питання авторського права й поваги до чужої праці. Опис ознак стилю (наприклад, «широкі мазки, пастельні кольори, імпресіонізм») працює не гірше."}
+]);
+
+Lesson.match("#match", {
+  options: ["Inpainting","Outpainting","Image-to-image","Варіації","Апскейлінг","Референс персонажа"],
+  items: [
+    {s:"Прибрати з фото випадкового перехожого на задньому плані", a:0, e:"Виділяємо перехожого, і модель домальовує фон на його місці."},
+    {s:"Розширити вертикальне фото до горизонтального банера 16:9", a:1, e:"Outpainting домальовує нові ділянки за межами кадру з боків."},
+    {s:"Перетворити свій олівцевий ескіз на кольорову ілюстрацію", a:2, e:"Ескіз задає композицію, а промпт описує стиль і кольори результату."},
+    {s:"Отримати кілька схожих версій вдалого зображення, щоб обрати найкращу", a:3, e:"Варіації зберігають загальну ідею і змінюють деталі."},
+    {s:"Збільшити маленьку картинку, щоб надрукувати її на плакаті", a:4, e:"Апскейлінг збільшує роздільність і домальовує дрібні деталі, щоб зображення не було розмитим."},
+    {s:"Зробити так, щоб головний герой коміксу виглядав однаково на всіх кадрах", a:5, e:"Референсне зображення персонажа допомагає моделі зберегти обличчя, одяг і стиль."}
+  ]
+});
+
+Lesson.sort("#ethics", {
+  choices: ["Допустимо","За умов","Недопустимо"],
+  items: [
+    {s:"Згенерувати ілюстрацію для своєї презентації і підписати «зображення створено за допомогою ШІ».", a:0, e:"Мета навчальна, нічиїх прав не порушено, а підпис робить використання прозорим."},
+    {s:"Зробити реалістичне «фото» однокласника в смішному образі і викласти в класну групу.", a:2, e:"Немає згоди, використано чуже обличчя, а такий «жарт» легко стає кібербулінгом."},
+    {s:"Подати згенероване зображення як частину учнівського проєкту на конкурс.", a:1, e:"Лише якщо правила конкурсу це дозволяють і ти чесно вказуєш, що і як зробив ШІ."},
+    {s:"Завантажити фото обличчя друга в онлайн-редактор, щоб «постарити» його.", a:1, e:"Лише за згодою друга, якщо сервіс дозволено для твого віку і ти знаєш, що він робить із завантаженими фото."},
+    {s:"Видати згенеровану картину за власний малюнок на конкурсі малюнків.", a:2, e:"Це порушення академічної доброчесності: робота не твоя, а журі введено в оману."},
+    {s:"Створити реалістичне «фото» події, якої не було, і поширити як новину.", a:2, e:"Це дезінформація. Навіть «для жарту» такі зображення швидко поширюються й шкодять."}
+  ]
+});
+
+/* ===== Конструктор промпту (лише в цьому уроці) ===== */
+(function(){
+var B = {
+  subject:[["","— обери —"],
+    ["рудий кіт-астронавт","a ginger cat astronaut"],
+    ["старий маяк на скелі","an old lighthouse on a cliff"],
+    ["робот-бібліотекар","a robot librarian"],
+    ["дерев'яний будиночок у лісі","a small wooden cabin in the forest"],
+    ["футуристичний шкільний клас","a futuristic school classroom"]],
+  detail:[["","— без деталей —"],
+    ["тримає стос книжок","holding a stack of books"],
+    ["з яскравими вогниками у вікнах","with warm glowing lights in the windows"],
+    ["читає голографічну книгу","reading a holographic book"],
+    ["вкритий першим снігом","covered with the first snow"],
+    ["у русі, легке розмиття руху","in motion, slight motion blur"]],
+  env:[["","— без середовища —"],
+    ["на тлі нічного міста","against a night city skyline"],
+    ["у старовинній бібліотеці","in an old library"],
+    ["на березі моря на світанку","on the seashore at dawn"],
+    ["у відкритому космосі біля Землі","in outer space near Earth"],
+    ["у туманному осінньому лісі","in a misty autumn forest"]],
+  style:[["","— без стилю —"],
+    ["фотореалізм","photorealistic photo"],
+    ["акварельна ілюстрація","watercolor illustration"],
+    ["піксель-арт","pixel art"],
+    ["3D-рендер у стилі анімаційного фільму","3D render, animated film style"],
+    ["мінімалістична векторна ілюстрація","minimalist flat vector illustration"],
+    ["олівцевий ескіз","pencil sketch"]],
+  light:[["","— без світла —"],
+    ["м'яке денне світло","soft daylight"],
+    ["золота година","golden hour lighting"],
+    ["неонове освітлення","neon lighting"],
+    ["драматичне контрове світло","dramatic backlight"],
+    ["студійне освітлення","studio lighting"]],
+  comp:[["","— без композиції —"],
+    ["крупний план","close-up"],
+    ["загальний план","wide shot"],
+    ["вид згори","top-down view"],
+    ["ракурс знизу","low-angle shot"],
+    ["симетрична композиція по центру","centered symmetrical composition"]],
+  mood:[["","— без палітри —"],
+    ["теплі кольори, затишний настрій","warm colors, cozy mood"],
+    ["холодні кольори, таємничий настрій","cool colors, mysterious mood"],
+    ["пастельні кольори, спокійний настрій","pastel colors, calm mood"],
+    ["яскраві контрастні кольори, енергійний настрій","vivid contrasting colors, energetic mood"]],
+  ratio:[["","— без формату —"],
+    ["формат 16:9 (слайд, банер)","aspect ratio 16:9"],
+    ["формат 1:1 (аватар, пост)","aspect ratio 1:1"],
+    ["формат 9:16 (сторіс, телефон)","aspect ratio 9:16"],
+    ["формат 3:4 (плакат)","aspect ratio 3:4"]],
+  neg:[["","— без негативного промпту —"],
+    ["без тексту і літер","no text, no letters"],
+    ["без водяних знаків і логотипів","no watermarks, no logos"],
+    ["без розмиття і зайвих деталей","no blur, no clutter"],
+    ["без людей у кадрі","no people"]]
+};
+var lang = "ua", plain = "";
+var keys = ["subject","detail","env","style","light","comp","mood","ratio","neg"];
+var esc = Lesson.esc;
+
+keys.forEach(function(k){
+  var sel = document.getElementById("b-" + k);
+  B[k].forEach(function(o, i){
+    var op = document.createElement("option");
+    op.value = i; op.textContent = i === 0 ? o[1] : o[0];
+    sel.appendChild(op);
+  });
+  sel.addEventListener("change", build);
+});
+document.getElementById("b-subject-own").addEventListener("input", build);
+document.querySelectorAll(".lang button").forEach(function(b){
+  b.addEventListener("click", function(){
+    lang = b.dataset.lang;
+    document.querySelectorAll(".lang button").forEach(function(x){ x.classList.toggle("on", x === b); });
+    build();
+  });
+});
+
+function pick(k){
+  var i = +document.getElementById("b-" + k).value;
+  return i ? B[k][i][lang === "ua" ? 0 : 1] : "";
+}
+function build(){
+  var own = document.getElementById("b-subject-own").value.trim();
+  var subj = own || pick("subject");
+  var parts = [subj, pick("detail"), pick("env"), pick("style"), pick("light"), pick("comp"), pick("mood"), pick("ratio")].filter(Boolean);
+  var neg = pick("neg");
+  var negLabel = lang === "ua" ? "Уникати: " : "Negative prompt: ";
+  var out = document.getElementById("out");
+  if (!parts.length){
+    out.textContent = lang === "ua" ? "Обери хоча б об'єкт…" : "Choose at least a subject…";
+    plain = "";
+  } else {
+    var main = parts.join(", ");
+    main = main.charAt(0).toUpperCase() + main.slice(1);
+    plain = main + (neg ? "\n" + negLabel + neg : "");
+    out.innerHTML = esc(main) + (neg ? '\n<span class="neg">' + esc(negLabel + neg) + "</span>" : "");
+  }
+  var n = parts.length + (neg ? 1 : 0);
+  var m = document.getElementById("meter");
+  m.style.width = Math.round(n / 9 * 100) + "%";
+  var txt;
+  if (n === 0){ txt = "Складників: 0 з 9"; }
+  else if (!subj){ m.style.background = "var(--bad)"; txt = "Немає об'єкта: ШІ не знає, що малювати"; }
+  else if (n <= 2){ m.style.background = "var(--bad)"; txt = "Слабкий промпт: ШІ додумає майже все"; }
+  else if (n <= 5){ m.style.background = "var(--orange)"; txt = "Середній: додай стиль, світло чи формат"; }
+  else { m.style.background = "var(--ok)"; txt = "Сильний промпт: результат передбачуваний"; }
+  document.getElementById("meterTxt").textContent = txt;
+}
+document.getElementById("randBtn").addEventListener("click", function(){
+  document.getElementById("b-subject-own").value = "";
+  keys.forEach(function(k){
+    document.getElementById("b-" + k).value = 1 + Math.floor(Math.random() * (B[k].length - 1));
+  });
+  build();
+});
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var btn = this;
+  if (!plain) return;
+  function done(){ btn.textContent = "Скопійовано ✓"; setTimeout(function(){ btn.textContent = "Копіювати"; }, 1500); }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = plain; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(e){}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(plain).then(done, fallback);
+  else fallback();
+});
+build();
+})();
+</script>
+</body>
+</html>

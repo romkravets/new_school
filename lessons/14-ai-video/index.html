@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Створення відеоконтенту з ШІ</title>
+<meta name="description" content="Рухи камери, способи генерації відео, відеопромпти й критична оцінка результатів ШІ.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"}}
+</script>
+<style>
+:root{--accent:var(--sky)}
+.scene-box{min-height:180px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg)}
+.scene-canvas{display:block;width:100%;height:auto}
+.scene-description{margin:0;padding:12px;background:var(--card);border-top:1px solid var(--line)}
+.scene-controls{display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--card)}
+.scene-controls button{min-width:100px}
+.scene-status{border-left:4px solid var(--orange);padding:10px 12px;background:var(--bg);border-radius:0 10px 10px 0}
+.scene-fallback{margin:0;padding:10px;background:var(--card)}
+.scene-fallback img{display:block;width:100%;height:auto;border-radius:10px}
+.move-description{min-height:56px;padding:10px 12px;background:var(--bg);border-radius:10px}
+.guess-options{display:flex;flex-wrap:wrap;gap:8px}
+.guess-options button{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}
+.guess-options button:hover:not(:disabled){border-color:var(--blue)}
+.guess-options button:disabled{opacity:.55}
+.guess-options button.right{background:var(--ok);color:#fff;border-color:var(--ok)}
+.guess-options button.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}
+.out{background:#15171a;color:#f2f2f2;border-radius:14px;padding:14px;white-space:pre-wrap;min-height:60px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#ai">← До курсу ШІ</a>
+  <header class="hero">
+    <small>Заняття 14 · Штучний інтелект і суспільство · 10 клас</small>
+    <h1>Створення відеоконтенту з ШІ</h1>
+    <p>Порівняй способи генерації відео, опиши рух камери й перевір, що модель справді створила.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Типи генерації</button>
+    <button data-tab="camera" data-break="6">2. Рухи камери</button>
+    <button data-tab="technique" data-break="5">3. Яка техніка?</button>
+    <button data-tab="builder">4. Промпт для відео</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><span class="chip" style="background:var(--yellow)">text-to-video</span><h2 style="margin-top:8px">Текст → відео</h2><p>Модель створює рухому сцену за текстовим описом. Чітко назви об'єкт, дію, середовище й рух камери.</p></div>
+      <div class="card"><span class="chip" style="background:var(--sky)">image-to-video</span><h2 style="margin-top:8px">Зображення → відео</h2><p>Зображення задає вигляд першого кадру, а запит пояснює, що має рухатися і як змінюється камера.</p></div>
+      <div class="card"><span class="chip" style="background:var(--pink)">video-to-video</span><h2 style="margin-top:8px">Відео → відео</h2><p>Наявний відеоряд перетворюється або стилізується. Перевір, які деталі й рухи інструмент зберіг.</p></div>
+    </div>
+    <div class="card">
+      <h2>Що описати у відеопромпті</h2>
+      <ul class="tight"><li>хто або що в кадрі та що саме робить;</li><li>де відбувається сцена, який план і освітлення;</li><li>рух камери: наїзд, панорама, обліт, підйом або слідування;</li><li>тривалість і темп, якщо інструмент дозволяє їх задати.</li></ul>
+      <div class="tip"><b>Перевір результат:</b> короткі кліпи можуть спотворювати руки, текст, причинно-наслідкові дії й фізику. Не публікуй синтетичне відео так, ніби це реальна подія.</div>
+    </div>
+  </section>
+  <section class="panel" id="camera">
+    <div class="card">
+      <h2>Відступ: рухи камери</h2>
+      <p class="lead">Об'ємна сцена показує, як камера рухається відносно персонажа й декорацій. Обери рух; кнопки працюють з клавіатури.</p>
+      <div class="scene-box camera-scene"></div>
+      <p class="scene-status" data-scene-status role="status">Завантажується сцена або її доступний текстовий опис.</p>
+      <figure class="scene-fallback">
+        <img src="../../assets/scenes/camera-moves.svg" alt="Персонаж між будинками й деревами; стрілка показує наїзд камери до персонажа.">
+        <figcaption class="teacher-note">Схема руху камери. Інтерактивна 3D-сцена працює на сайті через http(s); з локального файлу доступний цей малюнок.</figcaption>
+      </figure>
+      <p class="move-description" id="camera-move-description" aria-live="polite">Обери рух камери, щоб побачити його назву та приклад фрази для промпту.</p>
+      <h3 style="margin-top:16px">Вгадай рух</h3>
+      <p class="lead">Сцена виконає випадковий рух. Обери назву з чотирьох варіантів.</p>
+      <div class="row"><button class="btn" type="button" id="guess-start">Почати</button><button class="btn ghost" type="button" id="guess-next" disabled>Наступний рух</button><button class="btn ghost" type="button" id="guess-reset">Спробувати ще раз</button></div>
+      <p class="progress" id="guess-progress" aria-live="polite"></p>
+      <div class="guess-options" id="guess-options"></div>
+      <div class="fb" id="guess-feedback" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="panel" id="technique">
+    <div class="card"><h2>Яка техніка генерації?</h2><p class="lead">Визнач, що було початковим матеріалом: текст, окреме зображення або відео.</p><div id="technique-sort"></div></div>
+  </section>
+  <section class="panel" id="builder">
+    <div class="card">
+      <h2>Конструктор відеопромпту</h2>
+      <div class="grid g2">
+        <div><label class="f" for="video-subject">Персонаж або об'єкт</label><textarea id="video-subject" placeholder="Наприклад, паперовий човник"></textarea></div>
+        <div><label class="f" for="video-action">Дія</label><textarea id="video-action" placeholder="Повільно пливе вперед"></textarea></div>
+        <div><label class="f" for="video-setting">Місце й вигляд сцени</label><textarea id="video-setting" placeholder="У струмку в парку, м'яке ранкове світло"></textarea></div>
+        <div><label class="f" for="video-camera">Рух камери</label><select id="video-camera"><option value="">Обери рух</option><option>Наїзд (dolly in)</option><option>Панорама (pan)</option><option>Обліт (orbit)</option><option>Підйом (crane)</option><option>Слідування (tracking)</option><option>Статична камера</option></select></div>
+      </div>
+      <div style="margin-top:10px"><label class="f" for="video-duration">Тривалість і обмеження</label><textarea id="video-duration" placeholder="5 секунд, плавний рух, без тексту в кадрі"></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn" type="button" id="build-video-prompt">Зібрати промпт</button><button class="btn ghost" type="button" id="copy-video-prompt">Копіювати</button></div>
+      <p class="out" id="video-prompt-output" aria-live="polite"></p>
+      <p class="fb" id="video-prompt-feedback" aria-live="polite"></p>
+    </div>
+  </section>
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Чому відео вийшло не таким?</h2><div id="quiz"></div></div></section>
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Який рух камери легко переплутати із зумом?</li><li>Що потрібно перевірити перед поширенням відео?</li></ul></div>
+  </section>
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · 3D-сцена потребує інтернету й браузера з WebGL</footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script type="module" src="../../assets/scenes/camera-moves.js"></script>
+<script>
+Lesson.messages.high = "Чудово! Ти розрізняєш способи генерації й можеш описати рух камери.";
+Lesson.messages.low = "Повтори різницю між text-to-video, image-to-video та video-to-video.";
+Lesson.sort("#technique-sort", {
+  choices:["text-to-video","image-to-video","video-to-video","Це не генерація відео"],
+  items:[
+    {s:"Модель отримує текстовий опис і створює відеоряд.",a:0,e:"Початковий матеріал — текстовий запит."},
+    {s:"Зображення задає перший кадр, а промпт — бажаний рух.",a:1,e:"Вхідне зображення оживлюють за текстовою інструкцією."},
+    {s:"Короткий кліп стилізують, зберігаючи частину його руху.",a:2,e:"Вхідний матеріал — наявне відео."},
+    {s:"У відеоредакторі обрізають зайві секунди кліпу.",a:3,e:"Це звичайне редагування, а не генерація ШІ."},
+    {s:"За фотографією створюють сцену, де персонаж повертає голову.",a:1,e:"Зображення є початковою основою для руху."},
+    {s:"За описом «камера пролітає над лісом» створюють нову сцену.",a:0,e:"Сцену створено за текстовим описом."}
+  ]
+});
+Lesson.quiz("#quiz", [
+  {prompt:"Згенеруй короткий ролик про ліс",q:"Чого бракує для керованого руху камери?",o:["Опису плану й руху камери","Назви файлу","Більшої кількості прикметників"],a:0,e:"Потрібно прямо назвати рух і ракурс, наприклад: «повільний наїзд до стежки»."},
+  {q:"Чим наїзд відрізняється від зуму?",o:["Наїзд переміщує камеру, зум змінює фокусну відстань із тієї самої точки","Це одна й та сама дія","Зум завжди рухає камеру по колу"],a:0,e:"Наїзд змінює положення камери у просторі й перспективу; зум змінює кут огляду."},
+  {q:"На згенерованому кліпі з'явився дивний текст на вивісці. Що робити?",o:["Перевірити кадри, прибрати або виправити текст і не подавати його як справжній","Не перевіряти, бо відео коротке","Додати ще випадкові написи"],a:0,e:"Генератор може спотворювати текст. Переглянь відео й виправ помилку перед поширенням."},
+  {q:"Який запит найкраще описує рух камери?",o:["Красива камера, дуже кінематографічно","Плавний обліт персонажа зліва направо, середній план","Зроби відео якісним"],a:1,e:"Конкретний напрямок, тип руху й план дають моделі зрозуміліші вказівки."}
+]);
+var guessScore = Lesson.register(5);
+var moveChoices = ["dolly","dollyOut","pan","orbit","crane","zoom","tracking"];
+var fallbackMoves = {
+  dolly:{title:"Наїзд (dolly in)",prompt:"Камера наближається, а перспектива сцени змінюється."},
+  dollyOut:{title:"Від'їзд (dolly out)",prompt:"Камера віддаляється й відкриває більше простору."},
+  pan:{title:"Панорама (pan)",prompt:"Камера повертається на місці."},
+  orbit:{title:"Обліт (orbit)",prompt:"Камера рухається навколо персонажа."},
+  crane:{title:"Підйом (crane)",prompt:"Камера підіймається над сценою."},
+  zoom:{title:"Зум (zoom)",prompt:"Камера лишається на місці, але змінює кут огляду."},
+  tracking:{title:"Слідування (tracking)",prompt:"Камера рухається поруч із персонажем."}
+};
+var round = 0, currentMove = "", answered = false;
+var guessOptions = document.getElementById("guess-options");
+var guessFeedback = document.getElementById("guess-feedback");
+function shuffle(items){ return items.sort(function(){ return Math.random() - 0.5; }); }
+function beginRound(){
+  if (round >= 5){
+    guessFeedback.className = "fb show ok";
+    guessFeedback.textContent = "Готово! Пройдено 5 рухів камери.";
+    document.getElementById("guess-next").disabled = true;
+    return;
+  }
+  answered = false;
+  currentMove = moveChoices[Math.floor(Math.random() * moveChoices.length)];
+  if (window.CameraScene) window.CameraScene.playMove(currentMove);
+  var moveLibrary = window.CameraScene ? window.CameraScene.moves : fallbackMoves;
+  var choices = shuffle([currentMove].concat(shuffle(moveChoices.filter(function(move){ return move !== currentMove; })).slice(0,3)));
+  guessOptions.innerHTML = choices.map(function(move){
+    return '<button type="button" data-move="' + move + '">' + moveLibrary[move].title + '</button>';
+  }).join("");
+  document.getElementById("guess-progress").textContent = "Рух " + (round + 1) + " із 5";
+  document.getElementById("guess-next").disabled = true;
+  guessFeedback.className = "fb";
+  guessFeedback.textContent = "Уважно стеж за сценою та обери назву руху.";
+}
+guessOptions.addEventListener("click", function(event){
+  var button = event.target.closest("button[data-move]");
+  if (!button || answered) return;
+  answered = true;
+  var correct = button.dataset.move === currentMove;
+  if (correct) Lesson.addScore(guessScore);
+  guessOptions.querySelectorAll("button").forEach(function(option){
+    option.disabled = true;
+    if (option.dataset.move === currentMove) option.classList.add("right");
+    else if (option === button) option.classList.add("wrong");
+  });
+  var move = window.CameraScene ? window.CameraScene.moves[currentMove] : fallbackMoves[currentMove];
+  guessFeedback.className = "fb show " + (correct ? "ok" : "no");
+  guessFeedback.textContent = (correct ? "Так! " : "Правильна відповідь: ") + move.title + ". " + move.prompt;
+  round++;
+  document.getElementById("guess-next").disabled = false;
+  document.getElementById("guess-progress").textContent = "Правильно: " + document.querySelectorAll("#guess-options button.right").length + " у цьому раунді · завершено " + round + " із 5";
+});
+document.getElementById("guess-start").addEventListener("click", function(){
+  round = 0;
+  Lesson.setScore(guessScore,0);
+  beginRound();
+});
+document.getElementById("guess-next").addEventListener("click", beginRound);
+document.getElementById("guess-reset").addEventListener("click", function(){
+  round = 0;
+  answered = false;
+  guessOptions.innerHTML = "";
+  guessFeedback.className = "fb";
+  guessFeedback.textContent = "";
+  document.getElementById("guess-progress").textContent = "";
+  document.getElementById("guess-next").disabled = true;
+  Lesson.setScore(guessScore,0);
+});
+document.getElementById("build-video-prompt").addEventListener("click", function(){
+  var fields = [
+    ["Персонаж або об'єкт","video-subject"],
+    ["Дія","video-action"],
+    ["Місце й вигляд сцени","video-setting"],
+    ["Рух камери", "video-camera"],
+    ["Тривалість і обмеження","video-duration"]
+  ];
+  var prompt = fields.map(function(field){
+    return field[0] + ": " + document.getElementById(field[1]).value.trim();
+  }).filter(function(value){ return value.split(": ").slice(1).join(": ").trim(); }).join("\n");
+  document.getElementById("video-prompt-output").textContent =
+    prompt + "\nПеревір плавність руху, анатомію, текст і відповідність результату запиту.";
+});
+document.getElementById("copy-video-prompt").addEventListener("click", function(){
+  var text = document.getElementById("video-prompt-output").textContent;
+  var feedback = document.getElementById("video-prompt-feedback");
+  if (!text){ feedback.className = "fb show no"; feedback.textContent = "Спершу створи промпт."; return; }
+  if (!navigator.clipboard){
+    feedback.className = "fb show no";
+    feedback.textContent = "Копіювання недоступне. Виділи текст і скопіюй його вручну.";
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function(){
+    feedback.className = "fb show ok";
+    feedback.textContent = "Промпт скопійовано.";
+  }).catch(function(){
+    feedback.className = "fb show no";
+    feedback.textContent = "Браузер не дозволив копіювати. Виділи текст і скопіюй його вручну.";
+  });
+});
+</script>
+</body>
+</html>
