@@ -1,5 +1,6 @@
 .teacher-page{max-width:980px}
 .teacher-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.teacher-page .hero .teacher-actions .btn.ghost{color:#15171a;border-color:#15171a}
 .teacher-section{margin:14px 0}
 .teacher-section h2{margin-bottom:10px}
 .teacher-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
