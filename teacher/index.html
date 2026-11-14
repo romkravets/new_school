@@ -117,8 +117,8 @@
     var hoursLabel = program.grade == null ? "Клас не вказано" : program.grade + " клас";
     summary.innerHTML = '<h2>' + esc(program.title) + '</h2><p class="course-meta">' +
       esc(hoursLabel) + (program.level ? " · " + esc(program.level) : "") + '</p><p>' + groupSummary(program) + '</p>' +
-      (program.id === "boards" ? '<p>Додаткові практикуми з LAB_1 доповнюють теми ІІ семестру та проводяться в межах наявних годин; роботи з LAB_2 залишаються в календарі.</p>' : "") +
-      (program.id === "boards11" ? '<p><b>Адаптований дворічний план: 70 годин у 10–11 класах.</b> Не є повним розподілом 105 годин модельної програми.</p>' : "");
+      (program.id === "boards" ? '<p><b>10 клас:</b> послідовно виконуємо LAB_1 № 1–7 з основного комплекту. Згадані в календарі «Мрії» LAB_2 перенесені до 11 класу.</p>' : "") +
+      (program.id === "boards11" ? '<p><b>11 клас:</b> спочатку LAB_1 № 8–20 з основного комплекту, потім LAB_2 № 1–8 зі складнішого комплекту-розширення. Разом із 10 класом це адаптований дворічний план на 70 годин, а не повний розподіл 105 годин модельної програми.</p>' : "");
     var hasCourseLabs = Boolean(courseLabs[program.id]);
     calendar.innerHTML = '<table class="calendar"><thead><tr><th>№</th><th>Семестр</th><th>Тема</th><th>ДЗ з Мрії</th>' +
       (hasCourseLabs ? '<th>Практикум і лабораторні</th>' : "") +
