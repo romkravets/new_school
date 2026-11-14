@@ -112,6 +112,14 @@ function readProgram(program) {
 
 fs.mkdirSync(dataDir, { recursive: true });
 for (const program of programs) {
+  if (program.externalTopics) {
+    const outputPath = path.join(dataDir, `${program.id}.js`);
+    if (!fs.existsSync(outputPath)) {
+      throw new Error(`Не знайдено окремий файл курсу: data/${program.id}.js`);
+    }
+    console.log(`${program.id}: окремий навчальний план збережено`);
+    continue;
+  }
   const topics = readProgram(program);
   const output = `window.TOPICS = window.TOPICS || {};\nwindow.TOPICS.${program.id} = ${JSON.stringify(topics, null, 2)};\n`;
   fs.writeFileSync(path.join(dataDir, `${program.id}.js`), output);

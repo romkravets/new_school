@@ -26,6 +26,17 @@ window.PROGRAMS = [
     ]
   },
   {
+    id: "boards11",
+    title: "Розумні плати: продовження курсу",
+    level: "Адаптоване продовження, 35 годин",
+    authors: "Шемшур В. М.",
+    grade: 11,
+    groups: [],
+    hours: { s1: 1, s2: 1 },
+    externalTopics: true,
+    sources: []
+  },
+  {
     id: "stem",
     title: "STEM-проєкт: від ідеї до втілення",
     level: "10 клас",

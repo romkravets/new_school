@@ -21,6 +21,9 @@
 .calendar .num{font-weight:900;white-space:nowrap}
 .calendar .semester{white-space:nowrap;color:var(--muted)}
 .calendar .homework{min-width:220px;color:var(--muted);font-size:14px}
+.calendar .lab-materials{min-width:220px;font-size:14px}
+.lab-materials p{margin:4px 0;color:var(--muted)}
+.lab-materials ul{margin:4px 0;padding-left:18px}
 .calendar .status{font-weight:800;color:var(--muted);white-space:nowrap}
 .calendar .status.ready{color:var(--ok)}
 .calendar-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:130px}
@@ -34,7 +37,7 @@
   <header class="hero">
     <small>Учительський розділ</small>
     <h1>Календарний план</h1>
-    <p>Теми й домашні завдання автоматично імпортовано з календарних планів для «Мрії».</p>
+    <p>Календар 10-го класу імпортовано з «Мрії». Продовження на 11-й клас — адаптований план курсу на 35 годин.</p>
   </header>
   <section class="card teacher-help">
     <b>Як оновлювати й доповнювати матеріали</b>
@@ -57,6 +60,8 @@
 <script src="../lessons.js"></script>
 <script src="../data/ai.js"></script>
 <script src="../data/boards.js"></script>
+<script src="../data/boards11.js"></script>
+<script src="../data/course-labs.js"></script>
 <script src="../data/stem.js"></script>
 <script src="../data/inf10.js"></script>
 <script src="../data/inf10deep.js"></script>
@@ -69,6 +74,7 @@
   var programs = window.PROGRAMS || [];
   var lessons = window.LESSONS || [];
   var topics = window.TOPICS || {};
+  var courseLabs = window.COURSE_LABS || {};
   var select = document.getElementById("program-select");
   var summary = document.getElementById("course-summary");
   var calendar = document.getElementById("calendar");
@@ -88,6 +94,17 @@
       return group.name + " — " + group.hours.s1 + "/" + group.hours.s2 + " год/тиж. (І/ІІ семестри)";
     }).join("<br>");
   }
+  function materialsMarkup(programId, number){
+    var item = courseLabs[programId] && courseLabs[programId][number];
+    if (!item) return "—";
+    var links = (item.materials || []).map(function(material){
+      var href = "../" + material.path.split("/").map(encodeURIComponent).join("/");
+      return '<li><a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(material.title) + '</a></li>';
+    }).join("");
+    return '<div class="lab-materials"><b>' + esc(item.label) + '</b>' +
+      (item.note ? '<p>' + esc(item.note) + '</p>' : "") +
+      (links ? '<ul>' + links + '</ul>' : "") + '</div>';
+  }
   function render(id){
     var program = programs.find(function(item){ return item.id === id; }) || programs[0];
     if (!program) return;
@@ -99,8 +116,13 @@
     }).length;
     var hoursLabel = program.grade == null ? "Клас не вказано" : program.grade + " клас";
     summary.innerHTML = '<h2>' + esc(program.title) + '</h2><p class="course-meta">' +
-      esc(hoursLabel) + (program.level ? " · " + esc(program.level) : "") + '</p><p>' + groupSummary(program) + '</p>';
-    calendar.innerHTML = '<table class="calendar"><thead><tr><th>№</th><th>Семестр</th><th>Тема</th><th>ДЗ з Мрії</th><th>Статус</th><th>Матеріали</th></tr></thead><tbody>' +
+      esc(hoursLabel) + (program.level ? " · " + esc(program.level) : "") + '</p><p>' + groupSummary(program) + '</p>' +
+      (program.id === "boards" ? '<p>Додаткові практикуми з LAB_1 доповнюють теми ІІ семестру та проводяться в межах наявних годин; роботи з LAB_2 залишаються в календарі.</p>' : "") +
+      (program.id === "boards11" ? '<p><b>Адаптований дворічний план: 70 годин у 10–11 класах.</b> Не є повним розподілом 105 годин модельної програми.</p>' : "");
+    var hasCourseLabs = Boolean(courseLabs[program.id]);
+    calendar.innerHTML = '<table class="calendar"><thead><tr><th>№</th><th>Семестр</th><th>Тема</th><th>ДЗ з Мрії</th>' +
+      (hasCourseLabs ? '<th>Практикум і лабораторні</th>' : "") +
+      '<th>Статус</th><th>Матеріали</th></tr></thead><tbody>' +
       list.map(function(topic){
         var lesson = findLesson(program.id, topic.num);
         var ready = lesson && lesson.status === "ready";
@@ -109,6 +131,7 @@
         var status = ready ? "Готово" : lesson && lesson.status === "draft" ? "У розробці" : "Заплановано";
         return '<tr><td class="num">' + topic.num + '</td><td class="semester">' + topic.semester + '</td>' +
           '<td>' + esc(topic.title) + '</td><td class="homework">' + esc(topic.homework || "—") + '</td>' +
+          (hasCourseLabs ? '<td>' + materialsMarkup(program.id, topic.num) + '</td>' : "") +
           '<td class="status ' + (ready ? "ready" : "") + '">' + status + '</td>' +
           '<td><div class="calendar-actions">' + teacherLink + lessonLink + '</div></td></tr>';
       }).join("") + '</tbody></table>';
