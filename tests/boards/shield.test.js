@@ -52,6 +52,15 @@ describe("shield.matchModule", () => {
     expect(r.ok).toBe(false);
     expect(r.why).toBeTruthy();
   });
+  it("сервопривід не на аналоговий", () => {
+    const r = shield.matchModule("servo", "analog");
+    expect(r.ok).toBe(false);
+    expect(r.why).toBeTruthy();
+  });
+  it("кнопка не на I2C, але може на ШІМ-пін", () => {
+    expect(shield.matchModule("button", "i2c").ok).toBe(false);
+    expect(shield.matchModule("button", "pwm").ok).toBe(true);
+  });
   it("невідомий модуль", () => {
     expect(shield.matchModule("nope", "pwm").ok).toBe(false);
   });

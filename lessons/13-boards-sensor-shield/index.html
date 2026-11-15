@@ -73,7 +73,7 @@ svg{max-width:100%;height:auto}
     </div>
   </section>
 
-  <section class="panel" id="match-tab"><div class="card"><h2>Який роз'єм?</h2><p class="lead">До якого роз'єму шилда підключають кожен модуль?</p><div id="match"></div></div></section>
+  <section class="panel" id="match-tab"><div class="card"><h2>Який роз'єм?</h2><p class="lead">Обери типовий роз'єм для кожного модуля. Піни з ШІМ теж цифрові, але тут шукаємо найточніший варіант.</p><div id="match"></div></div></section>
   <section class="panel" id="sort-tab"><div class="card"><h2>Вхід чи вихід?</h2><p class="lead">Датчик дає дані мікроконтролеру, пристрій виводу виконує його команди.</p><div id="sort"></div></div></section>
   <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
 
@@ -147,10 +147,11 @@ Lesson.match("#match", {
 
 /* ---------- Вхід чи вихід? ---------- */
 var IO = {input: 0, output: 1, both: 2};
-var IO_WHY = {input: "Це датчик: він передає дані в мікроконтролер.", output: "Це пристрій виводу: він виконує команди мікроконтролера.", both: "Шина I2C двобічна: плата надсилає текст, екран відповідає на обмін."};
+var IO_WHY = {input: "Це датчик: він передає дані в мікроконтролер.", output: "Це пристрій виводу: він виконує команди мікроконтролера."};
+IO_WHY["lcd-i2c"] = "Шина I2C двобічна, але сам екран лише показує текст: це пристрій виводу.";
 Lesson.sort("#sort", {
   choices: ["Датчик (вхід)", "Пристрій виводу", "І те, і те"],
-  items: S.MODULES.map(function(m){ return {s: m.name, a: IO[m.io], e: IO_WHY[m.io]}; })
+  items: S.MODULES.map(function(m){ return {s: m.name, a: IO[m.io], e: IO_WHY[m.id] || IO_WHY[m.io]}; })
 });
 
 /* ---------- Вікторина ---------- */
