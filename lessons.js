@@ -38,5 +38,13 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["ШІ", "відео", "анімація"]
+  },
+  {
+    folder: "11-boards-blink",
+    program: "boards",
+    num: 11,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "світлодіод", "delay"]
   }
 ];
