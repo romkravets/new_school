@@ -38,7 +38,9 @@ var STEPS = {
 function runLoops(loops){
   var events = [], problems = [], iterations = 0, infinite = false;
   (loops || []).forEach(function(l){
-    var cond = CONDS[l.cond], step = STEPS[l.step];
+    var has = Object.prototype.hasOwnProperty;
+    var cond = has.call(CONDS, l.cond) ? CONDS[l.cond] : null;
+    var step = has.call(STEPS, l.step) ? STEPS[l.step] : null;
     if (!cond || !step) return;
     var i = l.start, n = 0;
     while (cond(i)) {

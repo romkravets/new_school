@@ -89,3 +89,14 @@ describe("leds.trafficLightSteps / PINS", () => {
     expect(leds.PINS).toEqual({ red: 7, yellow: 6, green: 5 });
   });
 });
+
+describe("leds.runLoops — невалідні ключі", () => {
+  it("успадковані ключі (constructor/toString) не проходять як умова чи крок", () => {
+    const r = leds.runLoops([{ start: 0, cond: "constructor", step: "toString", body: "on(i)" }]);
+    expect(r.events).toEqual([]);
+    expect(r.infinite).toBe(false);
+  });
+  it("i+=2 з <3 → [0,2]", () => {
+    expect(seq(leds.runLoops([{ start: 0, cond: "<3", step: "i+=2", body: "on(i)" }]))).toEqual([0, 2]);
+  });
+});
