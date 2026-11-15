@@ -38,5 +38,29 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["ШІ", "відео", "анімація"]
+  },
+  {
+    folder: "11-boards-blink",
+    program: "boards",
+    num: 11,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "світлодіод", "delay"]
+  },
+  {
+    folder: "12-boards-leds-loops",
+    program: "boards",
+    num: 12,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "макетна плата", "цикл for"]
+  },
+  {
+    folder: "13-boards-sensor-shield",
+    program: "boards",
+    num: 13,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "Sensor Shield", "датчики"]
   }
 ];

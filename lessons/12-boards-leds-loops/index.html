@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Світлодіоди, цикл for і світлофор</title>
+<meta name="description" content="Макетна плата, підключення світлодіода через резистор 220 Ом, цикл for і світлофор на трьох світлодіодах Arduino UNO.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+:root{--accent:var(--orange)}
+.led-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+.led-cell{text-align:center;min-width:72px}
+.led{width:56px;height:56px;border-radius:50%;background:#4a3a2a;border:3px solid var(--line);margin:0 auto 4px}
+.led.on{background:#ffb02e;box-shadow:0 0 22px 6px #ffb02e}
+.led-cap{font-size:13px;color:var(--muted);min-height:1.2em}
+.fields{display:flex;flex-wrap:wrap;gap:12px}
+.fields > div{flex:1 1 150px;min-width:0}
+.loop-box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0}
+.order{list-style:none;margin:10px 0;padding:0}
+.order li{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;margin:6px 0;background:var(--card)}
+.order li.right{border-color:var(--ok);background:var(--okbg)}
+.order li.wrong{border-color:var(--bad);background:var(--badbg)}
+.order li span{flex:1}
+.order button{border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:8px;width:36px;height:36px;font:inherit;cursor:pointer}
+.order button:disabled{opacity:.4;cursor:not-allowed}
+.pins{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.pins b{border-radius:8px;padding:4px 10px;color:#fff}
+.pins .r{background:#d6334a}.pins .y{background:#b07a00}.pins .g{background:#1f9d55}
+.svg-wrap{overflow-x:auto}
+svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#boards">← До курсу «Розумні плати»</a>
+  <header class="hero">
+    <small>Заняття 12 · Розумні плати · 10 клас</small>
+    <h1>Світлодіоди на макетній платі, цикл for і світлофор</h1>
+    <p>Підключи світлодіод через резистор, склади цикл for, який вмикає світлодіоди по черзі, і впорядкуй сигнали світлофора.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Макетка і цикл for</button>
+    <button data-tab="wiring" data-break="5">2. Підключи світлодіод</button>
+    <button data-tab="loop" data-break="6">3. Конструктор циклу</button>
+    <button data-tab="traffic">4. Світлофор</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Макетна плата</h2><p>Дві бічні шини: червона <b>+</b> і синя <b>−</b>. У середній частині отвори з'єднані <b>вертикальними групами по п'ять</b>: усе, що вставлено в одну групу, електрично з'єднане.</p></div>
+      <div class="card"><h2>Світлодіод</h2><p>Має полярність: довша ніжка — <b>анод</b> (+), коротша — <b>катод</b> (−). Струм іде від анода до катода. Без резистора світлодіод перегорить.</p></div>
+      <div class="card"><h2>Схема з лаби 2</h2><p>Пін <b>5</b> → резистор <b>220 Ом</b> → анод; катод → <b>GND</b>.</p></div>
+    </div>
+    <div class="card">
+      <h2>Макетна плата зі світлодіодом</h2>
+      <div class="svg-wrap">
+      <svg viewBox="0 0 420 190" width="420" role="img" aria-label="Макетна плата: шини плюс і мінус, вертикальні групи отворів, світлодіод і резистор">
+        <rect x="5" y="5" width="410" height="180" rx="10" fill="#efe8d6" stroke="#8a826c"/>
+        <rect x="15" y="14" width="390" height="5" fill="#d6334a"/><text x="15" y="12" font-size="10" fill="#d6334a">+ шина</text>
+        <rect x="15" y="171" width="390" height="5" fill="#2f6df6"/><text x="15" y="187" font-size="10" fill="#2f6df6">− шина</text>
+        <g fill="#6b665a">
+          <g id="hg"><circle cx="100" cy="50" r="3"/><circle cx="100" cy="68" r="3"/><circle cx="100" cy="86" r="3"/><circle cx="100" cy="104" r="3"/><circle cx="100" cy="122" r="3"/></g>
+          <use href="#hg" x="40"/><use href="#hg" x="80"/><use href="#hg" x="120"/><use href="#hg" x="160"/><use href="#hg" x="200"/><use href="#hg" x="240"/>
+        </g>
+        <rect x="95" y="43" width="10" height="86" rx="5" fill="none" stroke="#2f6df6" stroke-dasharray="3 3"/>
+        <text x="110" y="145" font-size="10" fill="#555">одна група</text>
+        <rect x="130" y="63" width="50" height="10" fill="#c9a36a" stroke="#6b4b1a"/><text x="135" y="60" font-size="10" fill="#333">220 Ом</text>
+        <circle cx="220" cy="68" r="11" fill="#ffb02e" stroke="#8a5a00"/><text x="205" y="92" font-size="10" fill="#333">анод (+)</text>
+        <text x="260" y="92" font-size="10" fill="#333">катод (−)</text>
+        <path d="M232 68 H260 V150 H300 V171" fill="none" stroke="#2f6df6" stroke-width="2"/>
+        <text x="305" y="160" font-size="10" fill="#2f6df6">до GND</text>
+        <path d="M130 68 H60 V30" fill="none" stroke="#b07a00" stroke-width="2"/><text x="20" y="40" font-size="10" fill="#b07a00">пін 5</text>
+      </svg>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Цикл for із лаби</h2>
+      <div class="code">for (int i = 0; i &lt; 3; i++) {
+  digitalWrite(5 + i, HIGH);  // увімкнути світлодіод
+  delay(500);
+  digitalWrite(5 + i, LOW);   // вимкнути
+}</div>
+      <ul class="tight"><li><code>int i = 0</code> — початок;</li><li><code>i &lt; 3</code> — умова: поки правда, цикл триває;</li><li><code>i++</code> — крок: збільшити <code>i</code> на 1.</li></ul>
+      <div class="tip"><b>Пам'ятай:</b> три крапки з комою в дужках, а <code>i</code> має бути в межах номерів світлодіодів.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="wiring">
+    <div class="card">
+      <h2>Підключи світлодіод</h2>
+      <p class="lead">Обери, куди під'єднано анод, катод і де стоїть резистор 220 Ом.</p>
+      <div class="fields">
+        <div><label class="f" for="w-anode">Анод (довга ніжка)</label>
+          <select id="w-anode"><option value="none">не підключено</option><option value="pin5">пін 5</option><option value="gnd">GND</option><option value="5v">5V</option></select></div>
+        <div><label class="f" for="w-cathode">Катод (коротка ніжка)</label>
+          <select id="w-cathode"><option value="none">не підключено</option><option value="pin5">пін 5</option><option value="gnd">GND</option><option value="5v">5V</option></select></div>
+        <div><label class="f" for="w-resistor">Резистор 220 Ом</label>
+          <select id="w-resistor"><option value="none">немає</option><option value="anode">біля анода</option><option value="cathode">біля катода</option></select></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" type="button" id="w-check">Перевірити</button><button class="btn ghost" type="button" id="w-again">Спробувати ще раз</button></div>
+      <p class="fb" id="w-fb" role="alert"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="loop">
+    <div class="card">
+      <h2>Конструктор циклу</h2>
+      <p class="lead">Налаштуй цикл (або два) і запусти: світлодіоди 0, 1, 2 стоять на пінах 5, 6, 7.</p>
+      <label class="f" for="l-task">Завдання</label>
+      <select id="l-task"></select>
+      <div id="l-loops"></div>
+      <label class="f" style="font-weight:400"><input type="checkbox" id="l-second"> Додати другий цикл</label>
+      <div class="code" id="l-code"></div>
+      <div class="row"><button class="btn" type="button" id="l-run">Запустити</button><button class="btn ghost" type="button" id="l-check">Перевірити завдання</button></div>
+      <p class="fb" id="l-fb" role="alert"></p>
+      <div class="led-row" style="margin-top:12px">
+        <div class="led-cell"><div class="led" role="img" aria-label="Світлодіод 0 вимкнено"></div><div class="led-cap">0 (пін 5)</div></div>
+        <div class="led-cell"><div class="led" role="img" aria-label="Світлодіод 1 вимкнено"></div><div class="led-cap">1 (пін 6)</div></div>
+        <div class="led-cell"><div class="led" role="img" aria-label="Світлодіод 2 вимкнено"></div><div class="led-cap">2 (пін 7)</div></div>
+      </div>
+      <p id="l-note" aria-live="polite" style="min-height:1.4em"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="traffic">
+    <div class="card">
+      <h2>Світлофор по порядку</h2>
+      <p class="lead">Розстав кроки так, як працює світлофор у лабораторній 2.</p>
+      <div class="pins" aria-label="Піни світлофора"><b class="r">червоний: пін 7</b><b class="y">жовтий: пін 6</b><b class="g">зелений: пін 5</b></div>
+      <ol class="order" id="t-list"></ol>
+      <div class="row"><button class="btn" type="button" id="t-check">Перевірити</button><button class="btn ghost" type="button" id="t-again">Спробувати ще раз</button></div>
+      <p class="fb" id="t-fb" role="alert"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Що станеться зі світлодіодом без резистора?</li><li>Що відбудеться, якщо цикл не має умови завершення?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="../../documents/rp/LAB_1/лаб 2.pdf">Лабораторна робота 2 (PDF)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/boards/leds.js"></script>
+<script>
+(function(){
+var L = window.Boards.leds;
+function $(s){ return document.querySelector(s); }
+function show(fb, ok, text){ fb.className = "fb show " + (ok ? "ok" : "no"); fb.textContent = text; }
+function opt(sel, pairs){ pairs.forEach(function(p){ var o = document.createElement("option"); o.value = p[0]; o.textContent = p[1]; sel.appendChild(o); }); }
+
+Lesson.messages.high = "Чудово! Ти вмієш підключати світлодіод і керувати ним циклом for.";
+Lesson.messages.low = "Повтори: резистор 220 Ом, анод до піну, катод до GND, і три частини циклу for.";
+
+/* ---------- Схема ---------- */
+var WHY = {
+  "anode-not-pin": "Анод має йти до піну 5: саме звідти Arduino подає сигнал.",
+  "cathode-not-gnd": "Катод має йти до GND, щоб струм мав шлях назад.",
+  "no-resistor": "Потрібен резистор 220 Ом, інакше струм перегріє й спалить світлодіод.",
+  "direct-5v": "Анод на 5V напряму: світлодіод світитиме без керування й без захисту.",
+  "reversed": "Світлодіод повернуто навпаки: анод до GND, катод до піну. Струм так не піде."
+};
+var wScore = Lesson.register(1), wDone = false;
+var wFb = $("#w-fb");
+$("#w-check").addEventListener("click", function(){
+  var r = L.checkWiring({anode: $("#w-anode").value, cathode: $("#w-cathode").value, resistor: $("#w-resistor").value});
+  if (r.ok){
+    if (!wDone){ wDone = true; Lesson.addScore(wScore); }
+    show(wFb, true, "Схема правильна: пін 5 → резистор 220 Ом → анод, катод → GND.");
+  } else {
+    show(wFb, false, r.problems.map(function(c){ return WHY[c] || c; }).join(" "));
+  }
+});
+$("#w-again").addEventListener("click", function(){
+  wFb.className = "fb"; wFb.textContent = ""; wDone = false; Lesson.setScore(wScore, 0);
+  ["#w-anode", "#w-cathode"].forEach(function(s){ $(s).value = "none"; });
+  $("#w-resistor").value = "none"; $("#w-anode").focus();
+});
+
+/* ---------- Конструктор циклу ---------- */
+var COND = ["<3", "<=2", "<=3", ">=0", ">0"], STEP = ["i++", "i--", "i+=2"], BODY = ["on(i)", "blink(i)"];
+var loopsBox = $("#l-loops"), secondBox = $("#l-second"), taskSel = $("#l-task");
+var lFb = $("#l-fb"), lNote = $("#l-note"), lRun = $("#l-run"), lCheck = $("#l-check");
+var leds = [].slice.call(document.querySelectorAll("#loop .led"));
+var lScore = Lesson.register(L.TASKS.length), lDone = {};
+var loopRows = [];
+
+opt(taskSel, [["free", "Вільний режим (без балів)"]].concat(L.TASKS.map(function(t){ return [t.id, t.title]; })));
+function makeLoop(n){
+  var box = document.createElement("div"); box.className = "loop-box";
+  box.innerHTML = '<h3>Цикл ' + n + '</h3><div class="fields"></div>';
+  var f = box.querySelector(".fields"), r = {box: box};
+  [["start", "Початок i", [0, 1, 2].map(function(v){ return [String(v), String(v)]; })],
+   ["cond", "Умова", COND.map(function(v){ return [v, "i " + v]; })],
+   ["step", "Крок", STEP.map(function(v){ return [v, v]; })],
+   ["body", "Тіло", BODY.map(function(v){ return [v, v]; })]].forEach(function(d){
+    var w = document.createElement("div"), id = "l-" + n + "-" + d[0];
+    w.innerHTML = '<label class="f" for="' + id + '">' + d[1] + '</label>';
+    var s = document.createElement("select"); s.id = id; opt(s, d[2]); s.addEventListener("change", update);
+    w.appendChild(s); f.appendChild(w); r[d[0]] = s;
+  });
+  return r;
+}
+loopRows = [makeLoop(1), makeLoop(2)];
+loopRows.forEach(function(r){ loopsBox.appendChild(r.box); });
+function active(){ return secondBox.checked ? loopRows : loopRows.slice(0, 1); }
+function readLoops(){ return active().map(function(r){ return {start: Number(r.start.value), cond: r.cond.value, step: r.step.value, body: r.body.value}; }); }
+function codeOf(l){ return "for (int i = " + l.start + "; i " + l.cond + "; " + l.step + ") { " + l.body + "; }"; }
+function update(){
+  loopRows[1].box.hidden = !secondBox.checked;
+  stopLoop();
+  $("#l-code").textContent = readLoops().map(codeOf).join("\n");
+  lCheck.disabled = taskSel.value === "free";
+}
+secondBox.addEventListener("change", update);
+taskSel.addEventListener("change", function(){ update(); lFb.className = "fb"; });
+
+var lTimers = [];
+function setLed(i, on){
+  leds[i].classList.toggle("on", on);
+  leds[i].setAttribute("aria-label", "Світлодіод " + i + (on ? " увімкнено" : " вимкнено"));
+}
+function resetLeds(){ leds.forEach(function(_, i){ setLed(i, false); }); }
+function stopLoop(){
+  lTimers.forEach(clearTimeout); lTimers = [];
+  resetLeds(); lRun.textContent = "Запустити";
+}
+var PROBLEM = {"index-out-of-range": "Індекс поза межами 0–2: такого світлодіода немає."};
+lRun.addEventListener("click", function(){
+  if (lTimers.length){ stopLoop(); lNote.textContent = ""; return; }
+  var specs = readLoops(), res = L.runLoops(specs);
+  resetLeds(); lNote.textContent = ""; lFb.className = "fb";
+  if (res.infinite) lNote.textContent = "Цикл нескінченний: умова ніколи не стає хибною. Показано перші 50 кроків.";
+  lRun.textContent = "Зупинити";
+  var bodyOf = []; 
+  specs.forEach(function(s){ bodyOf.push(s.body); });
+  res.events.forEach(function(ev, k){
+    lTimers.push(setTimeout(function(){
+      if (ev.missing){ lNote.textContent = "Світлодіода " + ev.i + " немає."; return; }
+      setLed(ev.i, true);
+      if (bodyOf.indexOf("blink(i)") >= 0 && bodyOf.every(function(b){ return b === "blink(i)"; })){
+        lTimers.push(setTimeout(function(){ setLed(ev.i, false); }, 200));
+      }
+    }, k * 400));
+  });
+  lTimers.push(setTimeout(function(){
+    lTimers = []; lRun.textContent = "Запустити";
+    if (!res.infinite && !lNote.textContent && res.problems.length) lNote.textContent = PROBLEM[res.problems[0]] || "";
+  }, res.events.length * 400 + 400));
+});
+lCheck.addEventListener("click", function(){
+  var res = L.runLoops(readLoops()), id = taskSel.value;
+  if (res.infinite){ show(lFb, false, "Цикл нескінченний. Перевір умову й крок."); return; }
+  if (L.checkTask(id, res.events)){
+    if (!lDone[id]){ lDone[id] = true; Lesson.addScore(lScore); }
+    show(lFb, true, "Завдання виконано: порядок вмикання правильний.");
+  } else {
+    show(lFb, false, "Порядок не збігається із завданням. Запусти цикл і подивись, які світлодіоди спалахують.");
+  }
+});
+update();
+
+/* ---------- Світлофор ---------- */
+var steps = L.trafficLightSteps(), tScore = Lesson.register(1), tDone = false;
+var order = [3, 0, 4, 2, 1];
+var tList = $("#t-list"), tFb = $("#t-fb");
+function renderTraffic(res){
+  tList.textContent = "";
+  order.forEach(function(si, pos){
+    var li = document.createElement("li");
+    if (res) li.className = si === pos ? "right" : "wrong";
+    var sp = document.createElement("span"); sp.textContent = (pos + 1) + ". " + steps[si].text; li.appendChild(sp);
+    [["▲", -1, "Вгору"], ["▼", 1, "Вниз"]].forEach(function(d){
+      var b = document.createElement("button"); b.type = "button"; b.textContent = d[0];
+      b.setAttribute("aria-label", d[2] + ": " + steps[si].text);
+      b.disabled = pos + d[1] < 0 || pos + d[1] >= order.length;
+      b.addEventListener("click", function(){
+        var t = order[pos]; order[pos] = order[pos + d[1]]; order[pos + d[1]] = t;
+        tFb.className = "fb"; renderTraffic();
+        var nb = tList.children[pos + d[1]].querySelectorAll("button")[d[1] < 0 ? 0 : 1];
+        if (nb && !nb.disabled) nb.focus();
+      });
+      li.appendChild(b);
+    });
+    tList.appendChild(li);
+  });
+}
+$("#t-check").addEventListener("click", function(){
+  var ok = order.every(function(si, pos){ return si === pos; });
+  renderTraffic(true);
+  if (ok){ if (!tDone){ tDone = true; Lesson.addScore(tScore); } show(tFb, true, "Так! Це порядок із лабораторної 2."); }
+  else show(tFb, false, "Порядок хибний: підкреслено кроки, що стоять не на своєму місці.");
+});
+$("#t-again").addEventListener("click", function(){
+  order = [3, 0, 4, 2, 1]; tDone = false; Lesson.setScore(tScore, 0); tFb.className = "fb"; renderTraffic();
+});
+renderTraffic();
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q:"Яка ніжка світлодіода довша?",o:["Катод","Анод","Обидві однакові"],a:1,e:"Довша ніжка — анод (+), коротша — катод (−)."},
+  {q:"Навіщо перед світлодіодом ставлять резистор 220 Ом?",o:["Щоб обмежити струм і не спалити світлодіод","Щоб світлодіод світив довше за delay","Щоб з'єднати плату з комп'ютером"],a:0,e:"Резистор обмежує струм через світлодіод."},
+  {q:"Скільки разів виконається тіло циклу for (int i = 0; i < 3; i++)?",o:["2 рази","3 рази","4 рази"],a:1,e:"i набуває значень 0, 1, 2: це три кроки."},
+  {q:"Які піни світлофора в лабораторній 2?",o:["Червоний 5, жовтий 6, зелений 7","Червоний 7, жовтий 6, зелений 5","Усі три на піні 13"],a:1,e:"Червоний — пін 7, жовтий — 6, зелений — 5."}
+]);
+
+/* ---------- Зупинка відтворення, коли вкладка неактивна ---------- */
+new MutationObserver(function(){
+  if (!$("#loop").classList.contains("active") && lTimers.length) stopLoop();
+}).observe($("#loop"), {attributes: true, attributeFilter: ["class"]});
+window.addEventListener("pagehide", stopLoop);
+})();
+</script>
+</body>
+</html>

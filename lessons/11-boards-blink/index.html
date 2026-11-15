@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Миготіння світлодіода на платі</title>
+<meta name="description" content="Скетч Arduino UNO: pinMode, digitalWrite, delay і Serial. Симулятор миготіння, межа сприйняття оком і пошук помилок у коді.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+:root{--accent:var(--orange)}
+.led-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.led{width:56px;height:56px;border-radius:50%;background:#4a3a2a;border:3px solid var(--line);flex:none;transition:none}
+.led.on{background:#ffb02e;box-shadow:0 0 22px 6px #ffb02e}
+.led.dim{background:#c98a2a;box-shadow:0 0 10px 2px #c98a2a}
+.fields{display:flex;flex-wrap:wrap;gap:12px}
+.fields input[type=number]{width:120px}
+.out{background:#15171a;color:#f2f2f2;border-radius:14px;padding:14px;white-space:pre-wrap;min-height:60px;max-height:200px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+.lint-lines{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:var(--card);color:var(--ink);font:14px ui-monospace,Menlo,Consolas,monospace;padding:3px 8px;cursor:pointer;white-space:pre}
+.lint-lines:hover:not(:disabled){background:var(--bg)}
+.lint-lines.right{background:var(--ok);color:#15171a}
+.lint-lines.wrong{background:var(--bad);color:#fff}
+.lint-lines:disabled{cursor:default}
+.lint-code{border:1px solid var(--line);border-radius:12px;overflow:auto;margin:8px 0}
+input[type=range]{width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#boards">← До курсу «Розумні плати»</a>
+  <header class="hero">
+    <small>Заняття 11 · Розумні плати · 10 клас</small>
+    <h1>Проєкт «Миготіння світлодіода» на фізичній платі</h1>
+    <p>Керуй вбудованим світлодіодом плати UNO, дізнайся, коли око перестає бачити миготіння, і знаходь помилки в скетчі.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Плата і скетч</button>
+    <button data-tab="sim" data-break="5">2. Симулятор</button>
+    <button data-tab="flicker" data-break="3">3. Коли око перестає бачити?</button>
+    <button data-tab="lint">4. Знайди помилку</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Плата UNO</h2><p>Мікроконтролер ATmega328, 14 цифрових входів/виходів, 6 аналогових входів, живлення через USB. Вбудований світлодіод «L» під'єднано до <b>піну 13</b>.</p></div>
+      <div class="card"><h2>Дві функції скетча</h2><p><code>setup()</code> виконується один раз на старті, <code>loop()</code> повторюється безкінечно.</p></div>
+      <div class="card"><h2>Три команди</h2><ul class="tight"><li><code>pinMode(13, OUTPUT)</code> — пін працює як вихід;</li><li><code>digitalWrite(13, HIGH/LOW)</code> — вмикає або вимикає;</li><li><code>delay(1000)</code> — пауза в мілісекундах.</li></ul></div>
+    </div>
+    <div class="card">
+      <h2>Код із лабораторної 1</h2>
+      <div class="code">int counter = 0;
+
+void setup() {
+  Serial.begin(9600);     // відкрити COM-порт
+  pinMode(13, OUTPUT);    // пін 13 — вихід
+}
+
+void loop() {
+  digitalWrite(13, HIGH); // світлодіод увімкнено
+  delay(1000);            // 1000 мс = 1 с
+  digitalWrite(13, LOW);  // вимкнено
+  delay(1000);
+  counter++;
+  Serial.println(counter);
+}</div>
+      <div class="tip"><b>Пам'ятай:</b> після кожної команди — крапка з комою <code>;</code>, а <code>Serial.begin(9600)</code> має бути раніше за будь-який <code>Serial.println</code>.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="sim">
+    <div class="card">
+      <h2>Симулятор миготіння</h2>
+      <p class="lead">Задай, як довго світлодіод світить і як довго вимкнений, та запусти скетч.</p>
+      <div class="fields">
+        <div><label class="f" for="sim-on">Світить (delay, мс)</label><input id="sim-on" type="number" value="1000" step="1"></div>
+        <div><label class="f" for="sim-off">Вимкнено (delay, мс)</label><input id="sim-off" type="number" value="1000" step="1"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" type="button" id="sim-run">Запустити</button></div>
+      <p class="fb" id="sim-fb" role="alert"></p>
+      <div class="led-row" style="margin-top:12px">
+        <div class="led" id="sim-led" role="img" aria-label="Світлодіод вимкнено"></div>
+        <div class="code" id="sim-code" style="flex:1;min-width:220px;margin:0"></div>
+      </div>
+      <h3 style="margin-top:14px">Монітор порту</h3>
+      <pre class="out" id="sim-out" aria-live="off"></pre>
+    </div>
+  </section>
+
+  <section class="panel" id="flicker">
+    <div class="card">
+      <h2>Коли око перестає бачити миготіння?</h2>
+      <p class="lead">Зменшуй затримку, поки світлодіод не здаватиметься таким, що світить постійно. Тоді натисни кнопку.</p>
+      <div class="led-row"><div class="led" id="fl-led" role="img" aria-label="Світлодіод"></div>
+        <div style="flex:1;min-width:220px">
+          <label class="f" for="fl-range">Затримка delay: <span id="fl-delay">500</span> мс</label>
+          <input type="range" id="fl-range" min="2" max="1000" value="500">
+          <p id="fl-period" aria-live="polite" style="margin:6px 0 0"></p>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" type="button" id="fl-see">Я не бачу миготіння</button><button class="btn ghost" type="button" id="fl-again">Спробувати ще раз</button></div>
+      <p class="fb" id="fl-fb" aria-live="polite"></p>
+      <p class="teacher-note">Для затримок, коротших за ~20 мс, браузер не встигає показувати окремі спалахи, тому ми малюємо те, що бачить око: світло середньої яскравості.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="lint">
+    <div class="card">
+      <h2>Знайди помилку</h2>
+      <p class="lead">У кожному скетчі є одна помилка. Клацни на рядок, де вона. Кнопки-рядки працюють і з клавіатури.</p>
+      <div id="lint-box"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Що станеться, якщо забути <code>pinMode(13, OUTPUT)</code>?</li><li>Чому при затримці 10 мс миготіння не видно, хоча скетч працює?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="../../documents/rp/LAB_1/лаб 1.pdf">Лабораторна робота 1 (PDF)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/boards/blink.js"></script>
+<script>
+(function(){
+var B = window.Boards.blink;
+function $(s){ return document.querySelector(s); }
+function show(fb, ok, text){ fb.className = "fb show " + (ok ? "ok" : "no"); fb.textContent = text; }
+
+Lesson.messages.high = "Чудово! Ти розумієш, як скетч керує світлодіодом.";
+Lesson.messages.low = "Повтори три команди: pinMode, digitalWrite, delay.";
+
+/* ---------- Таймери: усе зупиняється при зміні вкладки і pagehide ---------- */
+var simTimers = [], flTimer = 0;
+function stopSim(){
+  simTimers.forEach(clearTimeout); simTimers = [];
+  $("#sim-led").classList.remove("on");
+  $("#sim-run").textContent = "Запустити";
+}
+function stopFlicker(){ clearTimeout(flTimer); flTimer = 0; }
+function stopAll(){ stopSim(); stopFlicker(); }
+
+/* ---------- Симулятор ---------- */
+var simOn = $("#sim-on"), simOff = $("#sim-off"), simLed = $("#sim-led"), simOut = $("#sim-out"), simFb = $("#sim-fb"), simBtn = $("#sim-run");
+function simCode(on, off){
+  return "void loop() {\n  digitalWrite(13, HIGH);\n  delay(" + on + ");\n  digitalWrite(13, LOW);\n  delay(" + off + ");\n  counter++;\n  Serial.println(counter);\n}";
+}
+function setLed(led, state){
+  led.classList.toggle("on", !!state);
+  led.setAttribute("aria-label", state ? "Світлодіод увімкнено" : "Світлодіод вимкнено");
+}
+function log(line){ simOut.textContent += line + "\n"; simOut.scrollTop = simOut.scrollHeight; }
+function runSim(){
+  if (simTimers.length){ stopSim(); return; }
+  var on = Number(simOn.value), off = Number(simOff.value);
+  var res = B.simulate({onMs: on, offMs: off, durationMs: 10000});
+  if (res.error){ show(simFb, false, res.error); return; }
+  simFb.className = "fb";
+  simOut.textContent = "";
+  $("#sim-code").textContent = simCode(on, off);
+  simBtn.textContent = "Зупинити";
+  var loops = 0;
+  res.events.forEach(function(ev){
+    simTimers.push(setTimeout(function(){
+      if (ev.state && ev.t > 0){ loops++; log("loop: " + loops); }
+      setLed(simLed, ev.state);
+      log(ev.state ? "LED: ON" : "LED: OFF");
+    }, ev.t));
+  });
+  var last = res.events[res.events.length - 1];
+  simTimers.push(setTimeout(stopSim, last.t + (last.state ? on : off)));
+}
+simBtn.addEventListener("click", runSim);
+$("#sim-code").textContent = simCode(1000, 1000);
+
+/* ---------- Межа сприйняття ---------- */
+var flScore = Lesson.register(1), flDone = false;
+var flRange = $("#fl-range"), flLed = $("#fl-led"), flFb = $("#fl-fb");
+function flPeriod(){ return Number(flRange.value) * 2; }
+function flUpdate(){
+  var d = Number(flRange.value), p = d * 2;
+  $("#fl-delay").textContent = d;
+  $("#fl-period").textContent = "Період " + p + " мс — " + (1000 / p).toFixed(1).replace(/\.0$/, "") + " спалахів за секунду.";
+  stopFlicker();
+  flLed.classList.remove("on", "dim");
+  if (document.getElementById("flicker").classList.contains("active")) flStart();
+}
+function flStart(){
+  stopFlicker();
+  var d = Number(flRange.value);
+  if (d < 20){ flLed.classList.remove("on"); flLed.classList.add("dim"); return; }
+  flLed.classList.remove("dim");
+  (function tick(){ flLed.classList.toggle("on"); flTimer = setTimeout(tick, d); })();
+}
+flRange.addEventListener("input", flUpdate);
+$("#fl-see").addEventListener("click", function(){
+  if (!B.isFlickerVisible(flPeriod())){
+    if (!flDone){ flDone = true; Lesson.addScore(flScore); }
+    show(flFb, true, "Так! Період " + flPeriod() + " мс — понад 25 спалахів за секунду, око зливає їх у постійне світло.");
+  } else {
+    show(flFb, false, "Миготіння ще можна помітити: період " + flPeriod() + " мс. Зменш затримку.");
+  }
+});
+$("#fl-again").addEventListener("click", function(){ flFb.className = "fb"; flRange.value = 500; flUpdate(); flRange.focus(); });
+flUpdate();
+
+/* ---------- Знайди помилку ---------- */
+var buggy = B.SKETCHES.filter(function(s){ return s.expected.length; });
+var lintScore = Lesson.register(buggy.length);
+var lintBox = $("#lint-box");
+buggy.forEach(function(s, si){
+  var card = document.createElement("div");
+  card.className = "card";
+  var h = document.createElement("h3"); h.textContent = (si + 1) + ". " + s.title; card.appendChild(h);
+  var wrap = document.createElement("div"); wrap.className = "lint-code"; card.appendChild(wrap);
+  var fb = document.createElement("p"); fb.className = "fb"; fb.setAttribute("aria-live", "polite"); card.appendChild(fb);
+  var btns = [];
+  s.code.replace(/\n$/, "").split("\n").forEach(function(text, i){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "lint-lines";
+    b.textContent = String(i + 1).padStart(2, " ") + "  " + text;
+    b.setAttribute("aria-label", "Рядок " + (i + 1) + ": " + (text || "порожній"));
+    b.addEventListener("click", function(){
+      var want = s.expected[0];
+      var ok = i + 1 === want.line;
+      if (ok) Lesson.addScore(lintScore);
+      btns.forEach(function(x, j){
+        x.disabled = true;
+        if (j + 1 === want.line) x.classList.add("right");
+        else if (j === i) x.classList.add("wrong");
+      });
+      show(fb, ok, (ok ? "Так! " : "Помилка в рядку " + want.line + ". ") + B.MESSAGES[want.code]);
+    });
+    btns.push(b); wrap.appendChild(b);
+  });
+  lintBox.appendChild(card);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q:"Навіщо в setup() викликають pinMode(13, OUTPUT)?",o:["Щоб пін 13 працював як вихід і міг вмикати світлодіод","Щоб відкрити COM-порт","Щоб затримати виконання на 13 мс"],a:0,e:"pinMode задає режим піну; для керування світлодіодом потрібен вихід (OUTPUT)."},
+  {q:"Що робить рядок delay(1000)?",o:["Вимикає світлодіод","Ставить програму на паузу на 1000 мс","Надсилає число 1000 у COM-порт"],a:1,e:"delay зупиняє виконання скетча на вказаний час."},
+  {q:"У яких одиницях задають аргумент delay()?",o:["У секундах","У мікросекундах","У мілісекундах"],a:2,e:"1000 мс = 1 с. Для delay(1) пауза лише одна мілісекунда."},
+  {q:"Навіщо в setup() викликають Serial.begin(9600)?",o:["Щоб відкрити COM-порт зі швидкістю 9600 біт/с для виведення даних","Щоб увімкнути світлодіод на 9600 мс","Щоб скинути лічильник counter"],a:0,e:"Без Serial.begin функція Serial.println нічого не передасть у монітор порту."}
+]);
+
+/* ---------- Зупинка таймерів, коли вкладка неактивна ---------- */
+var panelObserver = new MutationObserver(function(){
+  if (!$("#sim").classList.contains("active") && simTimers.length) stopSim();
+  if ($("#flicker").classList.contains("active")){ if (!flTimer) flUpdate(); } else if (flTimer) stopFlicker();
+});
+[$("#sim"), $("#flicker")].forEach(function(p){ panelObserver.observe(p, {attributes:true, attributeFilter:["class"]}); });
+window.addEventListener("pagehide", stopAll);
+})();
+</script>
+</body>
+</html>
