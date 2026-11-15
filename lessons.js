@@ -46,5 +46,13 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Arduino", "світлодіод", "delay"]
+  },
+  {
+    folder: "12-boards-leds-loops",
+    program: "boards",
+    num: 12,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "макетна плата", "цикл for"]
   }
 ];

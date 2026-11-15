@@ -18,3 +18,23 @@ describe("урок 11 · миготіння світлодіода", () => {
     expect(hrefs).toContain("../../documents/rp/LAB_1/лаб 1.pdf");
   });
 });
+
+describe("урок 12 · макетна плата, цикл for, світлофор", () => {
+  it("має вкладки, бали, схему, цикл і посилання у футері", async () => {
+    const window = await loadPage("12-boards-leds-loops");
+    const doc = window.document;
+    const tabs = [...doc.querySelectorAll("nav.tabs button[data-tab]")];
+    expect(tabs.length).toBeGreaterThan(0);
+    for (const b of tabs) {
+      expect(doc.querySelector("section.panel#" + b.dataset.tab), b.dataset.tab).not.toBeNull();
+    }
+    expect(Number(doc.querySelector("[data-max]").textContent)).toBeGreaterThanOrEqual(1 + 2 + 1 + 4);
+    for (const id of ["w-anode", "w-cathode", "w-resistor"]) {
+      expect(doc.querySelector("#wiring select#" + id), id).not.toBeNull();
+    }
+    expect(doc.querySelectorAll("#loop .led").length).toBe(3);
+    const hrefs = [...doc.querySelectorAll("footer a")].map(a => a.getAttribute("href"));
+    expect(hrefs).toContain("teacher.html");
+    expect(hrefs).toContain("../../documents/rp/LAB_1/лаб 2.pdf");
+  });
+});
