@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Плата розширення Sensor Shield V5</title>
+<meta name="description" content="Карта Sensor Shield V5 для Arduino UNO: цифрові, ШІМ, аналогові піни, I2C, UART і живлення; підбери роз'єм для модуля.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+:root{--accent:var(--orange)}
+.svg-wrap{overflow-x:auto}
+svg{max-width:100%;height:auto}
+.map-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;align-items:start}
+@media (max-width:700px){.map-grid{grid-template-columns:minmax(0,1fr)}}
+.legend{display:flex;flex-direction:column;gap:8px}
+.legend button{display:block;text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;cursor:pointer}
+.legend button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.legend small{display:block;color:var(--muted)}
+.grp rect{fill:var(--card);stroke:var(--line);stroke-width:2}
+.grp text{fill:var(--ink);font-size:12px}
+.grp .lbl{font-weight:700}
+.grp{cursor:pointer}
+.grp.on rect{fill:#ffb02e44;stroke:var(--accent);stroke-width:4}
+#map-note{min-height:4.5em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#boards">← До курсу «Розумні плати»</a>
+  <header class="hero">
+    <small>Заняття 13 · Розумні плати · 10 клас</small>
+    <h1>Плата розширення Sensor Shield V5</h1>
+    <p>Дізнайся, як шилд збирає піни UNO в зручні роз'єми, і підбери кожному модулю правильний.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Навіщо шилд</button>
+    <button data-tab="map" data-break="5">2. Карта плати</button>
+    <button data-tab="match-tab">3. Який роз'єм?</button>
+    <button data-tab="sort-tab">4. Вхід чи вихід?</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Що таке шилд</h2><p>Плата розширення «вдягається» на мікроконтролер і виводить його піни в зручні площадки. Програма пишеться так само, як для звичайної UNO.</p></div>
+      <div class="card"><h2>Рядок G-V-S</h2><p>Кожному датчику потрібні три контакти, тому піни шилда зібрано по три: <b>G</b> (земля, GND), <b>V</b> (живлення) і <b>S</b> (сигнал). Дроти F-F вставляються без макетки.</p></div>
+      <div class="card"><h2>Живлення</h2><p>Шилд живиться від UNO, але є клемна колодка для зовнішнього джерела й перемичка <b>SEL</b>, що обирає джерело живлення пінів V.</p></div>
+    </div>
+    <div class="card">
+      <h2>З лабораторної 1</h2>
+      <ul class="tight">
+        <li>Модуль світлодіода: сигнальний пін до цифрового піну <b>7</b>.</li>
+        <li>Ємнісний датчик дотику: сигнальний пін до цифрового піну <b>2</b>.</li>
+        <li>Модуль RGB-світлодіода: до пінів із ШІМ.</li>
+      </ul>
+      <div class="tip"><b>Пам'ятай:</b> знак <code>~</code> біля номера піна означає, що на ньому працює ШІМ (<code>analogWrite</code>).</div>
+    </div>
+  </section>
+
+  <section class="panel" id="map">
+    <div class="card">
+      <h2>Карта плати</h2>
+      <p class="lead">Натисни на групу пінів на схемі або на кнопку праворуч: група підсвітиться, а нижче з'явиться пояснення.</p>
+      <div class="map-grid">
+        <div class="svg-wrap">
+          <svg id="map-svg" viewBox="0 0 560 270" width="560" role="img" aria-label="Схема Sensor Shield V5: групи пінів"></svg>
+        </div>
+        <div class="legend" id="map-legend"></div>
+      </div>
+      <p id="map-note" aria-live="polite">Обери групу пінів.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="match-tab"><div class="card"><h2>Який роз'єм?</h2><p class="lead">До якого роз'єму шилда підключають кожен модуль?</p><div id="match"></div></div></section>
+  <section class="panel" id="sort-tab"><div class="card"><h2>Вхід чи вихід?</h2><p class="lead">Датчик дає дані мікроконтролеру, пристрій виводу виконує його команди.</p><div id="sort"></div></div></section>
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Чому датчик звуку підключають до аналогового входу, а кнопку до цифрового?</li><li>Які піни UNO зайняті, коли підключено LCD з I2C?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="../../documents/rp/LAB_2/лаб 1.pdf">Лабораторна робота 1, частина 2 (PDF)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/boards/shield.js"></script>
+<script>
+(function(){
+var S = window.Boards.shield;
+function $(s){ return document.querySelector(s); }
+Lesson.messages.high = "Чудово! Ти орієнтуєшся в роз'ємах шилда й розрізняєш входи та виходи.";
+Lesson.messages.low = "Повтори: G-V-S, ШІМ лише на 3, 5, 6, 9, 10, 11, а LCD з I2C йде на SDA/SCL.";
+
+/* ---------- Карта ---------- */
+var NS = "http://www.w3.org/2000/svg";
+var BOX = {
+  "uart": [20, 20, 120, 70], "digital": [150, 20, 190, 70], "pwm": [350, 20, 190, 70],
+  "i2c": [20, 105, 140, 70], "analog": [170, 105, 230, 70],
+  "power": [20, 190, 260, 70], "ext-power": [290, 190, 250, 70]
+};
+var svg = $("#map-svg"), legend = $("#map-legend"), note = $("#map-note");
+function sv(tag, attrs, text){
+  var e = document.createElementNS(NS, tag);
+  for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+var bg = sv("rect", {x: 4, y: 4, width: 552, height: 262, rx: 12});
+bg.setAttribute("fill", "none"); bg.setAttribute("stroke", "currentColor"); bg.setAttribute("stroke-opacity", ".3");
+svg.appendChild(bg);
+var groups = {}, buttons = {};
+function select(id){
+  S.PIN_GROUPS.forEach(function(g){
+    var on = g.id === id;
+    groups[g.id].classList.toggle("on", on);
+    buttons[g.id].setAttribute("aria-pressed", on ? "true" : "false");
+    if (on) note.textContent = g.label + ". " + g.note;
+  });
+}
+S.PIN_GROUPS.forEach(function(g){
+  var b = BOX[g.id];
+  var el = sv("g", {"data-group": g.id, "class": "grp"});
+  el.appendChild(sv("rect", {x: b[0], y: b[1], width: b[2], height: b[3], rx: 8}));
+  el.appendChild(sv("text", {x: b[0] + 10, y: b[1] + 22, "class": "lbl"}, g.label));
+  el.appendChild(sv("text", {x: b[0] + 10, y: b[1] + 46}, g.pins.join("  ")));
+  el.addEventListener("click", function(){ select(g.id); });
+  svg.appendChild(el); groups[g.id] = el;
+  var btn = document.createElement("button");
+  btn.type = "button"; btn.setAttribute("data-group", g.id); btn.setAttribute("aria-pressed", "false");
+  btn.innerHTML = "<b></b><small></small>";
+  btn.firstChild.textContent = g.label; btn.lastChild.textContent = g.pins.join(", ");
+  btn.addEventListener("click", function(){ select(g.id); });
+  btn.addEventListener("focus", function(){ select(g.id); });
+  legend.appendChild(btn); buttons[g.id] = btn;
+});
+
+/* ---------- Який роз'єм? ---------- */
+var kinds = Object.keys(S.KIND_LABELS);
+Lesson.match("#match", {
+  options: kinds.map(function(k){ return S.KIND_LABELS[k]; }),
+  items: S.MODULES.map(function(m){
+    return {s: m.name, a: kinds.indexOf(m.connector), e: "Підходить: " + S.KIND_LABELS[m.connector].toLowerCase() + "."};
+  })
+});
+
+/* ---------- Вхід чи вихід? ---------- */
+var IO = {input: 0, output: 1, both: 2};
+var IO_WHY = {input: "Це датчик: він передає дані в мікроконтролер.", output: "Це пристрій виводу: він виконує команди мікроконтролера.", both: "Шина I2C двобічна: плата надсилає текст, екран відповідає на обмін."};
+Lesson.sort("#sort", {
+  choices: ["Датчик (вхід)", "Пристрій виводу", "І те, і те"],
+  items: S.MODULES.map(function(m){ return {s: m.name, a: IO[m.io], e: IO_WHY[m.io]}; })
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q:"Що означають літери G-V-S у роз'ємі шилда?",o:["Земля, живлення, сигнал","Генератор, вольтметр, сенсор","Цифровий, ШІМ, аналоговий"],a:0,e:"G — земля (GND), V — живлення, S — сигнальний пін."},
+  {q:"Що означає знак ~ біля номера піна на UNO?",o:["Пін тільки для входу","Пін підтримує ШІМ (analogWrite)","Пін зайнятий серійним портом"],a:1,e:"Знак ~ позначає піни 3, 5, 6, 9, 10, 11, де працює ШІМ."},
+  {q:"Куди підключають LCD з I2C?",o:["До аналогових пінів A0–A3","До пінів із ШІМ","До роз'єму I2C (SDA і SCL)"],a:2,e:"Для I2C потрібні лінії SDA і SCL (на UNO це A4 і A5)."}
+]);
+})();
+</script>
+</body>
+</html>

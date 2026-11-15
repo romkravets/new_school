@@ -54,5 +54,13 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Arduino", "макетна плата", "цикл for"]
+  },
+  {
+    folder: "13-boards-sensor-shield",
+    program: "boards",
+    num: 13,
+    status: "ready",
+    teacher: true,
+    tags: ["Arduino", "Sensor Shield", "датчики"]
   }
 ];
