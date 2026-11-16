@@ -37,12 +37,16 @@ var messages = {
 };
 function register(max){
   var id = "ex" + (++uid);
-  reg[id] = {score:0, max:max};
+  reg[id] = {score:0, max:Math.max(0, Number(max) || 0)};
   renderScore();
   return id;
 }
-function setScore(id, v){ reg[id].score = v; renderScore(); }
-function addScore(id){ reg[id].score++; renderScore(); }
+function setScore(id, v){
+  if (!reg[id]) return;
+  reg[id].score = Math.max(0, Math.min(reg[id].max, Number(v) || 0));
+  renderScore();
+}
+function addScore(id){ if (reg[id]) setScore(id, reg[id].score + 1); }
 function renderScore(){
   var s = 0, m = 0;
   Object.keys(reg).forEach(function(k){ s += reg[k].score; m += reg[k].max; });
@@ -59,15 +63,32 @@ function initTabs(){
   var tabs = $$("nav.tabs button");
   tabs.forEach(function(b){
     b.setAttribute("role", "tab");
-    b.addEventListener("click", function(){ goTo(b.dataset.tab); });
+    b.addEventListener("click", function(){ goTo(b.dataset.tab, false, true); });
+    if (b.dataset.break && !$(".break-time", b)){
+      var badge = el("span", "break-time", "⏱ " + esc(b.dataset.break) + " хв");
+      b.appendChild(badge);
+    }
   });
   $$("section.panel").forEach(function(p){ p.setAttribute("role", "tabpanel"); });
+  if (new URLSearchParams(window.location.search).has("projector")) document.body.classList.add("projector");
   var first = tabs[0];
-  if (first && !$("section.panel.active")) goTo(first.dataset.tab, true);
+  if (first){
+    var requested = window.location.hash.slice(1);
+    var target = tabs.find(function(b){ return b.dataset.tab === requested; });
+    goTo(target ? target.dataset.tab : first.dataset.tab, true);
+  }
+  window.addEventListener("hashchange", function(){
+    var requested = window.location.hash.slice(1);
+    if (tabs.some(function(b){ return b.dataset.tab === requested; })) goTo(requested, true);
+  });
 }
-function goTo(id, noScroll){
+function goTo(id, noScroll, updateAddress){
+  if (!id || !document.getElementById(id) || !document.getElementById(id).classList.contains("panel")) return;
   $$("nav.tabs button").forEach(function(x){ x.setAttribute("aria-selected", x.dataset.tab === id ? "true" : "false"); });
   $$("section.panel").forEach(function(p){ p.classList.toggle("active", p.id === id); });
+  if (updateAddress && window.location.hash !== "#" + encodeURIComponent(id)){
+    window.history.replaceState(null, "", "#" + encodeURIComponent(id));
+  }
   if (!noScroll) window.scrollTo({top:0, behavior:"smooth"});
 }
 function nextTab(){
@@ -224,6 +245,7 @@ function sort(root, cfg){
 window.Lesson = {
   quiz: quiz, match: match, sort: sort,
   goTo: goTo, nextTab: nextTab, esc: esc,
+  register: register, addScore: addScore, setScore: setScore,
   messages: messages   // можна змінити тексти підсумку: Lesson.messages.high = "…"
 };
 

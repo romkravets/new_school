@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Схема сцени для пояснення рухів камери</title>
+  <desc id="desc">Персонаж стоїть між будинками й деревами. Стрілки показують наїзд камери до персонажа та обліт навколо нього.</desc>
+  <rect width="760" height="420" rx="24" fill="#dff5f5"/>
+  <path d="M0 285h760v135H0z" fill="#93bd8e"/>
+  <g fill="#e6a45e" stroke="#674a3b" stroke-width="4">
+    <path d="M90 204h120v90H90z"/><path d="m76 206 74-65 74 65z" fill="#9b5b54"/>
+    <path d="M555 204h120v90H555z"/><path d="m541 206 74-65 74 65z" fill="#9b5b54"/>
+  </g>
+  <g fill="#377a59"><path d="m275 206 43-82 43 82z"/><path d="m423 206 43-82 43 82z"/></g>
+  <g fill="#76513b"><rect x="310" y="195" width="16" height="58"/><rect x="458" y="195" width="16" height="58"/></g>
+  <circle cx="380" cy="216" r="22" fill="#f0c39b"/>
+  <path d="M352 247q28-20 56 0l16 70h-88z" fill="#315d9b"/>
+  <path d="m362 311-8 42m44-42 8 42" stroke="#273b4d" stroke-width="14" stroke-linecap="round"/>
+  <path d="M104 350h170" fill="none" stroke="#2f6df6" stroke-width="8" stroke-linecap="round"/>
+  <path d="m253 335 24 15-24 15" fill="none" stroke="#2f6df6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="105" y="385" font-family="system-ui,sans-serif" font-size="21" font-weight="700" fill="#15171a">Наїзд: камера рухається</text>
+</svg>

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ШІ для здоров'я і розвитку</title>
+<meta name="description" content="Інтерактив: ШІ для здоров'я та особистого розвитку, межі його можливостей і професійна комунікація з ШІ.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+  :root{ --accent: var(--pink); }
+  .formula{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700}
+  .formula .plus{color:var(--muted)}
+  .out{background:#15171a;color:#f2f2f2;border-radius:14px;padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;white-space:pre-wrap;word-break:break-word;min-height:70px}
+  textarea{min-height:100px;resize:vertical}
+  .lim{border-left:4px solid var(--bad);padding:8px 12px;background:var(--badbg);border-radius:0 10px 10px 0;margin:10px 0 0}
+  .meter{height:10px;background:var(--line);border-radius:999px;overflow:hidden;margin:10px 0 4px}
+  .meter i{display:block;height:100%;width:0;background:var(--bad);transition:width .25s,background .25s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="../../index.html#ai">← До курсу ШІ</a>
+
+<header class="hero">
+  <small>Заняття 12 · Штучний інтелект і суспільство · 10 клас</small>
+  <h1>ШІ для здоров'я та особистого розвитку</h1>
+  <p>Як ШІ може допомогти з навчанням, звичками й самопочуттям, де межа його можливостей і як говорити з ним професійно, щоб отримувати корисні відповіді.</p>
+  <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+</header>
+
+<nav class="tabs" aria-label="Розділи">
+  <button data-tab="theory">1. Можливості й межі</button>
+  <button data-tab="sort-tab" data-break="5">2. Кому питання?</button>
+  <button data-tab="formula">3. Професійний запит</button>
+  <button data-tab="builder">4. Конструктор</button>
+  <button data-tab="quiz-tab">5. Покращ запит</button>
+  <button data-tab="final">Підсумок</button>
+</nav>
+
+<!-- 1. ТЕОРІЯ -->
+<section class="panel" id="theory">
+  <div class="grid g2">
+    <div class="card">
+      <h3>Здоров'я і самопочуття</h3>
+      <ul class="tight">
+        <li>пояснити, як працює сон, харчування, фізичне навантаження;</li>
+        <li>скласти розминку для перерви між уроками;</li>
+        <li>нагадати про воду, сон, перерви від екрана;</li>
+        <li>підготувати запитання, які варто поставити лікареві.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Особистий розвиток</h3>
+      <ul class="tight">
+        <li>план підготовки до НМТ чи олімпіади;</li>
+        <li>тренування співбесіди або виступу;</li>
+        <li>відгук на есе, резюме, мотиваційний лист;</li>
+        <li>пояснення складної теми «простими словами».</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Межі: чого ШІ не замінить</h3>
+    <div class="lim"><b>ШІ — не лікар і не психолог.</b> Він не бачить тебе, не знає твоєї історії хвороби і може впевнено помилятися. Діагноз, ліки й дози — тільки від лікаря.</div>
+    <ul class="tight" style="margin-top:10px">
+      <li><b>Галюцинації:</b> ШІ може вигадати факт, дослідження чи пораду. Важливе перевіряй в офіційних джерелах.</li>
+      <li><b>Приватність:</b> не вводь ПІБ, адресу, номер телефону, фото документів, діагнози свої чи чужі.</li>
+      <li><b>Екстрена ситуація:</b> не пиши чат-боту, а дзвони <b>103</b> або <b>112</b> і клич дорослого.</li>
+      <li><b>Коли важко на душі:</b> поговори з дорослим, якому довіряєш, шкільним психологом або зателефонуй на дитячу лінію <b>116 111</b>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2. СОРТУВАННЯ -->
+<section class="panel" id="sort-tab">
+  <div class="card">
+    <h2>Кому адресувати питання?</h2>
+    <p class="lead">Для кожної ситуації обери, хто має допомогти: ШІ, фахівець (лікар, психолог, учитель) чи екстрені служби.</p>
+  </div>
+  <div id="sort"></div>
+</section>
+
+<!-- 3. ФОРМУЛА -->
+<section class="panel" id="formula">
+  <div class="card">
+    <h2>Формула професійного запиту</h2>
+    <p class="lead">ШІ відповідає настільки добре, наскільки чітко ти пояснив, що потрібно.</p>
+    <div class="formula">
+      <span class="chip" style="background:var(--lime)">Роль</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--sky)">Контекст</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--yellow)">Задача</span><span class="plus">+</span>
+      <span class="chip" style="background:var(--orange)">Формат</span><span class="plus">+</span>
+      <span class="chip" style="background:#cfd8ff">Обмеження</span>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div><h3>Слабкий запит</h3><div class="code">Допоможи з англійською</div></div>
+      <div><h3>Професійний запит</h3><div class="code">Ти — викладач англійської. Я учень 11 класу, рівень B1, до НМТ 4 місяці, можу займатися 30 хв на день. Склади план підготовки на 4 тижні. Подай таблицею: тиждень, тема, вправи. Без платних застосунків.</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Правила спілкування</h3>
+    <ul class="tight">
+      <li><b>Одна задача — один запит.</b> Велику задачу розбий на кроки.</li>
+      <li><b>Уточнюй і продовжуй:</b> «зроби коротше», «додай приклади», «поясни для 9 класу».</li>
+      <li><b>Попроси джерела</b> і перевір їх: посилання можуть бути вигадані.</li>
+      <li><b>Нічого особистого:</b> заміни імена й деталі на загальні («учень», «друг»).</li>
+      <li><b>Ввічливий і чіткий тон</b> — звичка, яка знадобиться і в спілкуванні з людьми.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Добери приклад до складника</h3>
+    <div id="match"></div>
+  </div>
+</section>
+
+<!-- 4. КОНСТРУКТОР -->
+<section class="panel" id="builder">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h2>Конструктор запиту</h2>
+        <p class="lead" style="margin:0">Заповни поля або обери приклад. Запит збирається внизу.</p>
+      </div>
+      <select id="preset" style="width:auto;max-width:100%">
+        <option value="">— приклад —</option>
+        <option value="0">План підготовки до НМТ</option>
+        <option value="1">Розминка між уроками</option>
+        <option value="2">Тренування співбесіди</option>
+        <option value="3">Режим сну</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <div class="grid g2">
+      <div><label class="f" for="f-role">Роль: ким має бути ШІ?</label><textarea id="f-role" placeholder="Ти — тренер з фізичної культури…"></textarea></div>
+      <div><label class="f" for="f-ctx">Контекст: хто ти і яка ситуація?</label><textarea id="f-ctx" placeholder="Я учень 10 класу, багато сиджу за комп'ютером…"></textarea></div>
+      <div><label class="f" for="f-task">Задача: що саме зробити?</label><textarea id="f-task" placeholder="Склади…"></textarea></div>
+      <div><label class="f" for="f-fmt">Формат: як подати відповідь?</label><textarea id="f-fmt" placeholder="Список із 5 пунктів, таблиця…"></textarea></div>
+    </div>
+    <div style="margin-top:10px"><label class="f" for="f-lim">Обмеження: чого уникати?</label><textarea id="f-lim" placeholder="Без спортивного інвентарю, до 5 хвилин…"></textarea></div>
+  </div>
+  <div class="card">
+    <h3>Твій запит</h3>
+    <div class="out" id="out" aria-live="polite"></div>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+    <div class="row" style="justify-content:space-between">
+      <span class="progress" id="meterTxt"></span>
+      <button class="btn" type="button" id="copyBtn">Копіювати</button>
+    </div>
+    <div class="fb" id="warn"></div>
+  </div>
+</section>
+
+<!-- 5. ВІКТОРИНА -->
+<section class="panel" id="quiz-tab">
+  <div class="card">
+    <h2>Покращ запит</h2>
+    <p class="lead">Прочитай запит і обери найкращий наступний крок.</p>
+    <div id="quiz"></div>
+  </div>
+</section>
+
+<!-- ПІДСУМОК -->
+<section class="panel" id="final">
+  <div class="card final">
+    <h2>Твій результат</h2>
+    <div class="big"><span data-score>0</span> / <span data-max>0</span></div>
+    <p class="lead" style="margin-top:8px" data-final-msg></p>
+  </div>
+  <div class="card">
+    <h3>Рефлексія</h3>
+    <ul class="tight">
+      <li>Для якої мети розвитку я спробую використати ШІ цього тижня?</li>
+      <li>Яке питання про здоров'я я точно поставлю фахівцеві, а не чат-боту?</li>
+      <li>Який складник формули я найчастіше пропускав раніше?</li>
+    </ul>
+  </div>
+</section>
+
+<footer>Навчальний інтерактив · <a href="teacher.html">План уроку для вчителя</a> · працює без реєстрації і не збирає даних</footer>
+</div>
+
+<script src="../../assets/lesson.js"></script>
+<script>
+Lesson.messages.high = "Чудово! Ти розумієш, де ШІ допомагає, а де потрібен фахівець, і вмієш формулювати професійні запити.";
+Lesson.messages.mid  = "Добрий результат. Переглянь пояснення, особливо щодо меж ШІ і приватності.";
+Lesson.messages.low  = "Повернись до розділів «Можливості й межі» та «Професійний запит» і спробуй ще раз.";
+
+Lesson.sort("#sort", {
+  choices: ["ШІ підійде","Потрібен фахівець","Екстрені служби"],
+  items: [
+    {s:"Скласти план розминки на 5 хвилин для перерви між уроками.", a:0, e:"Загальні вправи без медичних протипоказань — добре завдання для ШІ. Але якщо щось болить, зупинись."},
+    {s:"Третій тиждень болить коліно після тренувань. Що це і чим лікувати?", a:1, e:"Діагноз і лікування — лише лікар. ШІ може допомогти підготувати запитання до лікаря, але не замінить огляд."},
+    {s:"Друг знепритомнів у спортзалі й не відповідає.", a:2, e:"Негайно 103 або 112 і клич дорослих. Писати чат-боту в такій ситуації — втрачати час."},
+    {s:"Пояснити простими словами, чому сон важливий для пам'яті.", a:0, e:"Пояснення загальних знань — сильна сторона ШІ. Для важливих рішень перевір факти в надійних джерелах."},
+    {s:"Підібрати дозу ліків від температури для молодшої сестри.", a:1, e:"Дози ліків, особливо для дітей, визначає лікар або фармацевт за вагою і віком. ШІ тут може помилитися з небезпечними наслідками."},
+    {s:"Потренувати відповіді на питання співбесіди на літню роботу.", a:0, e:"Рольова гра «ШІ — роботодавець» — хороший спосіб підготуватися. Особисті дані при цьому не вводимо."},
+    {s:"Уже кілька тижнів дуже сумно, нічого не хочеться і важко з цим упоратися.", a:1, e:"Це привід поговорити з дорослим, якому довіряєш, шкільним психологом або зателефонувати на 116 111. Ти не мусиш справлятися сам."}
+  ]
+});
+
+Lesson.match("#match", {
+  options: ["Роль","Контекст","Задача","Формат","Обмеження"],
+  items: [
+    {s:"«Ти — досвідчений рекрутер у ІТ-компанії»", a:0, e:"Роль задає, з якої позиції і яким тоном відповідати."},
+    {s:"«Я учень 11 класу, хочу на літню практику, досвіду роботи немає»", a:1, e:"Контекст пояснює ситуацію, щоб відповідь підходила саме тобі."},
+    {s:"«Постав мені 5 типових запитань співбесіди і оціни мої відповіді»", a:2, e:"Задача — що саме треба зробити. Дієслово на початку робить її чіткою."},
+    {s:"«Подай таблицею: запитання, моя відповідь, як покращити»", a:3, e:"Формат визначає, як виглядатиме відповідь: список, таблиця, план."},
+    {s:"«Простою мовою, без англіцизмів, не довше 200 слів»", a:4, e:"Обмеження відсікають зайве і зберігають твій час."}
+  ]
+});
+
+Lesson.quiz("#quiz", [
+  {prompt:"Склади мені план тренувань", q:"Чого найбільше бракує?",
+   o:["Контексту і мети: вік, рівень, скільки часу, чого хочеш досягти","Слова «будь ласка»","Згадки, що це терміново","Нічого, і так зрозуміло"], a:0,
+   e:"Без контексту ШІ дасть усереднений план, який може не підходити: занадто важкий, задовгий або не для твоєї мети."},
+  {prompt:"Я Іван Петренко, 10-Б, ліцей №2, у мене астма. Склади план бігу.", q:"Що тут не так?",
+   o:["Забагато особистих даних, а план з урахуванням хвороби має погодити лікар","Немає формату","Запит задовгий","Усе правильно"], a:0,
+   e:"ПІБ, школа і діагноз — зайва особиста інформація. А навантаження при хронічній хворобі треба погоджувати з лікарем."},
+  {prompt:"Поясни фотосинтез", q:"Відповідь вийшла надто складною. Що зробити?",
+   o:["Почати новий чат і написати те саме","Уточнити: «Поясни для учня 7 класу, на прикладі, до 5 речень»","Вирішити, що ШІ не вміє пояснювати","Написати ВЕЛИКИМИ ЛІТЕРАМИ"], a:1,
+   e:"Ітерація з уточненням рівня, формату й обсягу — головний інструмент професійної комунікації з ШІ."},
+  {prompt:"Дай 3 наукові дослідження про вплив сну на оцінки", q:"ШІ дав три дослідження з назвами і посиланнями. Що далі?",
+   o:["Одразу вставити в реферат","Перевірити, що ці дослідження справді існують і кажуть саме це","Попросити ще 10 досліджень","Видалити посилання"], a:1,
+   e:"ШІ може вигадувати джерела, які виглядають цілком правдоподібно. Кожне посилання треба відкрити і перевірити."},
+  {prompt:"Напиши за мене мотиваційний лист в університет", q:"Як зробити це доброчесно і корисніше?",
+   o:["Подати текст ШІ як свій","Написати чернетку самому і попросити ШІ дати відгук: структура, помилки, що посилити","Попросити ШІ вигадати досягнення","Скопіювати лист з інтернету"], a:1,
+   e:"Так лист залишиться твоїм, а ШІ працює як редактор і тренер. Вигадані досягнення — це обман."},
+  {prompt:"Зроби все про здоровий спосіб життя, харчування, сон, спорт і план на рік", q:"Як краще?",
+   o:["Розбити на кілька окремих запитів, по одній задачі","Додати ще кілька тем","Попросити відповісти одним словом","Залишити як є"], a:0,
+   e:"Одна задача — один запит. Так відповіді будуть глибшими, а тобі легше їх перевірити й використати."}
+]);
+
+/* ===== Конструктор запиту ===== */
+(function(){
+var F = ["role","ctx","task","fmt","lim"];
+var P = [
+  ["Ти — досвідчений викладач англійської мови.","Я учень 11 класу, рівень приблизно B1, до НМТ 4 місяці, можу займатися 30 хвилин на день.","Склади план підготовки на найближчі 4 тижні.","Таблиця: тиждень, тема, вправи, як перевірити себе.","Тільки безкоштовні ресурси, без платних застосунків."],
+  ["Ти — тренер з фізичної культури для підлітків.","Я учень 10 класу, багато сиджу за комп'ютером, на перерві маю 5 хвилин.","Склади розминку для шиї, спини та очей.","Нумерований список, біля кожної вправи — скільки повторень.","Без спортивного інвентарю, можна виконати в класі, без стрибків."],
+  ["Ти — рекрутер у ІТ-компанії, який проводить співбесіду на літню практику.","Я учень 11 класу, вивчаю веброзробку, досвіду роботи немає.","Постав мені по черзі 5 типових запитань і після кожної моєї відповіді дай відгук.","Одне запитання за раз, відгук: що добре і що покращити.","Доброзичливий тон, простою мовою."],
+  ["Ти — консультант зі здорових звичок.","Я учень 10 класу, лягаю спати після півночі, зранку важко прокинутися.","Запропонуй 5 кроків, щоб поступово зсунути час засинання.","Список із короткими поясненнями, чому це працює.","Без ліків і добавок; якщо проблема серйозна — порадь звернутися до лікаря."]
+];
+var esc = Lesson.esc, plain = "";
+var personal = /(\+?380|\b0\d{9}\b|@[a-z0-9_.-]+\.[a-z]{2,}|паспорт|адрес|вулиц|прізвище|\bвул\.|діагноз)/i;
+function v(id){ return document.getElementById("f-" + id).value.trim(); }
+function build(){
+  var parts = F.map(v).filter(Boolean);
+  plain = parts.join("\n");
+  var out = document.getElementById("out");
+  out.textContent = plain || "Заповни хоча б одне поле…";
+  var n = parts.length, m = document.getElementById("meter");
+  m.style.width = (n / 5 * 100) + "%";
+  var txt;
+  if (n === 0){ txt = "Складників: 0 з 5"; }
+  else if (!v("task")){ m.style.background = "var(--bad)"; txt = "Немає задачі: ШІ не знає, що зробити"; }
+  else if (n <= 2){ m.style.background = "var(--bad)"; txt = "Слабкий запит: додай контекст і формат"; }
+  else if (n <= 4){ m.style.background = "var(--orange)"; txt = "Майже: бракує " + F.filter(function(k){ return !v(k); }).map(function(k){ return {role:"ролі",ctx:"контексту",task:"задачі",fmt:"формату",lim:"обмежень"}[k]; }).join(", "); }
+  else { m.style.background = "var(--ok)"; txt = "Професійний запит"; }
+  document.getElementById("meterTxt").textContent = txt;
+  var w = document.getElementById("warn");
+  if (personal.test(plain)){ w.className = "fb show no"; w.innerHTML = "<b>Обережно:</b> схоже, у запиті є особисті дані (телефон, адреса, пошта, діагноз). Заміни їх на загальні слова."; }
+  else { w.className = "fb"; w.innerHTML = ""; }
+}
+F.forEach(function(k){ document.getElementById("f-" + k).addEventListener("input", build); });
+document.getElementById("preset").addEventListener("change", function(){
+  if (this.value === "") return;
+  var p = P[+this.value];
+  F.forEach(function(k, i){ document.getElementById("f-" + k).value = p[i]; });
+  build();
+});
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var btn = this;
+  if (!plain) return;
+  function done(){ btn.textContent = "Скопійовано ✓"; setTimeout(function(){ btn.textContent = "Копіювати"; }, 1500); }
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = plain; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(e){}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(plain).then(done, fallback);
+  else fallback();
+});
+build();
+})();
+</script>
+</body>
+</html>
