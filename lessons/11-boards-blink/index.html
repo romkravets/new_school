@@ -101,7 +101,7 @@ void loop() {
       </div>
       <div class="row" style="margin-top:10px"><button class="btn" type="button" id="fl-see">Я не бачу миготіння</button><button class="btn ghost" type="button" id="fl-again">Спробувати ще раз</button></div>
       <p class="fb" id="fl-fb" aria-live="polite"></p>
-      <p class="teacher-note">Для затримок, коротших за ~20 мс, браузер не встигає показувати окремі спалахи, тому ми малюємо те, що бачить око: світло середньої яскравості.</p>
+      <p class="teacher-note">Для затримок, коротших за ~20 мс, браузер не встигає показувати окремі спалахи, тому ми малюємо те, що бачить око: світло середньої яскравості. Поріг 40 мс (~25 Гц) на цій сторінці — приблизна межа, де більшість людей перестає помічати миготіння; у тексті лабораторної роботи 3 і в багатьох джерелах як безпечну межу «без мерехтіння» називають 50 Гц.</p>
     </div>
   </section>
 
@@ -214,7 +214,7 @@ var lintBox = $("#lint-box");
 buggy.forEach(function(s, si){
   var card = document.createElement("div");
   card.className = "card";
-  var h = document.createElement("h3"); h.textContent = (si + 1) + ". " + s.title; card.appendChild(h);
+  var h = document.createElement("h3"); h.textContent = "Скетч " + (si + 1); card.appendChild(h);
   var wrap = document.createElement("div"); wrap.className = "lint-code"; card.appendChild(wrap);
   var fb = document.createElement("p"); fb.className = "fb"; fb.setAttribute("aria-live", "polite"); card.appendChild(fb);
   var btns = [];

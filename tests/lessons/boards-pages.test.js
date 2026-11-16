@@ -2,8 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
-import { describe, it, expect } from "vitest";
-import { loadPage, loadScript } from "../helpers/load-script.js";
+import { describe, it, expect, afterEach } from "vitest";
+import { loadPage, loadScript, closePages } from "../helpers/load-script.js";
+
+afterEach(closePages);
 
 describe("урок 11 · миготіння світлодіода", () => {
   it("має вкладки, бали, симулятор і посилання у футері", async () => {
@@ -178,6 +180,9 @@ describe("реєстрація уроків 11–15 курсу «Розумні 
       const plan = window.TEACHER_PLANS["boards:" + n];
       expect(plan, "boards:" + n).toBeDefined();
       expect(plan.timeline.reduce((s, t) => s + t.min, 0)).toBe(45);
+      for (const t of plan.timeline) {
+        if (t.link) expect(t.link.startsWith("#"), "timeline link: " + t.link).toBe(true);
+      }
     });
   }
 });

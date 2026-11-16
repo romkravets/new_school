@@ -71,6 +71,11 @@ mountScene(".rgb-scene", {
   }
 }).then(function(mounted){
   if (!mounted) return;
+  var ids = ["rgb-r", "rgb-g", "rgb-b"], inputs = ids.map(function(id){ return document.getElementById(id); });
+  if (inputs.every(Boolean)){
+    pending = {r:num(inputs[0].value), g:num(inputs[1].value), b:num(inputs[2].value)};
+    applyColor(sceneApi, pending);
+  }
   window.RgbCube = {
     setColor: function(color){
       pending = {r:num(color && color.r), g:num(color && color.g), b:num(color && color.b)};

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -23,10 +23,18 @@ export function loadPage(folder) {
     const file = path.resolve(pageDir, src[1].split(/[?#]/)[0]);
     return "<script>" + fs.readFileSync(file, "utf8").replace(/<\/script/gi, "<\\/script") + "</script>";
   });
-  const dom = new JSDOM(html, { runScripts: "dangerously", url: "http://localhost/lessons/" + folder + "/" });
-  const { window } = dom;
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
+    const virtualConsole = new VirtualConsole();
+    virtualConsole.on("jsdomError", reject); // необроблена помилка у скрипті сторінки валить тест
+    const { window } = new JSDOM(html, { runScripts: "dangerously", virtualConsole, url: "http://localhost/lessons/" + folder + "/" });
+    opened.push(window);
     if (window.document.readyState === "complete") return resolve(window);
     window.addEventListener("load", () => resolve(window));
   });
+}
+
+// Закриває всі вікна, відкриті через loadPage (зупиняє таймери); викликати в afterEach.
+const opened = [];
+export function closePages() {
+  while (opened.length) opened.pop().close();
 }
