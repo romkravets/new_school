@@ -138,11 +138,12 @@ svg{max-width:100%;height:auto}
       <p class="teacher-note">На схемі: D5 під'єднано до колонки 5; резистор з'єднує колонки 5 і 8; анод світлодіода стоїть у колонці 8, катод — у 9. Провід із колонки 9 веде до синьої шини, з'єднаної з GND. Отвори A–E в одній колонці спільні; центральний паз відділяє від них окрему групу F–J.</p>
     </div>
     <div class="card">
-      <h2>Цикл for із лаби</h2>
+      <h2>Цикл for: блимнути тричі</h2>
       <div class="code">for (int i = 0; i &lt; 3; i++) {
-  digitalWrite(5 + i, HIGH);  // увімкнути світлодіод
+  digitalWrite(5, HIGH);  // зелений на піні 5 увімкнено
   delay(500);
-  digitalWrite(5 + i, LOW);   // вимкнути
+  digitalWrite(5, LOW);   // вимкнено
+  delay(500);
 }</div>
       <ul class="tight"><li><code>int i = 0</code> — початок;</li><li><code>i &lt; 3</code> — умова: поки правда, цикл триває;</li><li><code>i++</code> — крок: збільшити <code>i</code> на 1.</li></ul>
       <div class="tip"><b>Пам'ятай:</b> три крапки з комою в дужках, а <code>i</code> має бути в межах номерів світлодіодів.</div>
@@ -238,7 +239,8 @@ $("#w-check").addEventListener("click", function(){
   var r = L.checkWiring({anode: $("#w-anode").value, cathode: $("#w-cathode").value, resistor: $("#w-resistor").value});
   if (r.ok){
     if (!wDone){ wDone = true; Lesson.addScore(wScore); }
-    show(wFb, true, "Схема правильна: пін 5 → резистор 220 Ом → анод, катод → GND.");
+    show(wFb, true, "Схема правильна: пін 5 → резистор 220 Ом → анод, катод → GND." +
+      ($("#w-resistor").value === "cathode" ? " Резистор біля катода теж працює: у послідовному колі струм однаковий на всіх ділянках." : ""));
   } else {
     show(wFb, false, r.problems.map(function(c){ return WHY[c] || c; }).join(" "));
   }

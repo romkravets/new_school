@@ -15,7 +15,7 @@ function checkWiring(w){
     problems.push("reversed");
   } else {
     if (w.anode !== "pin5") problems.push("anode-not-pin");
-    if (w.anode === "5v") problems.push("direct-5v");
+    if (w.anode === "5v" && w.resistor === "none") problems.push("direct-5v");
     if (w.cathode !== "gnd") problems.push("cathode-not-gnd");
   }
   if (w.resistor !== "anode" && w.resistor !== "cathode") problems.push("no-resistor");

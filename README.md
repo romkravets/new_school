@@ -16,6 +16,10 @@ data/<курс>.js             теми та ДЗ, імпортовані з XLS
 data/boards11.js           адаптований план продовження курсу в 11 класі
 data/course-labs.js        зіставлення тем «Розумних плат» з PDF лабораторій
 documents/                 вхідні календарні плани для «Мрії»
+documents/rp/LAB_1, LAB_2  PDF лабораторних «Розумних плат» (латинські назви папок)
+assets/boards/             модулі логіки уроків 11–15 курсу «Розумні плати»
+tests/                     тести vitest + jsdom (npm test)
+docs/style-guide-interactives.md  гід зі стилю інтерактивів
 scripts/import-mriya.mjs   імпорт XLSX у data/
 teacher/index.html         календарний план учителя
 assets/lesson.css          спільні стилі уроків
@@ -28,6 +32,27 @@ template/index.html        шаблон нового інтерактиву
 template/teacher.html      шаблон учительського плану
 lessons/                    готові уроки та картки вчителя
 ```
+
+## Модулі логіки `assets/boards/`
+
+Кожен модуль — звичайний скрипт без збірки, що додає об'єкт до `window.Boards`; HTML уроку лише підключає його й малює інтерфейс.
+
+- `blink.js` (`Boards.blink`) — симулятор миготіння світлодіода (`simulate`, `isFlickerVisible`), лінтер скетчу (`lintSketch`) і готові скетчі.
+- `leds.js` (`Boards.leds`) — перевірка схеми світлодіода (`checkWiring`), виконання циклу for (`runLoops`), завдання (`checkTask`) і кроки світлофора.
+- `shield.js` (`Boards.shield`) — групи пінів Sensor Shield V5, модулі та сумісність роз'ємів (`matchModule`).
+- `lab.js` (`Boards.lab`) — чекліст безпеки, поля звіту, типові збої, `buildReport` і `gradeReport`.
+- `rgb.js` (`Boards.rgb`) — RGB-світлодіод: `clamp`, `toCss`, `toSketch`, `matches`, `hint`, `dutyCycle`.
+
+Сцена `assets/scenes/rgb-cube.js` показує куб кольорів для уроку 15 (без WebGL лишається `rgb-cube.svg`).
+
+## Тести
+
+```sh
+npm install
+npm test
+```
+
+Тести (vitest + jsdom) лежать у `tests/`. `loadPage(папка)` з `tests/helpers/load-script.js` читає `lessons/<папка>/index.html`, підставляє локальні `<script src>` вмістом файлів, пропускає зовнішні та `type="module"` скрипти й повертає вікно jsdom без мережі. `loadScript(window, шлях)` виконує файл репозиторію у вікні. Окремий тест перевіряє реєстрацію уроків 11–15: записи в `lessons.js`, `index.html` і `teacher.html` у папках, плани `boards:11..15` із сумою `min` 45.
 
 ## Оновлення календарів
 
@@ -63,6 +88,16 @@ node scripts/import-mriya.mjs
    Назва й номер уроку на головній беруться з `data/ai.js`; вони мають збігатися з календарем. Без запису в `lessons.js` тема лишається сірою як «Заплановано». `status` може бути `ready` або `draft`.
 4. Для учительської картки скопіюйте `template/teacher.html` у папку уроку, підключіть правильний `data/<курс>.js` і заповніть `window.TEACHER_PLAN`.
 5. Перевірте головну, урок і план учителя в браузері, потім закоміть і запуште зміни.
+
+## Як додати урок курсу «Розумні плати»
+
+1. Створіть папку `lessons/NN-boards-<slug>` (латиниця, наприклад `16-boards-buzzer`) із `index.html` і `teacher.html` за шаблонами. Дотримуйтесь `docs/style-guide-interactives.md`.
+2. У шапці `index.html` дайте рядок `<small>Заняття NN · Розумні плати · 10 клас</small>` перед `<h1>` за зразком уроків 11–15.
+3. Логіку, яку можна перевірити тестом, винесіть у `assets/boards/<модуль>.js` (`window.Boards.<модуль>`).
+4. Додайте запис `program: "boards"`, `num`, `status: "ready"` до `lessons.js`.
+5. Додайте план `"boards:NN"` у `data/teacher-plans.js`; сума `min` у `timeline` — 45 хв.
+6. У футері уроку дайте посилання на PDF лабораторної, наприклад `../../documents/rp/LAB_1/лаб 3.pdf` (`LAB_2` для другого комплекту); відповідність тем і PDF веде `data/course-labs.js`.
+7. Додайте тест у `tests/lessons/boards-pages.test.js` (і `tests/boards/` для модуля), запустіть `npm test`.
 
 ## Учительська картка й проєктор
 

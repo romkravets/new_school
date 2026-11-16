@@ -33,6 +33,11 @@ describe("leds.checkWiring", () => {
     expect(r.problems).toContain("direct-5v");
     expect(r.problems).toContain("anode-not-pin");
   });
+  it("анод на 5V з резистором: лише anode-not-pin", () => {
+    const r = leds.checkWiring({ anode: "5v", cathode: "gnd", resistor: "anode" });
+    expect(r.problems).toContain("anode-not-pin");
+    expect(r.problems).not.toContain("direct-5v");
+  });
   it("катод не на GND", () => {
     expect(leds.checkWiring({ anode: "pin5", cathode: "none", resistor: "anode" }).problems).toContain("cathode-not-gnd");
   });
