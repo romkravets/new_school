@@ -1,5 +1,9 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
 import { describe, it, expect } from "vitest";
-import { loadPage } from "../helpers/load-script.js";
+import { loadPage, loadScript } from "../helpers/load-script.js";
 
 describe("урок 11 · миготіння світлодіода", () => {
   it("має вкладки, бали, симулятор і посилання у футері", async () => {
@@ -156,4 +160,24 @@ describe("урок 15 · RGB-світлодіод і ШІМ", () => {
     doc.querySelector("#t-check").click();
     expect(score()).toBe(before + 1);
   });
+});
+
+describe("реєстрація уроків 11–15 курсу «Розумні плати»", () => {
+  const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const window = new JSDOM("", { runScripts: "outside-only" }).window;
+  loadScript(window, "lessons.js");
+  loadScript(window, "data/teacher-plans.js");
+
+  for (let n = 11; n <= 15; n++) {
+    it("урок " + n + ": запис, файли на диску й план на 45 хв", () => {
+      const entry = window.LESSONS.find(l => l.program === "boards" && l.num === n);
+      expect(entry, "запис lessons.js").toBeDefined();
+      for (const f of ["index.html", "teacher.html"]) {
+        expect(fs.existsSync(path.join(ROOT, "lessons", entry.folder, f)), entry.folder + "/" + f).toBe(true);
+      }
+      const plan = window.TEACHER_PLANS["boards:" + n];
+      expect(plan, "boards:" + n).toBeDefined();
+      expect(plan.timeline.reduce((s, t) => s + t.min, 0)).toBe(45);
+    });
+  }
 });
