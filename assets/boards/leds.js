@@ -60,13 +60,19 @@ function runLoops(loops){
 
 var TASKS = [
   { id: "all", title: "Увімкнути всі три по черзі", accept: [[0, 1, 2]] },
+  /* body — обов'язкове тіло кожного циклу: вогник біжить, лише коли світлодіод гасне перед наступним. */
+  { id: "chaser", title: "Біжучий вогник", accept: [[0, 1, 2]], body: "blink(i)" },
   { id: "bounce", title: "Туди-назад", accept: [[0, 1, 2, 1, 0], [0, 1, 2, 2, 1, 0]] }
 ];
 
-function checkTask(taskId, events){
+function checkTask(taskId, events, loops){
   var task = null;
   TASKS.forEach(function(t){ if (t.id === taskId) task = t; });
   if (!task) return false;
+  if (task.body) {
+    if (!loops || !loops.length) return false;
+    if (!loops.every(function(l){ return l.body === task.body; })) return false;
+  }
   var s = (events || []).filter(function(e){ return !e.missing; }).map(function(e){ return e.i; });
   return task.accept.some(function(a){
     return a.length === s.length && a.every(function(v, k){ return v === s[k]; });

@@ -57,3 +57,24 @@ describe("урок 13 · Sensor Shield V5", () => {
     expect(hrefs).toContain("../../documents/rp/LAB_2/лаб 1.pdf");
   });
 });
+
+describe("урок 12 · завдання «Біжучий вогник»", () => {
+  it("зараховує blink(i) і підказує, якщо обрано on(i)", async () => {
+    const window = await loadPage("12-boards-leds-loops");
+    const doc = window.document;
+    const task = doc.querySelector("#l-task");
+    expect([...task.options].map(o => o.textContent)).toContain("Біжучий вогник");
+    const change = (el, v) => { el.value = v; el.dispatchEvent(new window.Event("change")); };
+    change(task, "chaser");
+    const fb = doc.querySelector("#l-fb");
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const before = score();
+    doc.querySelector("#l-check").click();
+    expect(fb.textContent).toContain("blink(i)");
+    expect(score()).toBe(before);
+    change(doc.querySelector("#l-1-body"), "blink(i)");
+    doc.querySelector("#l-check").click();
+    expect(fb.textContent).toContain("Завдання виконано");
+    expect(score()).toBe(before + 1);
+  });
+});

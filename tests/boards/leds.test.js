@@ -100,3 +100,29 @@ describe("leds.runLoops — невалідні ключі", () => {
     expect(seq(leds.runLoops([{ start: 0, cond: "<3", step: "i+=2", body: "on(i)" }]))).toEqual([0, 2]);
   });
 });
+
+describe("leds.checkTask — біжучий вогник", () => {
+  const run = (body) => [{ start: 0, cond: "<3", step: "i++", body }];
+  it("є серед завдань", () => {
+    expect(leds.TASKS.map((t) => t.id)).toContain("chaser");
+  });
+  it("0→1→2 з blink(i) — виконано", () => {
+    const loops = run("blink(i)");
+    expect(leds.checkTask("chaser", leds.runLoops(loops).events, loops)).toBe(true);
+  });
+  it("on(i) не зараховується: світлодіоди не гаснуть", () => {
+    const loops = run("on(i)");
+    expect(leds.checkTask("chaser", leds.runLoops(loops).events, loops)).toBe(false);
+  });
+  it("без опису циклів не зараховується", () => {
+    expect(leds.checkTask("chaser", [{ i: 0 }, { i: 1 }, { i: 2 }])).toBe(false);
+  });
+  it("хибний порядок не зараховується", () => {
+    const loops = [{ start: 2, cond: ">=0", step: "i--", body: "blink(i)" }];
+    expect(leds.checkTask("chaser", leds.runLoops(loops).events, loops)).toBe(false);
+  });
+  it("завдання без вимоги до тіла приймають будь-яке тіло", () => {
+    const loops = run("blink(i)");
+    expect(leds.checkTask("all", leds.runLoops(loops).events, loops)).toBe(true);
+  });
+});

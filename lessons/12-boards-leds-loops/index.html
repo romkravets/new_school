@@ -86,6 +86,11 @@ svg{max-width:100%;height:auto}
       <ul class="tight"><li><code>int i = 0</code> — початок;</li><li><code>i &lt; 3</code> — умова: поки правда, цикл триває;</li><li><code>i++</code> — крок: збільшити <code>i</code> на 1.</li></ul>
       <div class="tip"><b>Пам'ятай:</b> три крапки з комою в дужках, а <code>i</code> має бути в межах номерів світлодіодів.</div>
     </div>
+    <div class="card">
+      <h2>«Біжучий вогник»</h2>
+      <p>Цикл вище — це і є «біжучий вогник»: світлодіод на піні <code>5 + i</code> вмикається, світить пів секунди й гасне, а тоді вмикається наступний. Здається, що один вогник біжить пінами 5 → 6 → 7.</p>
+      <ul class="tight"><li>У <code>loop()</code> цикл повторюється знову й знову, тож вогник біжить по колу.</li><li>Прибери рядок із <code>LOW</code> — і світлодіоди не гаснутимуть: вийде не вогник, а «заповнення».</li><li>У <code>setup()</code> кожен із трьох пінів треба налаштувати як вихід: <code>pinMode(5, OUTPUT)</code>, так само для 6 і 7.</li></ul>
+    </div>
   </section>
 
   <section class="panel" id="wiring">
@@ -109,6 +114,7 @@ svg{max-width:100%;height:auto}
     <div class="card">
       <h2>Конструктор циклу</h2>
       <p class="lead">Налаштуй цикл (або два) і запусти: світлодіоди 0, 1, 2 стоять на пінах 5, 6, 7.</p>
+      <p>Тіло <code>on(i)</code> вмикає світлодіод і лишає його горіти; <code>blink(i)</code> вмикає й одразу гасить — так робить «біжучий вогник».</p>
       <label class="f" for="l-task">Завдання</label>
       <select id="l-task"></select>
       <div id="l-loops"></div>
@@ -256,9 +262,12 @@ lRun.addEventListener("click", function(){
 lCheck.addEventListener("click", function(){
   var res = L.runLoops(readLoops()), id = taskSel.value;
   if (res.infinite){ show(lFb, false, "Цикл нескінченний. Перевір умову й крок."); return; }
-  if (L.checkTask(id, res.events)){
+  var specs = readLoops(), task = L.TASKS.filter(function(t){ return t.id === id; })[0];
+  if (L.checkTask(id, res.events, specs)){
     if (!lDone[id]){ lDone[id] = true; Lesson.addScore(lScore); }
     show(lFb, true, "Завдання виконано: порядок вмикання правильний.");
+  } else if (task && task.body && specs.some(function(s){ return s.body !== task.body; })){
+    show(lFb, false, "Світлодіоди лишаються горіти. У біжучому вогнику кожен гасне перед наступним: обери тіло " + task.body + ".");
   } else {
     show(lFb, false, "Порядок не збігається із завданням. Запусти цикл і подивись, які світлодіоди спалахують.");
   }
