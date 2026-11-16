@@ -50,31 +50,92 @@ svg{max-width:100%;height:auto}
 
   <section class="panel" id="theory">
     <div class="grid g3">
-      <div class="card"><h2>Макетна плата</h2><p>Дві бічні шини: червона <b>+</b> і синя <b>−</b>. У середній частині отвори з'єднані <b>вертикальними групами по п'ять</b>: усе, що вставлено в одну групу, електрично з'єднане.</p></div>
+      <div class="card"><h2>Макетна плата</h2><p>Уздовж країв плати проходять довгі шини <b>+</b> і <b>−</b>. У середній частині кожна нумерована колонка має дві окремі групи по п'ять отворів: <b>A–E</b> і <b>F–J</b>, розділені центральним пазом.</p></div>
       <div class="card"><h2>Світлодіод</h2><p>Має полярність: довша ніжка — <b>анод</b> (+), коротша — <b>катод</b> (−). Струм іде від анода до катода. Без резистора світлодіод перегорить.</p></div>
       <div class="card"><h2>Схема з лаби 2</h2><p>Пін <b>5</b> → резистор <b>220 Ом</b> → анод; катод → <b>GND</b>.</p></div>
     </div>
     <div class="card">
       <h2>Макетна плата зі світлодіодом</h2>
       <div class="svg-wrap">
-      <svg viewBox="0 0 420 190" width="420" role="img" aria-label="Макетна плата: шини плюс і мінус, вертикальні групи отворів, світлодіод і резистор">
-        <rect x="5" y="5" width="410" height="180" rx="10" fill="#efe8d6" stroke="#8a826c"/>
-        <rect x="15" y="14" width="390" height="5" fill="#d6334a"/><text x="15" y="12" font-size="10" fill="#d6334a">+ шина</text>
-        <rect x="15" y="171" width="390" height="5" fill="#2f6df6"/><text x="15" y="187" font-size="10" fill="#2f6df6">− шина</text>
-        <g fill="#6b665a">
-          <g id="hg"><circle cx="100" cy="50" r="3"/><circle cx="100" cy="68" r="3"/><circle cx="100" cy="86" r="3"/><circle cx="100" cy="104" r="3"/><circle cx="100" cy="122" r="3"/></g>
-          <use href="#hg" x="40"/><use href="#hg" x="80"/><use href="#hg" x="120"/><use href="#hg" x="160"/><use href="#hg" x="200"/><use href="#hg" x="240"/>
+      <svg viewBox="0 0 880 490" width="880" role="img" aria-label="Реалістична схема макетної плати з шинами вздовж країв, центральним пазом, рядами A–E і F–J та послідовним підключенням піну 5, резистора, світлодіода й GND">
+        <defs>
+          <pattern id="rail-holes" width="30" height="24" patternUnits="userSpaceOnUse" patternTransform="translate(0 12)">
+            <circle cx="15" cy="12" r="4" fill="#716f68"/>
+          </pattern>
+          <pattern id="terminal-holes" width="30" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="15" cy="10" r="4.3" fill="#716f68"/>
+          </pattern>
+          <marker id="led-arrow" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <path d="M0 0 L5 2.5 L0 5 Z" fill="#fff4c2"/>
+          </marker>
+        </defs>
+        <rect x="48" y="18" width="820" height="454" rx="18" fill="#e9e7df" stroke="#b9b6ac" stroke-width="3"/>
+        <rect x="64" y="32" width="788" height="66" rx="8" fill="#f3f1e9"/>
+        <text x="70" y="57" font-size="15" font-weight="700" fill="#cf3342">+ шина</text>
+        <rect x="140" y="36" width="692" height="24" fill="url(#rail-holes)"/>
+        <path d="M150 61 H822" stroke="#cf3342" stroke-width="3"/>
+        <text x="70" y="85" font-size="15" font-weight="700" fill="#2867e8">− шина</text>
+        <rect x="140" y="60" width="692" height="24" fill="url(#rail-holes)"/>
+        <path d="M150 89 H822" stroke="#2867e8" stroke-width="3"/>
+
+        <rect x="132" y="108" width="710" height="142" rx="6" fill="#f8f7f1"/>
+        <text x="88" y="151" font-size="13" fill="#555">A</text>
+        <text x="88" y="171" font-size="13" fill="#555">B</text>
+        <text x="88" y="191" font-size="13" fill="#555">C</text>
+        <text x="88" y="211" font-size="13" fill="#555">D</text>
+        <text x="88" y="231" font-size="13" fill="#555">E</text>
+        <g font-size="11" fill="#666" text-anchor="middle">
+          <text x="175" y="128">1</text><text x="295" y="128">5</text><text x="445" y="128">10</text>
+          <text x="595" y="128">15</text><text x="745" y="128">20</text>
         </g>
-        <rect x="95" y="43" width="10" height="86" rx="5" fill="none" stroke="#2f6df6" stroke-dasharray="3 3"/>
-        <text x="110" y="145" font-size="10" fill="#555">одна група</text>
-        <rect x="130" y="63" width="50" height="10" fill="#c9a36a" stroke="#6b4b1a"/><text x="135" y="60" font-size="10" fill="#333">220 Ом</text>
-        <circle cx="220" cy="68" r="11" fill="#ffb02e" stroke="#8a5a00"/><text x="205" y="92" font-size="10" fill="#333">анод (+)</text>
-        <text x="260" y="92" font-size="10" fill="#333">катод (−)</text>
-        <path d="M232 68 H260 V150 H300 V171" fill="none" stroke="#2f6df6" stroke-width="2"/>
-        <text x="305" y="160" font-size="10" fill="#2f6df6">до GND</text>
-        <path d="M130 68 H60 V30" fill="none" stroke="#b07a00" stroke-width="2"/><text x="20" y="40" font-size="10" fill="#b07a00">пін 5</text>
+        <rect x="160" y="136" width="690" height="100" fill="url(#terminal-holes)"/>
+
+        <rect x="132" y="255" width="710" height="20" rx="4" fill="#d4d2cb"/>
+        <path d="M145 260 H829 M145 270 H829" stroke="#c3c0b8" stroke-width="2"/>
+
+        <rect x="132" y="280" width="710" height="108" rx="6" fill="#f8f7f1"/>
+        <text x="88" y="295" font-size="13" fill="#555">F</text>
+        <text x="88" y="315" font-size="13" fill="#555">G</text>
+        <text x="88" y="335" font-size="13" fill="#555">H</text>
+        <text x="88" y="355" font-size="13" fill="#555">I</text>
+        <text x="88" y="375" font-size="13" fill="#555">J</text>
+        <g font-size="11" fill="#666" text-anchor="middle">
+          <text x="175" y="294">1</text><text x="295" y="294">5</text><text x="445" y="294">10</text>
+          <text x="595" y="294">15</text><text x="745" y="294">20</text>
+        </g>
+        <rect x="160" y="280" width="690" height="100" fill="url(#terminal-holes)"/>
+
+        <rect x="64" y="399" width="788" height="62" rx="8" fill="#f3f1e9"/>
+        <text x="70" y="421" font-size="15" font-weight="700" fill="#cf3342">+ шина</text>
+        <rect x="140" y="400" width="692" height="24" fill="url(#rail-holes)"/>
+        <path d="M150 425 H822" stroke="#cf3342" stroke-width="3"/>
+        <text x="70" y="455" font-size="15" font-weight="700" fill="#2867e8">− шина</text>
+        <rect x="140" y="424" width="692" height="24" fill="url(#rail-holes)"/>
+        <path d="M150 453 H822" stroke="#2867e8" stroke-width="3"/>
+
+        <rect x="282" y="137" width="26" height="100" rx="12" fill="none" stroke="#b07a00" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="372" y="137" width="26" height="100" rx="12" fill="none" stroke="#16834d" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="402" y="137" width="26" height="100" rx="12" fill="none" stroke="#2867e8" stroke-width="2" stroke-dasharray="5 4"/>
+
+        <rect x="4" y="207" width="62" height="30" rx="6" fill="#fff5dd" stroke="#b07a00" stroke-width="2"/>
+        <text x="35" y="227" font-size="14" font-weight="700" fill="#8a5900" text-anchor="middle">пін 5</text>
+        <path d="M66 226 H295 M295 226 H318 M362 226 H385" fill="none" stroke="#b07a00" stroke-width="5"/>
+        <rect x="318" y="214" width="44" height="24" rx="10" fill="#d4b17b" stroke="#8a642d" stroke-width="2"/>
+        <path d="M326 216 V236 M335 216 V236 M344 216 V236 M353 216 V236" stroke="#8a642d" stroke-width="2"/>
+        <text x="340" y="208" font-size="14" font-weight="700" fill="#333" text-anchor="middle">220 Ом</text>
+
+        <path d="M385 151 V166 M415 151 V166" stroke="#555" stroke-width="4"/>
+        <circle cx="400" cy="144" r="16" fill="#ffb02e" stroke="#9b6700" stroke-width="3"/>
+        <path d="M385 151 L379 143 M415 151 L421 143" stroke="#ffb02e" stroke-width="2"/>
+        <path d="M394 138 L402 130 M403 143 L411 135" stroke="#fff4c2" stroke-width="2" marker-end="url(#led-arrow)"/>
+        <text x="373" y="132" font-size="12" font-weight="700" fill="#176c45" text-anchor="end">A</text>
+        <text x="420" y="132" font-size="12" font-weight="700" fill="#2867e8">K</text>
+        <path d="M415 166 V245 H850 V440 H815" fill="none" stroke="#fff" stroke-width="11" stroke-linejoin="round"/>
+        <path d="M415 166 V245 H850 V440 H815" fill="none" stroke="#2867e8" stroke-width="5" stroke-linejoin="round"/>
+        <text x="786" y="241" font-size="14" font-weight="700" fill="#2867e8">до GND</text>
       </svg>
       </div>
+      <p class="teacher-note">На схемі: D5 під'єднано до колонки 5; резистор з'єднує колонки 5 і 8; анод світлодіода стоїть у колонці 8, катод — у 9. Провід із колонки 9 веде до синьої шини, з'єднаної з GND. Отвори A–E в одній колонці спільні; центральний паз відділяє від них окрему групу F–J.</p>
     </div>
     <div class="card">
       <h2>Цикл for із лаби</h2>
