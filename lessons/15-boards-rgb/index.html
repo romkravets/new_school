@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RGB-світлодіод і ШІМ</title>
+<meta name="description" content="Змішуй червоний, зелений і синій, бач значення analogWrite і шпаруватість ШІМ, підбирай кольори з лабораторної 3.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"}}
+</script>
+<style>
+/* Ідея: пульт освітлювача — три фейдери, зразок кольору і куб, у якому живе колір */
+:root{--accent:var(--orange)}
+.mix{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:760px){.mix{grid-template-columns:1fr 1fr}}
+.fader{display:grid;grid-template-columns:7.5em 1fr 3em;gap:10px;align-items:center;margin-bottom:10px}
+.fader input{width:100%;accent-color:var(--accent)}
+.fader output{font-family:ui-monospace,Menlo,monospace;font-weight:700;text-align:right}
+.swatch{height:96px;border:2px solid var(--ink);border-radius:14px;box-shadow:6px 6px 0 var(--line);background:rgb(0,0,0)}
+.pwm-row{display:grid;grid-template-columns:5.5em 1fr 4em;gap:10px;align-items:center;margin:6px 0}
+.pwm-track{height:16px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden}
+.pwm-fill{display:block;height:100%;width:0;background:var(--accent)}
+.pwm-row b{font-family:ui-monospace,Menlo,monospace;text-align:right}
+.code-out{white-space:pre;font-family:ui-monospace,Menlo,monospace;background:#15171a;color:#f2f2f2;border-radius:12px;padding:12px;margin:12px 0 0}
+.scene-box{min-height:180px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg)}
+.scene-canvas{display:block;width:100%;height:auto}
+.scene-description{margin:0;padding:12px;background:var(--card);border-top:1px solid var(--line)}
+.scene-controls{display:flex;flex-wrap:wrap;gap:8px;padding:12px;background:var(--card)}
+.scene-controls button{min-width:100px}
+.scene-status{border-left:4px solid var(--orange);padding:10px 12px;background:var(--bg);border-radius:0 10px 10px 0}
+.scene-fallback{margin:0;padding:10px;background:var(--card)}
+.scene-fallback img{display:block;width:100%;height:auto;border-radius:10px}
+.target{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.target .swatch{width:96px;flex:none}
+.target h3{margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#boards">← До курсу «Розумні плати»</a>
+  <header class="hero">
+    <small>Заняття 15 · Розумні плати · 10 клас</small>
+    <h1>RGB-світлодіод і ШІМ</h1>
+    <p>Три кольори, три піни, числа від 0 до 255. Покрути фейдери й побач, як із них народжується будь-який колір.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Що це</button>
+    <button data-tab="mixer" data-break="6">2. Змішувач</button>
+    <button data-tab="targets">3. П'ять кольорів</button>
+    <button data-tab="pwm">4. Що бачить око?</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Три діоди в одному</h2><p>RGB-світлодіод має чотири ніжки: червоний (R), зелений (G), синій (B) і спільний вивід. У нашому комплекті <b>спільний катод</b>: найдовша ніжка йде на GND.</p></div>
+      <div class="card"><h2>Піни й резистори</h2><p>R → пін 6, G → пін 3, B → пін 5. На кожен канал ставиш свій резистор <b>220 Ом</b>, щоб не перевантажити діод і пін плати.</p></div>
+      <div class="card"><h2>Яскравість числом</h2><p><code>analogWrite(пін, 0..255)</code>: 0 — вимкнено, 255 — на повну. Працює лише на пінах із позначкою <b>~</b>: 3, 5, 6, 9, 10, 11.</p></div>
+    </div>
+    <div class="card">
+      <h2>Як цифровий пін «димерує»</h2>
+      <p>Пін уміє тільки «є напруга» чи «немає». <b>ШІМ</b> (широтно-імпульсна модуляція) вмикає й вимикає його дуже швидко, а частку часу «увімкнено» називають шпаруватістю. Для 128 із 255 це приблизно 50 %. Око не помічає мерехтіння вище ~50 Гц, тож бачить середню яскравість.</p>
+      <div class="code">void setup() {
+  pinMode(6, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(5, OUTPUT);
+}
+
+void loop() {
+  analogWrite(6, 255);  // червоний на повну
+  analogWrite(3, 128);  // зелений наполовину
+  analogWrite(5, 0);    // синій вимкнено
+}</div>
+      <div class="tip"><b>Пам'ятай:</b> змішування адитивне. Червоний із зеленим дають жовтий, а не коричневий, як із фарбами.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="mixer">
+    <div class="card">
+      <h2>Змішувач</h2>
+      <p class="lead">Рухай фейдери: зразок, скетч, смужки ШІМ і кулька в кубі змінюються разом.</p>
+      <div class="mix">
+        <div>
+          <div class="fader"><label for="rgb-r">R → пін 6</label><input type="range" id="rgb-r" min="0" max="255" value="0"><output id="out-r" for="rgb-r">0</output></div>
+          <div class="fader"><label for="rgb-g">G → пін 3</label><input type="range" id="rgb-g" min="0" max="255" value="0"><output id="out-g" for="rgb-g">0</output></div>
+          <div class="fader"><label for="rgb-b">B → пін 5</label><input type="range" id="rgb-b" min="0" max="255" value="0"><output id="out-b" for="rgb-b">0</output></div>
+          <div class="swatch" id="swatch" role="img" aria-label="Зразок поточного кольору"></div>
+        </div>
+        <div>
+          <h3>Шпаруватість ШІМ</h3>
+          <div class="pwm-row"><span>Пін 6 (R)</span><span class="pwm-track"><span class="pwm-fill" id="bar-r"></span></span><b id="pct-r">0 %</b></div>
+          <div class="pwm-row"><span>Пін 3 (G)</span><span class="pwm-track"><span class="pwm-fill" id="bar-g"></span></span><b id="pct-g">0 %</b></div>
+          <div class="pwm-row"><span>Пін 5 (B)</span><span class="pwm-track"><span class="pwm-fill" id="bar-b"></span></span><b id="pct-b">0 %</b></div>
+          <pre class="code-out" id="sketch-out" aria-live="polite"></pre>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Куб кольорів</h3>
+      <p class="lead">Кожен колір — точка в кубі: три осі R, G, B. Перетягни сцену, щоб повернути її.</p>
+      <div class="scene-box rgb-scene"></div>
+      <p class="scene-status" data-scene-status role="status">Завантажується сцена або її доступний текстовий опис.</p>
+      <figure class="scene-fallback">
+        <img src="../../assets/scenes/rgb-cube.svg" alt="Куб RGB: три осі — червона, зелена й синя; чорний колір в одному кутку, білий у протилежному.">
+        <figcaption class="teacher-note">Схема куба кольорів. Інтерактивна 3D-сцена працює на сайті через http(s); з локального файлу доступний цей малюнок.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="panel" id="targets">
+    <div class="card">
+      <h2>Підбери п'ять кольорів</h2>
+      <p class="lead">Це самостійне завдання з лабораторної 3. Поверни фейдери на вкладці «Змішувач» і перевір тут. Допуск — ±40 на кожен канал.</p>
+      <div class="target">
+        <div class="swatch" id="t-swatch" role="img" aria-label="Цільовий колір"></div>
+        <div><h3 id="t-name"></h3><p id="t-count" aria-live="polite"></p></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="t-check" type="button">Перевірити</button>
+        <button class="btn ghost" id="t-next" type="button">Далі</button>
+        <button class="btn ghost" id="t-reset" type="button">Почати знову</button>
+      </div>
+      <div class="fb" id="t-fb" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="pwm">
+    <div class="card"><h2>Що бачить око?</h2><p class="lead">Світлодіод блимає з частотою вище 50 Гц. Яким він здається за такої шпаруватості?</p><div id="pwm-sort"></div></div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Який колір ти підібрав чи підібрала найшвидше і чому?</li><li>Чому білий — це всі три канали на 255, а не жодного?</li><li>Що станеться, якщо підключити червоний канал до піну без «~»?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="../../documents/rp/LAB_1/лаб 3.pdf">Лабораторна робота 3 (PDF)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/boards/rgb.js"></script>
+<script>
+(function(){
+var R = window.Boards.rgb;
+function $(s){ return document.querySelector(s); }
+Lesson.messages.high = "Чудово! Ти керуєш кольором так, як це робить плата.";
+Lesson.messages.low = "Повернись до змішувача: подивись, як числа каналів змінюють колір і смужки ШІМ.";
+
+/* ---------- Змішувач ---------- */
+var CH = ["r", "g", "b"];
+function color(){
+  var c = {};
+  CH.forEach(function(k){ c[k] = R.clamp($("#rgb-" + k).value); });
+  return c;
+}
+function render(){
+  var c = color();
+  CH.forEach(function(k){
+    var d = R.dutyCycle(c[k]);
+    $("#out-" + k).textContent = c[k];
+    $("#bar-" + k).style.width = (d.ratio * 100) + "%";
+    $("#pct-" + k).textContent = d.percent;
+  });
+  $("#swatch").style.background = R.toCss(c);
+  $("#sketch-out").textContent = R.toSketch(c);
+  if (window.RgbCube) window.RgbCube.setColor(c);
+}
+CH.forEach(function(k){ $("#rgb-" + k).addEventListener("input", render); });
+render();
+
+/* ---------- Підбір кольорів ---------- */
+var scoreId = Lesson.register(R.TARGETS.length);
+var ti = 0, got = {};
+var tfb = $("#t-fb");
+function count(){
+  var n = Object.keys(got).length;
+  $("#t-count").textContent = "Підібрано: " + n + " з " + R.TARGETS.length;
+}
+function showTarget(){
+  var t = R.TARGETS[ti];
+  $("#t-name").textContent = "Ціль " + (ti + 1) + ": " + t.name;
+  $("#t-swatch").style.background = R.toCss(t.value);
+  tfb.className = "fb";
+  count();
+}
+$("#t-check").addEventListener("click", function(){
+  var t = R.TARGETS[ti], c = color();
+  if (R.matches(t, c)){
+    if (!got[t.id]){ got[t.id] = true; Lesson.addScore(scoreId); }
+    tfb.className = "fb show ok";
+    tfb.textContent = "Є! " + t.name + " — це " + R.toSketch(t.value).replace(/\n/g, " ") + " Тепер натисни «Далі».";
+  } else {
+    tfb.className = "fb show no";
+    tfb.textContent = "Ще не те. " + R.hint(t, c) + ".";
+  }
+  count();
+});
+$("#t-next").addEventListener("click", function(){ ti = (ti + 1) % R.TARGETS.length; showTarget(); });
+$("#t-reset").addEventListener("click", function(){
+  got = {}; ti = 0; Lesson.setScore(scoreId, 0); showTarget();
+});
+showTarget();
+
+/* ---------- Що бачить око ---------- */
+Lesson.sort("#pwm-sort", {
+  choices: ["Тьмяно", "Середньо", "Яскраво"],
+  items: [
+    {s: "Шпаруватість 25 %: світлодіод увімкнено чверть часу.", a: 0, e: "Око усереднює швидкі спалахи: чверть часу «увімкнено» дає чверть яскравості."},
+    {s: "Шпаруватість 50 %: половину часу увімкнено, половину вимкнено.", a: 1, e: "Це analogWrite(пін, 128): яскравість посередині між вимкненим і повним."},
+    {s: "Шпаруватість 100 %: світлодіод увімкнено весь час.", a: 2, e: "Сигнал не вимикається взагалі, це те саме, що analogWrite(пін, 255) чи digitalWrite HIGH."}
+  ]
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "У яких межах задають значення в analogWrite?", o: ["Від 0 до 100", "Від 0 до 255", "Від 0 до 1023"], a: 1, e: "ШІМ на UNO має 8 біт: 256 значень, від 0 (вимкнено) до 255 (на повну)."},
+  {q: "Які піни UNO підтримують ШІМ (позначені «~»)?", o: ["3, 5, 6, 9, 10, 11", "2, 4, 7, 8, 12, 13", "Усі цифрові піни"], a: 0, e: "Лише шість пінів мають апаратний ШІМ. Тому в схемі R, G і B стоять на 6, 3 і 5."},
+  {q: "Чому в схемі спільний катод і куди його підключають?", o: ["До 5 V: тоді канали вмикаються лог. 0", "До GND: тоді канал світиться, коли на його піні високий рівень", "До будь-якого цифрового піна"], a: 1, e: "У RGB зі спільним катодом найдовша ніжка йде на GND, а кожен канал вмикають напругою на його піні через 220 Ом."},
+  {q: "Що таке шпаруватість (коефіцієнт заповнення) ШІМ?", o: ["Частота, з якою пін перемикається", "Частка періоду, коли сигнал увімкнено", "Напруга живлення плати"], a: 1, e: "Шпаруватість — це частка часу «увімкнено» в одному періоді: 50 % означає половину."}
+]);
+})();
+</script>
+<script type="module" src="../../assets/scenes/rgb-cube.js"></script>
+</body>
+</html>
