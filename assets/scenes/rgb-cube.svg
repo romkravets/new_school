@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-labelledby="title desc">
+  <title id="title">Схема куба RGB</title>
+  <desc id="desc">Ізометричний куб із трьома осями: червона R, зелена G і синя B. Усередині куба кулька позначає поточний колір.</desc>
+  <rect width="760" height="420" rx="24" fill="#1d2333"/>
+  <path d="M380 100 520 180v140L380 400 240 320V180z" fill="none" stroke="#8d96ad" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M380 240 520 180M380 240 240 180M380 240V400" fill="none" stroke="#8d96ad" stroke-width="2" stroke-dasharray="6 6" opacity=".6"/>
+  <g stroke-width="6" stroke-linecap="round" fill="none">
+    <path d="M380 240 520 320" stroke="#ff5a5a"/>
+    <path d="M380 240V100" stroke="#4be07a"/>
+    <path d="M380 240 240 320" stroke="#5b8cff"/>
+  </g>
+  <g font-family="sans-serif" font-size="28" font-weight="700">
+    <text x="535" y="340" fill="#ff5a5a">R</text>
+    <text x="368" y="84" fill="#4be07a">G</text>
+    <text x="205" y="345" fill="#5b8cff">B</text>
+  </g>
+  <circle cx="420" cy="215" r="16" fill="#ff8a1f" stroke="#fff" stroke-width="3"/>
+</svg>
