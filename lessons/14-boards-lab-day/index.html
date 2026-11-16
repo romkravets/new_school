@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лабораторний день</title>
+<meta name="description" content="Універсальна сторінка для практичного заняття з Arduino: чекліст безпеки, журнал роботи, звіт і типові збої.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: журнал лаборанта — чекліст перед стартом, бортовий журнал, звіт зі званням наприкінці */
+:root{--accent:var(--orange)}
+.ck{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ck li{border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--card)}
+.ck li.done{border-color:var(--accent)}
+.ck label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ck input{margin-top:.3em;width:18px;height:18px;accent-color:var(--accent)}
+.ck .why-btn{margin-top:6px;border:0;background:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:0;text-decoration:underline}
+.ck .why-txt{margin:6px 0 0;color:var(--muted)}
+#log-list{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+#log-list li{border-left:4px solid var(--accent);padding:4px 10px;background:var(--card);border-radius:0 8px 8px 0}
+#log-list time{font-family:ui-monospace,Menlo,monospace;font-weight:700;margin-right:8px}
+.rf{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.rf textarea{font:inherit;min-height:3.2em;padding:8px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);resize:vertical}
+.rf .req{color:var(--accent)}
+.out{white-space:pre-wrap;border:2px dashed var(--line);border-radius:12px;padding:10px 12px;min-height:3em}
+.rank{font-weight:800;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#boards">← До курсу «Розумні плати»</a>
+  <header class="hero">
+    <small>Заняття 14 · Розумні плати · 10 клас</small>
+    <h1>Лабораторний день</h1>
+    <p>Перед стартом пройди чекліст, під час роботи веди журнал, після неї збери звіт. Збої знайдеш наприкінці.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="checklist" data-break="5">1. Перед стартом</button>
+    <button data-tab="log">2. Під час роботи</button>
+    <button data-tab="report">3. Звіт</button>
+    <button data-tab="troubles">4. Типові збої</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="checklist">
+    <div class="card">
+      <h2>Чекліст лаборанта</h2>
+      <p class="lead">Познач кожен пункт, коли виконав чи виконала його. Натисни «Чому?», щоб побачити пояснення. Бали тут не нараховуються: безпека не вікторина.</p>
+      <ul class="ck" id="ck-list"></ul>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="power-on" type="button" disabled>Можна вмикати живлення</button>
+        <span id="ck-count" aria-live="polite"></span>
+      </div>
+      <div class="fb" id="ck-fb" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="log">
+    <div class="card">
+      <h2>Бортовий журнал</h2>
+      <p class="lead">Записуй, що зробив чи зробила й що побачив чи побачила: «підключив», «змінив delay на 200», «діод блимає». Записи з'являються з часом.</p>
+      <div class="row">
+        <label class="f" for="log-text" style="flex:1 1 220px">Запис
+          <input id="log-text" type="text" placeholder="Що щойно сталося?" style="width:100%;font:inherit;padding:8px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)">
+        </label>
+        <button class="btn" id="log-add" type="button">Додати запис</button>
+      </div>
+      <ol id="log-list" reversed aria-live="polite"></ol>
+      <p class="lead" id="log-empty">Поки що порожньо. Журнал живе лише на цій сторінці: оновиш її, і записи зникнуть.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="report">
+    <div class="card">
+      <h2>Звіт зі штампом</h2>
+      <p class="lead">Заповни поля (<span class="req">*</span> обов'язкові), збери звіт і скопіюй його, щоб здати вчителю.</p>
+      <form id="report-form" onsubmit="return false"></form>
+      <div class="row">
+        <button class="btn" id="report-build" type="button">Зібрати звіт</button>
+        <button class="btn ghost" id="report-copy" type="button">Копіювати</button>
+      </div>
+      <div class="fb" id="report-fb" aria-live="polite"></div>
+      <p class="rank" id="report-rank"></p>
+      <p class="out" id="report-out" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="troubles">
+    <div class="card"><h2>Типові збої</h2><p class="lead">Обери для кожного симптому найімовірнішу причину.</p><div id="tr-match"></div></div>
+    <div class="card"><h3>Що робити</h3><ul class="tight" id="tr-fix"></ul></div>
+  </section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Який пункт чекліста ти б пропустив чи пропустила найпростіше і чому?</li><li>Що з журналу допомогло скласти звіт?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="../../documents/rp/LAB_1/лаб 1.pdf">Лабораторна робота 1 (PDF)</a> · <a href="../../documents/rp/LAB_1/лаб 2.pdf">Лабораторна робота 2 (PDF)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/boards/lab.js"></script>
+<script>
+(function(){
+var L = window.Boards.lab;
+function $(s){ return document.querySelector(s); }
+function el(tag, cls){ var e = document.createElement(tag); if (cls) e.className = cls; return e; }
+Lesson.messages.high = "Чудово! Ти швидко знаходиш причину збою.";
+Lesson.messages.low = "Перечитай пояснення: полярність, резистор, порт і номер піна — найчастіші причини.";
+
+/* ---------- Чекліст ---------- */
+var list = $("#ck-list"), power = $("#power-on"), count = $("#ck-count"), ckfb = $("#ck-fb");
+function refresh(){
+  var boxes = list.querySelectorAll("input"), n = 0;
+  Array.prototype.forEach.call(boxes, function(b){
+    if (b.checked) n++;
+    b.closest("li").classList.toggle("done", b.checked);
+  });
+  count.textContent = n + " з " + boxes.length;
+  power.disabled = n < boxes.length;
+}
+L.CHECKLIST.forEach(function(c){
+  var li = el("li"), lab = el("label"), cb = el("input"), sp = el("span");
+  cb.type = "checkbox"; cb.id = "ck-" + c.id;
+  sp.textContent = c.text;
+  lab.appendChild(cb); lab.appendChild(sp); li.appendChild(lab);
+  var b = el("button", "why-btn"), why = el("p", "why-txt");
+  b.type = "button"; b.textContent = "Чому?"; b.setAttribute("aria-expanded", "false");
+  why.hidden = true; why.textContent = c.why;
+  b.addEventListener("click", function(){
+    why.hidden = !why.hidden;
+    b.setAttribute("aria-expanded", why.hidden ? "false" : "true");
+  });
+  li.appendChild(b); li.appendChild(why);
+  cb.addEventListener("change", function(){ ckfb.className = "fb"; refresh(); });
+  list.appendChild(li);
+});
+power.addEventListener("click", function(){
+  ckfb.className = "fb show ok";
+  ckfb.textContent = "Усе перевірено. Під'єднуй USB і став штамп у журналі: «живлення ввімкнено».";
+});
+refresh();
+
+/* ---------- Журнал ---------- */
+var logText = $("#log-text"), logList = $("#log-list"), logEmpty = $("#log-empty");
+function pad(n){ return n < 10 ? "0" + n : "" + n; }
+function addLog(){
+  var t = logText.value.trim();
+  if (!t) { logText.focus(); return; }
+  var d = new Date(), li = el("li"), tm = el("time");
+  tm.textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  li.appendChild(tm); li.appendChild(document.createTextNode(t));
+  logList.insertBefore(li, logList.firstChild);
+  logEmpty.hidden = true;
+  logText.value = ""; logText.focus();
+}
+$("#log-add").addEventListener("click", addLog);
+logText.addEventListener("keydown", function(e){ if (e.key === "Enter") addLog(); });
+
+/* ---------- Звіт ---------- */
+var form = $("#report-form"), out = $("#report-out"), rfb = $("#report-fb"), rank = $("#report-rank");
+L.REPORT_FIELDS.forEach(function(f){
+  var w = el("div", "rf"), lb = el("label", "f"), ta = el("textarea");
+  lb.setAttribute("for", "rf-" + f.id);
+  lb.textContent = f.label + (f.required ? " " : "");
+  if (f.required){ var s = el("span", "req"); s.textContent = "*"; lb.appendChild(s); }
+  ta.id = "rf-" + f.id; ta.placeholder = f.placeholder;
+  w.appendChild(lb); w.appendChild(ta); form.appendChild(w);
+});
+function values(){
+  var v = {};
+  L.REPORT_FIELDS.forEach(function(f){ v[f.id] = $("#rf-" + f.id).value; });
+  return v;
+}
+function rankOf(missing){
+  var req = L.REPORT_FIELDS.filter(function(f){ return f.required; }).length;
+  var done = req - missing;
+  return done === req ? "Звання: лаборант-дослідник" : done >= req - 2 ? "Звання: молодший лаборант" : "Звання: практикант";
+}
+$("#report-build").addEventListener("click", function(){
+  var v = values(), g = L.gradeReport(v);
+  out.textContent = L.buildReport(v);
+  var msg = [];
+  if (g.missing.length) msg.push("Бракує обов'язкових полів: " + g.missing.join(", ") + ".");
+  msg = msg.concat(g.hints);
+  rfb.className = "fb show " + (g.missing.length ? "no" : "ok");
+  rfb.textContent = msg.join(" ");
+  rank.textContent = rankOf(g.missing.length);
+});
+$("#report-copy").addEventListener("click", function(){
+  var text = out.textContent;
+  if (!text){ rfb.className = "fb show no"; rfb.textContent = "Спершу збери звіт."; return; }
+  if (!navigator.clipboard){
+    rfb.className = "fb show no";
+    rfb.textContent = "Копіювання недоступне. Виділи текст і скопіюй його вручну.";
+    return;
+  }
+  navigator.clipboard.writeText(text).then(function(){
+    rfb.className = "fb show ok"; rfb.textContent = "Звіт скопійовано.";
+  }).catch(function(){
+    rfb.className = "fb show no";
+    rfb.textContent = "Браузер не дозволив копіювати. Виділи текст і скопіюй його вручну.";
+  });
+});
+
+/* ---------- Типові збої ---------- */
+Lesson.match("#tr-match", {
+  options: L.TROUBLES.map(function(t){ return t.cause; }),
+  items: L.TROUBLES.map(function(t, i){ return {s: t.symptom, a: i, e: "Що робити: " + t.fix}; })
+});
+L.TROUBLES.forEach(function(t){
+  var li = el("li"), b = el("b");
+  b.textContent = t.symptom + ": "; li.appendChild(b); li.appendChild(document.createTextNode(t.fix));
+  $("#tr-fix").appendChild(li);
+});
+})();
+</script>
+</body>
+</html>

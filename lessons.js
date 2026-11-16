@@ -62,5 +62,13 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Arduino", "Sensor Shield", "датчики"]
+  },
+  {
+    folder: "14-boards-lab-day",
+    program: "boards",
+    num: 14,
+    status: "ready",
+    teacher: true,
+    tags: ["лабораторна", "безпека", "звіт"]
   }
 ];
