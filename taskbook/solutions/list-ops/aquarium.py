@@ -1,0 +1,1 @@
+print(fish.count("Гуппі"))
