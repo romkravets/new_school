@@ -105,6 +105,33 @@ describe("сторінка задачника", () => {
   });
 });
 
+describe("стійкість", () => {
+  it("зіпсований hash -> список тем", async () => {
+    const w = await loadPage("taskbook/index.html");
+    expect(w.Py.taskbook.route("#%E0%A4%A")).toEqual({ topic: null, taskId: null });
+  });
+  it("Esc звільняє Tab", async () => {
+    const w = await loadPage("taskbook/index.html");
+    await go(w, "#types/" + w.TASKBOOK.types[0].id);
+    const ta = w.document.getElementById("code");
+    const key = (k) => { const e = new w.KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }); ta.dispatchEvent(e); return e.defaultPrevented; };
+    expect(key("Tab")).toBe(true);
+    key("Escape");
+    expect(key("Tab")).toBe(false);
+  });
+  it("без Python немає «Тест 1 не пройдено»", async () => {
+    const w = await loadPage("taskbook/index.html");
+    w.Py.runner.isAvailable = () => false;
+    w.Py.runner.run = () => Promise.resolve({ stdout: "", error: "Python не завантажився", timedOut: false });
+    await go(w, "#types/" + w.TASKBOOK.types[0].id);
+    w.document.getElementById("check").click();
+    await new Promise((r) => w.setTimeout(r, 50));
+    expect(w.document.getElementById("result").textContent).not.toContain("Тест 1");
+    expect(w.document.querySelector("[data-py-status]").textContent).toContain("недоступний");
+    expect(w.document.getElementById("copy-task").className).toContain("primary");
+  });
+});
+
 describe("блок «Задачник» на сторінці курсу", () => {
   it("є для inf10deep, немає для boards", async () => {
     const w = await loadPage("index.html");

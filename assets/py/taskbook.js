@@ -11,6 +11,7 @@ var runner = Py.runner, compare = Py.compare, errors = Py.errors;
 
 var app = null;
 var statusText = "";
+var checkToken = 0;
 
 /* ---------- сховище ---------- */
 function progress() {
@@ -37,9 +38,11 @@ function solvedCount(topic) {
 }
 function route(hash) {
   var parts = String(hash || "").replace(/^#/, "").split("/");
-  var topic = parts[0] ? decodeURIComponent(parts[0]) : null;
-  var taskId = topic && parts[1] ? decodeURIComponent(parts.slice(1).join("/")) : null;
-  return { topic: topic, taskId: taskId };
+  try {
+    var topic = parts[0] ? decodeURIComponent(parts[0]) : null;
+    var taskId = topic && parts[1] ? decodeURIComponent(parts.slice(1).join("/")) : null;
+    return { topic: topic, taskId: taskId };
+  } catch (e) { return { topic: null, taskId: null }; }
 }
 function report() {
   var p = progress(), total = 0, done = 0, lines = [];
@@ -209,6 +212,7 @@ function viewTask(topic, taskId) {
   var saved = loadCode(key);
   ta.value = saved != null ? saved : (task.starter || "");
   work.appendChild(ta);
+  work.appendChild(el("p", { class: "source", text: "Tab — відступ 4 пробіли. Esc, потім Tab — вийти з поля." }));
   work.appendChild(el("p", { class: "status", "data-py-status": "", role: "status" }));
   var bRun = button("Запустити", "run"), bCheck = button("Перевірити", "check", "primary");
   var bHint = button("Підказка", "hint-btn"), bReset = button("Скинути до заготовки", "reset");
@@ -233,11 +237,15 @@ function viewTask(topic, taskId) {
   app.appendChild(work);
 
   var busy = false;
-  function setBusy(b) { busy = b; [bRun, bCheck].forEach(function (x) { x.disabled = b; }); }
+  function setBusy(b) { busy = b; [bRun, bCheck, bReset].forEach(function (x) { x.disabled = b; }); }
 
   ta.addEventListener("input", function () { saveCode(key, ta.value); });
+  var trapOff = false;
+  ta.addEventListener("focus", function () { trapOff = false; });
   ta.addEventListener("keydown", function (e) {
-    if (e.key === "Tab" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (e.key === "Escape") { trapOff = true; return; }
+    if (e.key !== "Tab") trapOff = false;
+    if (e.key === "Tab" && !trapOff && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       ta.setRangeText("    ", ta.selectionStart, ta.selectionEnd, "end");
       saveCode(key, ta.value);
@@ -262,7 +270,8 @@ function viewTask(topic, taskId) {
     setBusy(true); result.textContent = "";
     runner.run(ta.value, task.vars).then(function (r) {
       out.textContent = r.timedOut ? "" : (r.stdout || "");
-      if (r.timedOut) result.appendChild(el("div", { class: "result bad" }, [el("p", { text: "Програма виконується надто довго (понад 3 секунди) — схоже на нескінченний цикл. Перевір умову виходу з циклу." })]));
+      if (!runner.isAvailable()) paintStatus();
+      else if (r.timedOut) result.appendChild(el("div", { class: "result bad" }, [el("p", { text: "Програма виконується надто довго (понад 3 секунди) — схоже на нескінченний цикл. Перевір умову виходу з циклу." })]));
       else if (r.error) result.appendChild(errorBox(r.error));
     }).then(function () { setBusy(false); }, function () { setBusy(false); });
   }
@@ -278,8 +287,9 @@ function viewTask(topic, taskId) {
   bCheck.addEventListener("click", function () {
     if (busy) return;
     setBusy(true); result.textContent = ""; out.textContent = "";
-    var code = ta.value, i = 0;
+    var code = ta.value, i = 0, token = ++checkToken;
     function fail(ti, r, why) {
+      if (!runner.isAvailable()) { paintStatus(); setBusy(false); return; }
       var test = task.tests[ti];
       var box = el("div", { class: "result bad" }, [
         el("h3", { text: "Тест " + (ti + 1) + " з " + task.tests.length + " не пройдено" }),
@@ -299,6 +309,7 @@ function viewTask(topic, taskId) {
       setBusy(false);
     }
     function step() {
+      if (token !== checkToken) return;
       if (i >= task.tests.length) {
         markSolved(topic, task.id);
         result.appendChild(el("div", { class: "result ok" }, [
@@ -310,6 +321,8 @@ function viewTask(topic, taskId) {
       }
       var ti = i;
       runner.run(code, task.tests[ti].vars).then(function (r) {
+        if (token !== checkToken) return;
+        if (!runner.isAvailable()) return fail(ti, r, "error");
         if (r.timedOut) return fail(ti, r, "timeout");
         if (r.error) return fail(ti, r, "error");
         if (!compare.compareOutput(task.tests[ti].out, r.stdout, task.tolerance).ok) return fail(ti, r, "diff");
@@ -323,6 +336,7 @@ function viewTask(topic, taskId) {
 
 function render() {
   if (!app) return;
+  checkToken++;
   var r = route(window.location.hash);
   if (!r.topic) viewTopics();
   else if (!r.taskId) viewTopic(r.topic);

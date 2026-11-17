@@ -131,7 +131,7 @@ a.topic:hover{border-color:var(--ink)}
     var saved = {};
     try { saved = JSON.parse(window.localStorage.getItem("taskbook-v1") || "{}") || {}; } catch (e) { saved = {}; }
     var rows = (window.TASKBOOK_INDEX || []).map(function(topic){
-      var done = saved[topic.id] && typeof saved[topic.id] === "object" ? Object.keys(saved[topic.id]).length : 0;
+      var done = saved[topic.id] && typeof saved[topic.id] === "object" ? Object.keys(saved[topic.id]).filter(function(k){ return saved[topic.id][k] === true; }).length : 0;
       return '<a class="topic" href="taskbook/index.html#' + encodeURIComponent(topic.id) + '">' +
         '<span class="topic-num">✎</span><span><span class="topic-title">' + esc(topic.title) + '</span><br>' +
         '<span class="status">розв\'язано ' + Math.min(done, topic.count) + ' з ' + topic.count + '</span></span>' +
