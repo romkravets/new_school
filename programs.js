@@ -64,6 +64,7 @@ window.PROGRAMS = [
   },
   {
     id: "inf10deep",
+    taskbook: true,
     title: "Інформатика. 10–12 класи. Поглиблений рівень",
     level: "10 клас · група 33",
     authors: "Крутяк Н. О.",

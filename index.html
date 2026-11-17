@@ -34,6 +34,8 @@ a.topic:hover{border-color:var(--ink)}
 .topic.planned .status{color:var(--muted)}
 .safety-topic{border-color:var(--accent)}
 .empty{color:var(--muted)}
+.taskbook-block{margin:0 0 18px}
+.taskbook-block h3{margin:0 0 4px}
 @media(max-width:520px){.topic{grid-template-columns:36px 1fr}.topic .semester{grid-column:2}.topic-num{font-size:16px}}
 </style>
 </head>
@@ -72,6 +74,7 @@ a.topic:hover{border-color:var(--ink)}
 <script src="data/stem.js"></script>
 <script src="data/inf10.js"></script>
 <script src="data/inf10deep.js"></script>
+<script src="data/taskbook/index.js"></script>
 <script src="data/inf8.js"></script>
 <script src="data/inf9.js"></script>
 <script src="data/python.js"></script>
@@ -124,6 +127,19 @@ a.topic:hover{border-color:var(--ink)}
         '<p class="count">Готово тем: ' + esc(topicCount(program)) + '</p></a>';
     }).join("") || '<p class="empty">Для цього класу курсів немає.</p>';
   }
+  function renderTaskbook(){
+    var saved = {};
+    try { saved = JSON.parse(window.localStorage.getItem("taskbook-v1") || "{}") || {}; } catch (e) { saved = {}; }
+    var rows = (window.TASKBOOK_INDEX || []).map(function(topic){
+      var done = saved[topic.id] && typeof saved[topic.id] === "object" ? Object.keys(saved[topic.id]).length : 0;
+      return '<a class="topic" href="taskbook/index.html#' + encodeURIComponent(topic.id) + '">' +
+        '<span class="topic-num">✎</span><span><span class="topic-title">' + esc(topic.title) + '</span><br>' +
+        '<span class="status">розв\'язано ' + Math.min(done, topic.count) + ' з ' + topic.count + '</span></span>' +
+        '<span class="semester">Задачник</span></a>';
+    }).join("");
+    return '<section class="taskbook-block" aria-label="Задачник"><h3>Задачник</h3>' +
+      '<p class="empty">Задачі з автоперевіркою коду Python.</p><div class="topic-list">' + rows + '</div></section>';
+  }
   function renderProgram(program){
     var topics = topicsByProgram[program.id] || [];
     var map = lessonMap();
@@ -145,11 +161,12 @@ a.topic:hover{border-color:var(--ink)}
         '<span class="topic-num">БЖД</span><span><span class="topic-title">Інструктаж з безпеки життєдіяльності</span><br><span class="status">Спільний вступний інтерактив</span></span>' +
         '<span class="semester">Перед курсом</span></a>'
       : "";
+    var taskbookBlock = program.taskbook ? renderTaskbook() : "";
     courseView.innerHTML =
       '<div class="course-heading"><a class="course-back" href="#">← До курсів</a>' +
       '<h2>' + esc(program.title) + '</h2><p>' + esc(program.level || "") + '</p>' +
       '<a href="teacher/index.html#' + encodeURIComponent(program.id) + '">Відкрити календарний план учителя →</a></div>' +
-      '<div class="topic-list">' + safetyRow + rows.join("") + '</div>';
+      taskbookBlock + '<div class="topic-list">' + safetyRow + rows.join("") + '</div>';
   }
   function renderRoute(){
     var id = window.location.hash.slice(1);

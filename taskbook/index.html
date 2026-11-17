@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Задачник · Інформатика, поглиблений рівень</title>
+<meta name="description" content="Задачник з Python з автоперевіркою: розв'язуй задачі прямо в браузері.">
+<link rel="stylesheet" href="../assets/lesson.css">
+<style>
+/* Ідея: зошит задач — картки-завдання на папері, після успішної перевірки на картку падає штамп «Зараховано». */
+:root{--accent:var(--sky)}
+:root{--shadow:var(--line)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.tb-hint-line{color:var(--muted);margin:0 0 14px}
+.paper{background:var(--card);border:2px solid var(--ink);border-radius:var(--r);box-shadow:6px 6px 0 var(--line);padding:18px;margin:0 0 18px;position:relative}
+.btn{display:inline-block;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 14px;font:inherit;font-weight:800;font-size:15px;cursor:pointer;text-decoration:none;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:hover{background:var(--accent);color:#15171a}
+.btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.primary{background:var(--accent);color:#15171a}
+.btn.primary:hover{background:var(--yellow)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.topics,.tasks{display:grid;gap:10px;list-style:none;padding:0;margin:0}
+.topic-link,.task-link{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid var(--ink);border-radius:12px;background:var(--card);box-shadow:4px 4px 0 var(--line);padding:12px 14px;color:var(--ink);text-decoration:none;font-weight:700}
+.topic-link:hover,.task-link:hover{background:var(--accent);color:#15171a}
+.badge{white-space:nowrap;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;font-size:13px;font-weight:800}
+.task-link.solved .badge{background:var(--ok);border-color:var(--ok);color:#fff}
+.statement{white-space:pre-line;margin:0 0 10px}
+.statement pre,pre.code{white-space:pre}
+code,pre{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+code{background:var(--line);border-radius:5px;padding:1px 5px;font-size:.92em}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-x:auto;margin:8px 0;font-size:14px}
+pre code{background:none;padding:0}
+textarea#code{display:block;width:100%;min-height:200px;border:2px solid var(--ink);border-radius:12px;background:var(--bg);color:var(--ink);padding:10px 12px;font:14px/1.5 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;tab-size:4;resize:vertical}
+.status{font-size:14px;color:var(--muted);margin:8px 0;min-height:1.4em}
+.source{font-size:14px;color:var(--muted)}
+.hintbox{border-left:5px solid var(--orange);background:var(--bg);padding:8px 12px;margin:10px 0;border-radius:0 10px 10px 0}
+.result.bad{border:2px solid var(--bad);background:var(--badbg);border-radius:12px;padding:10px 14px;margin:12px 0}
+.result.ok{border:2px solid var(--ok);background:var(--okbg);border-radius:12px;padding:10px 14px;margin:12px 0}
+.result h3{margin:0 0 6px}
+.stamp{display:inline-block;border:4px solid var(--ok);color:var(--ok);border-radius:10px;padding:2px 16px;font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.06em;transform:rotate(-6deg);animation:slam .45s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes slam{from{transform:rotate(-6deg) scale(2.4);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}.btn{transition:none}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+:root[data-theme="dark"]{color-scheme:dark}
+@media(max-width:520px){.wrap{padding:12px 16px 40px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Задачник · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Задачник з Python</h1>
+    <p>Розв'язуй задачі й перевіряй їх автоматично. Прогрес зберігається в цьому браузері.</p>
+  </header>
+  <main id="app"></main>
+  <footer></footer>
+</div>
+<script src="../data/taskbook/index.js"></script>
+<script src="../data/taskbook/types.js"></script>
+<script src="../data/taskbook/branching.js"></script>
+<script src="../data/taskbook/slices.js"></script>
+<script src="../data/taskbook/list-ops.js"></script>
+<script src="../data/taskbook/for-range.js"></script>
+<script src="../assets/py/compare.js"></script>
+<script src="../assets/py/errors.js"></script>
+<script src="../assets/py/runner.js"></script>
+<script src="../assets/py/taskbook.js"></script>
+</body>
+</html>
