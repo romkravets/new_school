@@ -36,6 +36,19 @@ function hint(traceback) {
   return { type: type, line: line, text: text };
 }
 
+/* Прибирає внутрішні кадри Pyodide: лишає заголовок, кадри File "<exec>" з їхніми рядками коду та фінальну помилку. */
+function clean(traceback) {
+  var lines = String(traceback == null ? "" : traceback).replace(/\r\n?/g, "\n").split("\n");
+  var out = [], skipping = false;
+  lines.forEach(function (l) {
+    if (/^\s*File "/.test(l)) { skipping = !/^\s*File "<exec>"/.test(l); if (!skipping) out.push(l); return; }
+    if (skipping && /^\s/.test(l)) return;
+    skipping = false;
+    out.push(l);
+  });
+  return out.join("\n");
+}
+
 window.Py = window.Py || {};
-window.Py.errors = { hint: hint };
+window.Py.errors = { hint: hint, clean: clean };
 })();

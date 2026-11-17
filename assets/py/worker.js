@@ -32,13 +32,16 @@ self.onmessage = function (ev) {
   loading.then(function (ok) {
     if (!ok) return;
     var out = "", err = null, g = null, jsvars = null;
-    var collect = { batched: function (s) { out += s + "\n"; } };
+    // write-режим віддає байти як є (без втрати кінцевого неповного рядка, на відміну від batched)
+    var dec = new TextDecoder();
+    var collect = { write: function (buf) { out += dec.decode(buf, { stream: true }); return buf.length; } };
     try {
       pyodide.setStdout(collect);
       pyodide.setStderr(collect);
       g = pyodide.globals.get("dict")();
       jsvars = pyodide.toPy(m.vars || {});
       g.update(jsvars);
+      g.set("__name__", "__main__");
       var guard = pyodide.runPython(
         "def _input_blocked(*a, **k):\n    raise RuntimeError(" + JSON.stringify(INPUT_MSG) + ")\n_input_blocked",
         { globals: pyodide.globals.get("dict")() }
@@ -49,6 +52,7 @@ self.onmessage = function (ev) {
     } catch (e) {
       err = String(e && e.message || e);
     } finally {
+      try { pyodide.runPython("import sys\nsys.stdout.flush()\nsys.stderr.flush()"); } catch (e2) {}
       if (jsvars && jsvars.destroy) jsvars.destroy();
       if (g) g.destroy();
     }

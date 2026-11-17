@@ -113,4 +113,45 @@ describe("runner", () => {
     await p;
     expect(seen).toEqual(["loading", "ready", "running", "ready"]);
   });
+
+  it("завантаження без ready: тайм-аут завантаження, черга отримує помилку", async () => {
+    const f = fakeFactory();
+    R.configure({ createWorker: f.create, loadTimeoutMs: 40 });
+    const r = await R.run("1", {});
+    expect(r.error).toContain("Python");
+    expect(r.error).toContain("завантаження");
+    expect(R.isAvailable()).toBe(false);
+    expect(f.workers[0].terminated).toBe(true);
+  });
+
+  it("після тайм-ауту з порожньою чергою статус стає ready", async () => {
+    const f = fakeFactory();
+    R.configure({ createWorker: f.create, timeoutMs: 30 });
+    const seen = [];
+    R.onStatus((s) => seen.push(s));
+    const p = R.run("x", {});
+    f.workers[0].emit({ type: "status", status: "ready" });
+    await p;
+    expect(seen).toEqual(["ready", "running", "ready"]);
+  });
+
+  it("без currentScript шукає runner.js серед document.scripts", () => {
+    const { window } = new JSDOM('<!doctype html><script src="http://x.test/a/assets/py/runner.js"></script>', { runScripts: "outside-only" });
+    loadScript(window, "assets/py/runner.js");
+    const made = [];
+    window.Worker = function (u) { made.push(u); this.postMessage = () => {}; this.terminate = () => {}; };
+    window.Py.runner.run("1", {});
+    expect(made).toEqual(["http://x.test/a/assets/py/worker.js"]);
+  });
+
+  it("без жодного джерела — failed і помилка в консолі", async () => {
+    const { window } = new JSDOM("<!doctype html><html></html>", { runScripts: "outside-only" });
+    const errs = [];
+    window.console.error = (m) => errs.push(m);
+    loadScript(window, "assets/py/runner.js");
+    const r = await window.Py.runner.run("1", {});
+    expect(errs.length).toBe(1);
+    expect(r.error).toContain("Python");
+    expect(window.Py.runner.isAvailable()).toBe(false);
+  });
 });

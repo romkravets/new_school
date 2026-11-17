@@ -5,10 +5,21 @@
 (function(){
 "use strict";
 
-var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || "";
-var WORKER_URL = SCRIPT_SRC ? SCRIPT_SRC.replace(/[^\/]*$/, "") + "worker.js" : "worker.js";
+function findScriptSrc() {
+  if (document.currentScript && document.currentScript.src) return document.currentScript.src;
+  var list = document.scripts || [];
+  for (var i = 0; i < list.length; i++) {
+    var src = list[i].src || "";
+    if (/\/runner\.js(?:[?#].*)?$/.test(src)) return src;
+  }
+  return "";
+}
+var SCRIPT_SRC = findScriptSrc();
+var WORKER_URL = SCRIPT_SRC ? SCRIPT_SRC.replace(/[?#].*$/, "").replace(/[^\/]*$/, "") + "worker.js" : "";
+if (!WORKER_URL && typeof console !== "undefined") console.error("Py.runner: не вдалося визначити адресу worker.js (немає document.currentScript і <script src=\".../runner.js\">).");
 
-var cfg = { createWorker: null, timeoutMs: 3000 };
+var cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 30000 };
+var loadTimer = null;
 var worker = null, ready = false, failed = false, failMsg = "";
 var queue = [], current = null, nextId = 1;
 var listeners = [];
@@ -26,30 +37,37 @@ function unavailable() {
 }
 
 function makeWorker() {
-  return cfg.createWorker ? cfg.createWorker() : new Worker(WORKER_URL);
+  if (cfg.createWorker) return cfg.createWorker();
+  if (!WORKER_URL) throw new Error("не знайдено адресу worker.js");
+  return new Worker(WORKER_URL);
+}
+
+function fail(message) {
+  failed = true; failMsg = message || ""; ready = false;
+  clearTimeout(loadTimer);
+  killWorker();
+  emit("failed");
+  var pending = queue.splice(0);
+  if (current) { pending.unshift(current); current = null; }
+  pending.forEach(function (j) { clearTimeout(j.timer); j.resolve(unavailable()); });
 }
 
 function ensureWorker() {
-  if (worker) return;
+  if (worker || failed) return;
   ready = false;
-  var w = makeWorker();
+  var w;
+  try { w = makeWorker(); } catch (e) { fail(String(e && e.message || e)); return; }
   worker = w;
+  clearTimeout(loadTimer);
+  loadTimer = setTimeout(function () { if (worker === w && !ready) fail("час очікування завантаження вичерпано"); }, cfg.loadTimeoutMs);
   w.onmessage = function (ev) { if (worker === w) onMessage(ev.data || {}); };
   w.onerror = function (ev) { if (worker === w) onMessage({ type: "status", status: "failed", message: ev && ev.message }); };
 }
 
 function onMessage(m) {
   if (m.type === "status") {
-    if (m.status === "failed") {
-      failed = true; failMsg = m.message || ""; ready = false;
-      killWorker();
-      emit("failed");
-      var pending = queue.splice(0);
-      if (current) { pending.unshift(current); current = null; }
-      pending.forEach(function (j) { clearTimeout(j.timer); j.resolve(unavailable()); });
-      return;
-    }
-    if (m.status === "ready") { ready = true; emit("ready"); pump(); return; }
+    if (m.status === "failed") { fail(m.message); return; }
+    if (m.status === "ready") { ready = true; clearTimeout(loadTimer); emit("ready"); pump(); return; }
     emit(m.status);
     return;
   }
@@ -64,6 +82,7 @@ function onMessage(m) {
 }
 
 function killWorker() {
+  clearTimeout(loadTimer);
   if (worker) { try { worker.terminate(); } catch (e) {} }
   worker = null; ready = false;
 }
@@ -81,8 +100,9 @@ function onTimeout(job) {
   if (current !== job) return;
   current = null;
   killWorker();
-  job.resolve({ stdout: job.partial || "", error: null, timedOut: true });
-  if (queue.length) { ensureWorker(); } // наступні запуски — на новому worker
+  job.resolve({ stdout: "", error: null, timedOut: true });
+  if (queue.length) ensureWorker(); // новий worker сам повідомить "loading"
+  else emit("ready");
 }
 
 function run(code, vars) {
@@ -100,13 +120,14 @@ function configure(o) {
   o = o || {};
   if (o.createWorker !== undefined) cfg.createWorker = o.createWorker;
   if (o.timeoutMs !== undefined) cfg.timeoutMs = o.timeoutMs;
+  if (o.loadTimeoutMs !== undefined) cfg.loadTimeoutMs = o.loadTimeoutMs;
 }
 
 function _reset() {
   killWorker();
   if (current) clearTimeout(current.timer);
   current = null; queue = []; failed = false; failMsg = ""; listeners = [];
-  cfg = { createWorker: null, timeoutMs: 3000 };
+  cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 30000 };
 }
 
 window.Py = window.Py || {};
