@@ -275,9 +275,12 @@ function viewTask(topic, taskId) {
       else if (r.error) result.appendChild(errorBox(r.error));
     }).then(function () { setBusy(false); }, function () { setBusy(false); });
   }
+  // Повідомлення runner-а про незавантажений Python (зокрема перша невдача, після якої
+  // ще буде повторна спроба) — не traceback, показуємо як є.
+  function notLoaded(err) { return !runner.isAvailable() || /^Python не завантажився/.test(err || ""); }
   function errorBox(err) {
     var box = el("div", { class: "result bad" });
-    if (!runner.isAvailable()) { box.appendChild(el("p", { text: err })); return box; }
+    if (notLoaded(err)) { box.appendChild(el("p", { text: err })); return box; }
     box.appendChild(el("pre", { text: errors.clean(err) }));
     box.appendChild(el("p", { text: errors.hint(err).text }));
     return box;
@@ -289,7 +292,7 @@ function viewTask(topic, taskId) {
     setBusy(true); result.textContent = ""; out.textContent = "";
     var code = ta.value, i = 0, token = ++checkToken;
     function fail(ti, r, why) {
-      if (!runner.isAvailable()) { paintStatus(); setBusy(false); return; }
+      if (notLoaded(r && r.error)) { paintStatus(); if (runner.isAvailable()) result.appendChild(errorBox(r.error)); setBusy(false); return; }
       var test = task.tests[ti];
       var box = el("div", { class: "result bad" }, [
         el("h3", { text: "Тест " + (ti + 1) + " з " + task.tests.length + " не пройдено" }),

@@ -142,3 +142,21 @@ describe("блок «Задачник» на сторінці курсу", () =>
     expect(w.document.querySelector('a[href^="taskbook/index.html"]')).toBeNull();
   });
 });
+
+describe("Задачник — перша невдача завантаження з повторною спробою", () => {
+  it("показує повідомлення runner-а як є, без «Тест 1 не пройдено» і без підказки до traceback", async () => {
+    const w = await loadPage("taskbook/index.html");
+    const msg = "Python не завантажився (час очікування завантаження вичерпано). Перевірте з'єднання.";
+    w.Py.runner.isAvailable = () => true; // ще лишилась повторна спроба
+    w.Py.runner.run = () => Promise.resolve({ stdout: "", error: msg, timedOut: false });
+    await go(w, "#types/" + w.TASKBOOK.types[0].id);
+    w.document.getElementById("check").click();
+    await tick(w); await tick(w);
+    const body = w.document.body.cloneNode(true);
+    body.querySelectorAll("script").forEach((n) => n.remove());
+    const text = body.textContent;
+    expect(text).toContain("Python не завантажився");
+    expect(text).not.toContain("не пройдено");
+    expect(text).not.toContain("Сталася помилка");
+  });
+});
