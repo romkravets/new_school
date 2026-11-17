@@ -209,6 +209,8 @@ var CYCLE = ["-", "t", "f"];
 var scoreTT = Lesson.register(10);
 var wrap = $("#tt-wrap"), ttfb = $("#tt-fb");
 var cells = [];
+var revealed = false;
+var checkBtn = $("#truth [data-check]");
 TABLES.forEach(function(tb){
   var box = el("div");
   var table = el("table", "tt");
@@ -245,7 +247,8 @@ TABLES.forEach(function(tb){
   wrap.appendChild(box);
 });
 function lockCells(){ cells.forEach(function(c){ c.disabled = true; }); }
-$("#truth [data-check]").addEventListener("click", function(){
+checkBtn.addEventListener("click", function(){
+  if (revealed) return;
   if (cells.some(function(c){ return c.dataset.state === "-"; })){
     ttfb.className = "fb show no"; ttfb.textContent = "Заповни всі клітинки, а потім перевір."; return;
   }
@@ -262,12 +265,14 @@ $("#truth [data-check]").addEventListener("click", function(){
   ttfb.textContent = good === cells.length ? "Усі " + good + " вірно!" : "Вірно " + good + " з " + cells.length + ". Червоні клітинки виправлено: порівняй із поясненнями під таблицями.";
 });
 $("#truth [data-show]").addEventListener("click", function(){
+  revealed = true; checkBtn.disabled = true;
   cells.forEach(function(c){ c.textContent = c.dataset.answer; c.dataset.state = c.dataset.answer === "True" ? "t" : "f"; c.classList.add("set"); });
   lockCells();
   Lesson.setScore(scoreTT, 0);
   ttfb.className = "fb show no"; ttfb.textContent = "Відповіді показано, 0 балів. Спробуй ще раз і заповни самостійно.";
 });
 $("#truth [data-reset]").addEventListener("click", function(){
+  revealed = false; checkBtn.disabled = false;
   cells.forEach(function(c){ c.disabled = false; c.textContent = "—"; c.dataset.state = "-"; c.className = "cell"; });
   Lesson.setScore(scoreTT, 0);
   ttfb.className = "fb";
