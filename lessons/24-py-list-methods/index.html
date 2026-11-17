@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Робот-комірник</title>
+<meta name="description" content="Робот-комірник: методи списку append, insert, remove, pop, sort, reverse, index, count як команди роботу на полиці. Передбач стан полиці після кожної команди й не потрапляй у пастку a = a.sort().">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: робот-комірник виконує команди над полицею з ящиками (списком); учень наперед вибирає, як виглядатиме полиця, а потім дивиться, що вийшло і що метод повернув */
+:root{--accent:var(--sky)}
+.mtable{width:100%;border-collapse:collapse;font-size:15px}
+.mtable th,.mtable td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.mtable th{background:var(--card)}
+.mtable code{font-weight:700}
+.tbl-wrap{overflow-x:auto}
+.scenario{margin-bottom:16px}
+.scenario .shelf-lab{font-size:13px;color:var(--muted);font-weight:700;margin-top:6px}
+.shelf{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;min-height:56px;padding:10px 12px 8px;border-bottom:8px solid var(--ink);border-radius:8px 8px 0 0;background:var(--card);margin:6px 0 12px}
+.shelf .box{border:3px solid var(--ink);border-radius:8px;padding:6px 12px;background:var(--accent);color:#15171a;font:700 15px ui-monospace,Menlo,Consolas,monospace}
+.shelf .box.pop{animation:drop .5s ease-out}
+.shelf .empty,.shelf .none{font:700 15px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.shelf .none{color:var(--bad)}
+@keyframes drop{0%{transform:translateY(-22px);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.shelf .box.pop{animation:none;outline:3px solid var(--orange)}}
+.step{border-top:1.5px dashed var(--line);padding-top:10px;margin-top:10px}
+.step[hidden]{display:none}
+.step .cmd{font:800 19px ui-monospace,Menlo,Consolas,monospace;margin:2px 0 8px;word-break:break-word}
+.step .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.step .opt{font-family:ui-monospace,Menlo,Consolas,monospace;text-align:left}
+.step .opt.skip{border-style:dashed;color:var(--muted);font-family:system-ui,sans-serif}
+.step .why{display:none;margin:8px 0 0;font-size:15px}
+.step.done .why{display:block}
+.trap{display:inline-block;margin-right:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.scenario .end{display:none;margin:10px 0 0;font-weight:700}
+.scenario.finished .end{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 24 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Робот-комірник</h1>
+    <p>Список — це полиця з ящиками, а методи — команди для робота-комірника. Одні команди переставляють ящики на місці, інші ще й щось повертають у руки. Передбач, як виглядатиме полиця.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Методи списків</button>
+    <button data-tab="robot" data-break="6">2. Робот-комірник</button>
+    <button data-tab="quiz-tab">3. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="card">
+      <h2>Метод змінює список на місці</h2>
+      <p>Метод списку — це команда, яку виконують над самим списком: <code>a.append(5)</code>. Список змінюється, а ось те, що метод <b>повертає</b>, буває різним: майже завжди це <code>None</code> (тобто нічого), а в <code>pop</code>, <code>index</code> і <code>count</code> — корисне значення.</p>
+      <div class="tbl-wrap"><table class="mtable">
+        <thead><tr><th>Команда</th><th>Що робить зі списком</th><th>Що повертає</th></tr></thead>
+        <tbody>
+          <tr><td><code>a.append(x)</code></td><td>додає x в кінець</td><td><code>None</code></td></tr>
+          <tr><td><code>a.insert(i, x)</code></td><td>вставляє x перед позицією i</td><td><code>None</code></td></tr>
+          <tr><td><code>a.remove(x)</code></td><td>видаляє <b>перше</b> входження x (немає — <code>ValueError</code>)</td><td><code>None</code></td></tr>
+          <tr><td><code>a.pop()</code> / <code>a.pop(i)</code></td><td>виймає останній елемент (або елемент i)</td><td>цей елемент</td></tr>
+          <tr><td><code>a.sort()</code></td><td>упорядковує на місці</td><td><code>None</code></td></tr>
+          <tr><td><code>a.reverse()</code></td><td>розвертає порядок на місці</td><td><code>None</code></td></tr>
+          <tr><td><code>a.index(x)</code></td><td>нічого не змінює</td><td>позицію першого x</td></tr>
+          <tr><td><code>a.count(x)</code></td><td>нічого не змінює</td><td>скільки разів x є в списку</td></tr>
+          <tr><td><code>a.extend(b)</code></td><td>додає елементи b по одному в кінець</td><td><code>None</code></td></tr>
+          <tr><td><code>a.clear()</code></td><td>спустошує список</td><td><code>None</code></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Головна пастка: a = a.sort()</h2>
+      <p><code>sort</code> змінює список на місці й повертає <code>None</code>. Тому запис <code>a = a.sort()</code> упорядкує старий список, а потім запише в <code>a</code> саме <code>None</code>: полиці в <code>a</code> більше немає.</p>
+      <div class="code">a = [3, 1, 2]
+a = a.sort()
+print(a)         # None
+a.append(5)      # AttributeError: 'NoneType' object has no attribute 'append'</div>
+      <div class="tip"><b>Пам'ятай:</b> <code>remove</code> прибирає лише перше входження, <code>pop()</code> без числа виймає останній ящик і віддає його, а <code>a.sort()</code> без присвоєння — правильний запис.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="robot">
+    <div class="card">
+      <h2>Робот-комірник</h2>
+      <p class="lead">Перед кожною командою обери, як виглядатиме полиця після неї. Один бал за правильний крок. «Не знаю»: 0 балів і без втрат, робот усе одно покаже, що вийшло.</p>
+    </div>
+    <div id="scenarios"></div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#list-ops">До задачника: методи списків →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Три задачі теми «Списки: операції та методи», де потрібні методи: <b>Прибрати перше</b> (<code>remove-first</code>), <b>Рейтинг</b> (<code>sorted-desc</code>) і <b>Черга</b> (<code>queue-rotate</code>).</p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Що повертає <code>a.sort()</code> і чому <code>a = a.sort()</code> ламає програму?</li><li>Скільки ящиків прибере <code>remove</code>, якщо однакових є кілька?</li><li>Чим <code>pop()</code> відрізняється від <code>remove(x)</code>?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_21)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/listsim.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Головний комірник: полиця завжди під контролем.";
+Lesson.messages.mid = "Помічник комірника: перечитай «чому» там, де вийшло інакше.";
+Lesson.messages.low = "Новачок на складі: повернись до таблиці методів.";
+
+function repr(v){
+  if (v === null || v === undefined) return "None";
+  if (Array.isArray(v)) return "[" + v.map(repr).join(", ") + "]";
+  if (typeof v === "string") return "'" + v + "'";
+  return String(v);
+}
+function same(a, b){ return repr(a) === repr(b); }
+
+/* Сценарії; стани полиці рахує Py.listsim (звірено з python3) */
+var SCEN = [
+  {title: "Сценарій 1. Нова полиця", start: ["книга", "диск", "ручка"], steps: [
+    {cmd: "a.append('лампа')", op: {method: "append", args: ["лампа"]},
+     w: "append кладе ящик у кінець полиці."},
+    {cmd: "a.insert(1, 'кабель')", op: {method: "insert", args: [1, "кабель"]},
+     w: "insert(1, x) ставить x на позицію 1, а решта зсувається вправо: «перед» елементом, що стояв там раніше."},
+    {cmd: "a.pop()", op: {method: "pop", args: []},
+     w: "pop() без числа виймає останній ящик і повертає його: можна записати x = a.pop()."},
+    {cmd: "a.remove('диск')", op: {method: "remove", args: ["диск"]},
+     w: "remove шукає елемент за значенням і прибирає його."},
+    {cmd: "a.reverse()", op: {method: "reverse", args: []},
+     w: "reverse розвертає порядок на місці й нічого не повертає."}
+  ]},
+  {title: "Сценарій 2. Однакові ящики", start: ["диск", "книга", "диск", "ручка"], steps: [
+    {cmd: "a.remove('диск')", op: {method: "remove", args: ["диск"]}, trap: true,
+     w: "remove прибирає лише ПЕРШЕ входження: другий 'диск' залишається."},
+    {cmd: "a.count('диск')", op: {method: "count", args: ["диск"]},
+     w: "count лише рахує й нічого не змінює: полиця та сама."},
+    {cmd: "a.pop(0)", op: {method: "pop", args: [0]}, trap: true,
+     w: "pop(0) виймає перший ящик (позиція 0), а не останній, і повертає його."},
+    {cmd: "a.extend(['лампа', 'кабель'])", op: {method: "extend", args: [["лампа", "кабель"]]},
+     w: "extend додає елементи вкладеного списку по одному, а не один список-ящик."},
+    {cmd: "a.sort()", op: {method: "sort", args: []},
+     w: "sort упорядковує рядки за алфавітом прямо на полиці."},
+    {cmd: "a.clear()", op: {method: "clear", args: []},
+     w: "clear викидає всі ящики: полиця порожня, але сам список залишається."}
+  ]},
+  {title: "Сценарій 3. Пастка присвоєння", start: ["ручка", "диск", "книга"], steps: [
+    {cmd: "a.sort()", op: {method: "sort", args: []},
+     w: "sort змінює полицю на місці."},
+    {cmd: "a.index('книга')", op: {method: "index", args: ["книга"]},
+     w: "index лише шукає: полиця не змінюється, а метод повертає позицію."},
+    {cmd: "a.insert(0, 'лампа')", op: {method: "insert", args: [0, "лампа"]},
+     w: "insert(0, x) ставить x на початок полиці."},
+    {cmd: "a = a.sort()", op: {method: "sort", args: []}, assign: true, trap: true,
+     w: "sort упорядкував старий список, але повернув None, а присвоєння записало None в a. Тепер a — це None, а не полиця: наступне a.append('x') дало б AttributeError: 'NoneType' object has no attribute 'append'. Тут сценарій закінчується."}
+  ]}
+];
+
+/* Правдоподібні помилки: що намалював би учень, якби неправильно зрозумів метод */
+function removeAll(l, x){ return l.filter(function(y){ return y !== x; }); }
+function distractors(before, st, after){
+  var op = st.op, a = op.args, c = [], b = before.slice(), n = b.length, i;
+  function add(l){ c.push(l); }
+  switch (op.method){
+    case "append": add([a[0]].concat(b)); add(b); add(b.slice(0, -1).concat([a[0]])); break;
+    case "insert": i = a[0]; var t1 = b.slice(); t1.splice(Math.min(i + 1, n), 0, a[1]); add(t1);
+      var t2 = b.slice(); t2[i] = a[1]; add(t2); add(b.concat([a[1]])); add(b); break;
+    case "remove": add(removeAll(b, a[0])); var k = b.lastIndexOf(a[0]); var t3 = b.slice(); t3.splice(k, 1); add(t3); add(b); break;
+    case "pop": if (a.length) add(b.slice(0, -1)); else add(b.slice(1)); add(b); break;
+    case "sort": if (st.assign){ add(b.slice().sort()); add(b); break; }
+      add(b); add(b.slice().reverse()); add(b.slice().sort().reverse()); break;
+    case "reverse": add(b); add(b.slice().sort()); add(b.slice(1).concat(b.slice(0, 1))); break;
+    case "index": case "count": var f = b.indexOf(a[0]); var t4 = b.slice(); t4.splice(f, 1); add(t4); add(b.slice().reverse()); add(removeAll(b, a[0])); break;
+    case "extend": add(b.concat([a[0]])); add(a[0].concat(b)); add(b); break;
+    case "clear": add(b); add(b.slice(0, -1)); add(b.slice(1)); break;
+  }
+  add(b.slice().reverse()); add(b.slice(1)); add(b.slice(0, -1));
+  var seen = {}, out = [];
+  seen[repr(after)] = true;
+  c.forEach(function(l){ var r = repr(l); if (!seen[r]){ seen[r] = true; out.push(r); } });
+  return out.slice(0, 2);
+}
+
+var total = SCEN.reduce(function(s, sc){ return s + sc.steps.length; }, 0);
+var score = Lesson.register(total);
+var gi = 0;
+SCEN.forEach(function(sc){
+  var card = el("div", "scenario card");
+  card.appendChild(el("h3", null, sc.title));
+  card.appendChild(el("div", "shelf-lab", "Полиця a зараз"));
+  var shelf = el("div", "shelf");
+  shelf.setAttribute("aria-live", "polite");
+  card.appendChild(shelf);
+  function drawShelf(state, prev){
+    shelf.textContent = "";
+    if (state === null){ shelf.appendChild(el("div", "none", "a = None (полиці більше немає)")); shelf.setAttribute("aria-label", "a дорівнює None"); return; }
+    if (!state.length) shelf.appendChild(el("div", "empty", "порожньо []"));
+    state.forEach(function(x, i){
+      var b = el("div", "box" + (prev && prev[i] !== x ? " pop" : ""), x);
+      shelf.appendChild(b);
+    });
+    shelf.setAttribute("aria-label", "Полиця a: " + repr(state));
+  }
+  drawShelf(sc.start, null);
+  var cur = sc.start.slice(), stepEls = [], pre = [];
+  sc.steps.forEach(function(st, si){
+    var before = cur.slice();
+    var r = st.assign ? Py.listsim.assign(before, st.op) : Py.listsim.apply(before, st.op);
+    var after = st.assign ? null : r.list;
+    var rightText = repr(after);
+    var opts = distractors(before, st, after);
+    opts.splice(gi % 3 > opts.length ? opts.length : gi % 3, 0, rightText);
+    var rightIdx = opts.indexOf(rightText);
+    gi++;
+    pre.push({before: before, after: after, returned: st.assign ? null : r.returned});
+    if (!st.assign) cur = r.list;
+
+    var el1 = el("div", "step");
+    if (si > 0) el1.hidden = true;
+    el1.appendChild(el("div", null, "Команда " + (si + 1) + " з " + sc.steps.length));
+    el1.appendChild(el("div", "cmd", st.cmd));
+    var row = el("div", "opts-row"), why = el("p", "why"), done = false;
+    function reveal(choice){
+      if (done) return; done = true;
+      var ok = choice === rightIdx;
+      if (ok) Lesson.addScore(score);
+      Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+        b.disabled = true;
+        if (b.dataset.opt === String(rightIdx)) b.classList.add("right");
+        else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+      });
+      el1.classList.add("done");
+      drawShelf(after, before);
+      var msg = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: " + rightText + ". ") + st.w;
+      var ret = pre[si].returned;
+      if (ret !== null) msg += " " + st.cmd.replace(/^a\./, "").replace(/\(.*$/, "()") + " повернув " + repr(ret) + (st.op.method === "pop" ? "" : "; полиця не змінилась") + ".";
+      why.textContent = msg;
+      if (st.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+      if (stepEls[si + 1]) stepEls[si + 1].hidden = false;
+      else { card.classList.add("finished"); }
+    }
+    opts.forEach(function(text, j){
+      var b = el("button", "opt", text);
+      b.type = "button"; b.dataset.opt = j;
+      if (j === rightIdx) b.setAttribute("data-right", "1");
+      b.addEventListener("click", function(){ reveal(j); });
+      row.appendChild(b);
+    });
+    var u = el("button", "opt skip", "Не знаю");
+    u.type = "button"; u.setAttribute("data-unknown", "");
+    u.addEventListener("click", function(){ reveal(null); });
+    row.appendChild(u);
+    el1.appendChild(row); el1.appendChild(why);
+    stepEls.push(el1); card.appendChild(el1);
+  });
+  card.appendChild(el("p", "end", "Сценарій завершено."));
+  $("#scenarios").appendChild(card);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "a = [3, 1, 2]; b = a.sort(); print(b). Що виведе програма?", o: ["[1, 2, 3]", "None", "[3, 1, 2]"], a: 1, e: "sort змінює список на місці й повертає None, тому b дорівнює None."},
+  {q: "a = [1, 2, 1]; a.remove(1). Що тепер у a?", o: ["[2]", "[2, 1]", "[1, 2]"], a: 1, e: "remove прибирає лише перше входження: залишається [2, 1]."},
+  {q: "x = [1, 2, 3].pop(). Чому дорівнює x?", o: ["3", "None", "[1, 2]"], a: 0, e: "pop() виймає останній елемент і повертає його: x дорівнює 3."},
+  {q: "Чим a.extend([4, 5]) відрізняється від a.append([4, 5])?", o: ["Нічим", "extend додає 4 і 5 по одному, а append — один вкладений список", "append додає на початок"], a: 1, e: "Для [1, 2, 3]: extend дає [1, 2, 3, 4, 5], а append — [1, 2, 3, [4, 5]]."}
+]);
+})();
+</script>
+</body>
+</html>

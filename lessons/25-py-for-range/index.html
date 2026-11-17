@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лічильник range</title>
+<meta name="description" content="Лічильник range: функція range() у трьох формах, повзунки start, stop, step, передбачення послідовностей і трасування циклу for з накопиченням суми.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: лічильник — повзунки start/stop/step крутять число-за-числом послідовність range, а трасувальна таблиця показує, що цикл робить на кожному проході */
+:root{--accent:var(--sky)}
+.pred-item{margin-bottom:16px}
+.pred-code{font:800 20px ui-monospace,Menlo,Consolas,monospace;margin:4px 0 8px;white-space:pre-wrap;word-break:break-word}
+.pred-item .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.pred-item .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.pred-item .opt.skip{border-style:dashed;color:var(--muted);font-family:system-ui,sans-serif}
+.pred-item .why{display:none;margin:8px 0 0;font-size:15px}
+.pred-item.done .why{display:block}
+.trap{display:inline-block;margin-right:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.counter .forms{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.counter .forms button[aria-pressed=true]{background:var(--accent);color:#15171a;border-color:var(--ink)}
+.counter .sl{display:grid;grid-template-columns:70px 1fr 46px;gap:10px;align-items:center;margin:6px 0}
+.counter .sl.off{opacity:.45}
+.counter .sl label{font:700 16px ui-monospace,Menlo,Consolas,monospace}
+.counter .sl output{font:800 18px ui-monospace,Menlo,Consolas,monospace;text-align:right}
+.counter .sl input[type=range]{width:100%}
+.counter .code-line{font:800 24px ui-monospace,Menlo,Consolas,monospace;margin:12px 0 4px;word-break:break-word}
+.counter .values{font:700 18px ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+.counter .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;min-height:36px}
+.counter .chips span{border:2px solid var(--ink);border-radius:8px;padding:2px 10px;background:var(--accent);color:#15171a;font:700 15px ui-monospace,Menlo,Consolas,monospace}
+.counter .meta{font-size:15px;min-height:1.4em}
+.counter .err{color:var(--bad);font-weight:700;min-height:1.4em}
+.tbl-wrap{overflow-x:auto}
+.trace-table{border-collapse:collapse;width:100%;margin:8px 0}
+.trace-table th,.trace-table td{border:1.5px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+.trace-table th{background:var(--card);font-size:14px}
+.trace-table .btn{padding:6px 10px;font-size:14px}
+.trace-table input[type=text]{width:56px;font:700 17px ui-monospace,Menlo,Consolas,monospace;padding:6px 8px}
+.trace-table select{width:90px;font:700 16px system-ui,sans-serif;padding:6px 8px}
+.trace-table .fb{display:block;margin-top:6px;padding:6px 8px;font-size:14px}
+.trace-table .fb:empty{display:none}
+.trace-table tr.ok td{background:var(--okbg)}
+.trace-table tr.locked td{opacity:.8}
+.trace-card .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 25 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Лічильник range</h1>
+    <p>Цикл <code>for</code> бере числа з <code>range()</code> і виконує тіло для кожного з них. Покрути повзунки, передбач послідовність і простеж цикл рядок за рядком: що стає з <code>i</code> та <code>s</code>.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Цикл for і range</button>
+    <button data-tab="counter" data-break="5">2. Лічильник</button>
+    <button data-tab="predict">3. Передбач</button>
+    <button data-tab="trace">4. Трасування</button>
+    <button data-tab="quiz-tab">5. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>range(stop)</h2><p><code>range(5)</code> дає <code>0, 1, 2, 3, 4</code>: починає з 0 і йде з кроком 1. Число <code>stop</code> <b>не входить</b>.</p></div>
+      <div class="card"><h2>range(start, stop)</h2><p><code>range(2, 6)</code> дає <code>2, 3, 4, 5</code>. Якщо <code>start</code> не менший за <code>stop</code>, послідовність порожня: <code>range(5, 1)</code> — нічого.</p></div>
+      <div class="card"><h2>range(start, stop, step)</h2><p><code>range(2, 10, 3)</code> дає <code>2, 5, 8</code>. Від'ємний <code>step</code> іде назад: <code>range(10, 0, -3)</code> — <code>10, 7, 4, 1</code>. Крок 0 неможливий: <code>ValueError</code>.</p></div>
+    </div>
+    <div class="card">
+      <h2>Цикл for</h2>
+      <p>Змінна циклу бере по черзі кожне значення з <code>range</code>, і для кожного значення виконується тіло циклу (рядки з відступом).</p>
+      <div class="code">s = 0
+for i in range(1, 5):
+    s += i
+print(s)    # 10: тіло виконалось для i = 1, 2, 3, 4</div>
+      <div class="tip"><b>Пам'ятай:</b> кількість проходів — це кількість чисел у <code>range</code>. Для <code>range(1, 5)</code> їх чотири (а не п'ять), бо <code>stop = 5</code> не входить. Кількість можна порахувати так: <code>(stop − start)</code> для <code>step = 1</code>.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="counter">
+    <div class="card counter">
+      <h2>Лічильник range</h2>
+      <p class="lead">Обери форму запису й крути повзунки: нижче одразу видно, які числа дає <code>range</code>. Бали тут не нараховуються: просто досліджуй, а потім передбачай.</p>
+      <div class="forms" role="group" aria-label="Форма range">
+        <button type="button" class="opt" data-form="stop" aria-pressed="false">range(stop)</button>
+        <button type="button" class="opt" data-form="start-stop" aria-pressed="false">range(start, stop)</button>
+        <button type="button" class="opt" data-form="start-stop-step" aria-pressed="true">range(start, stop, step)</button>
+      </div>
+      <div class="sl" id="sl-start"><label for="c-start">start</label><input type="range" id="c-start" min="-10" max="10" value="2"><output for="c-start" id="o-start">2</output></div>
+      <div class="sl" id="sl-stop"><label for="c-stop">stop</label><input type="range" id="c-stop" min="-10" max="20" value="10"><output for="c-stop" id="o-stop">10</output></div>
+      <div class="sl" id="sl-step"><label for="c-step">step</label><input type="range" id="c-step" min="-5" max="5" value="3"><output for="c-step" id="o-step">3</output></div>
+      <div class="code-line" id="c-code"></div>
+      <div class="values" id="c-values" aria-live="polite"></div>
+      <div class="chips" id="c-chips" aria-hidden="true"></div>
+      <div class="meta" id="c-desc"></div>
+      <div class="err" id="c-error" role="status"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="predict">
+    <div class="card">
+      <h2>Передбач послідовність</h2>
+      <p class="lead">Які числа дає <code>range</code>? «Не знаю»: 0 балів і без втрат. Обов'язково прочитай «чому».</p>
+      <div id="pred-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="trace">
+    <div class="card trace-card">
+      <h2>Трасування 1</h2>
+      <p class="lead">Заповни, чому дорівнюють <code>i</code> і <code>s</code> наприкінці кожного проходу. Один бал за правильний рядок. «Показати відповіді» закриває таблицю з 0 балів за невирішені рядки.</p>
+      <div class="code">s = 0
+for i in range(1, 5):
+    s += i</div>
+      <div id="trace1"></div>
+    </div>
+    <div class="card trace-card">
+      <h2>Трасування 2: з умовою</h2>
+      <p class="lead">Тепер додаємо тільки парні числа. Для кожного проходу вкажи <code>i</code>, чи істинна умова, і значення <code>s</code> після проходу.</p>
+      <div class="code">s = 0
+for i in range(1, 7):
+    if i % 2 == 0:
+        s += i</div>
+      <div id="trace2"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#for-range">До задачника: цикл for і range →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Три задачі теми «Цикл for і range()»: <b>Зворотний відлік</b> (<code>countdown</code>), <b>Баскетбол</b> (<code>points-sum</code>) і <b>Числа в рядок</b> (<code>range-line</code>).</p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Чому <code>range(1, 5)</code> не містить числа 5?</li><li>Як зробити відлік від 10 до 1?</li><li>Скільки разів виконається тіло циклу для <code>range(5, 1)</code>?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_22)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/range.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Майстер лічильника: жоден stop не втік.";
+Lesson.messages.mid = "Лічильник у русі: перечитай «чому» там, де вийшло інакше.";
+Lesson.messages.low = "Новачок: повернись до теорії й покрути повзунки ще раз.";
+function fmt(n){ return String(n).replace("-", "−"); }
+function list(a){ return "[" + a.join(", ") + "]"; }
+
+/* ---------- Лічильник ---------- */
+(function(){
+  var form = "start-stop-step";
+  var st = $("#c-start"), sp = $("#c-stop"), sk = $("#c-step");
+  function render(){
+    var a = +st.value, b = +sp.value, c = +sk.value;
+    $("#o-start").textContent = fmt(a); $("#o-stop").textContent = fmt(b); $("#o-step").textContent = fmt(c);
+    $("#sl-start").classList.toggle("off", form === "stop"); st.disabled = form === "stop";
+    $("#sl-step").classList.toggle("off", form !== "start-stop-step"); sk.disabled = form !== "start-stop-step";
+    var rs = form === "stop" ? 0 : a, rk = form === "start-stop-step" ? c : 1;
+    $("#c-code").textContent = form === "stop" ? "range(" + b + ")" : form === "start-stop" ? "range(" + a + ", " + b + ")" : "range(" + a + ", " + b + ", " + c + ")";
+    var vals = Py.range.values(rs, b, rk);
+    var chips = $("#c-chips"); chips.textContent = "";
+    var err = $("#c-error"), out = $("#c-values"), desc = $("#c-desc");
+    err.textContent = "";
+    desc.textContent = Py.range.describe(rs, b, rk);
+    if (!Array.isArray(vals)){
+      out.textContent = "";
+      err.textContent = vals.error === "ValueError" ? "ValueError: range() arg 3 must not be zero. Крок 0 нікуди не веде, тому Python відмовляється." : "Помилка: " + vals.error;
+      return;
+    }
+    out.textContent = list(vals) + (vals.length ? "" : "  (порожньо)") + "  ·  чисел: " + vals.length;
+    vals.forEach(function(v){ chips.appendChild(el("span", null, v)); });
+  }
+  [st, sp, sk].forEach(function(i){ i.addEventListener("input", render); });
+  Array.prototype.forEach.call(document.querySelectorAll("#counter [data-form]"), function(b){
+    b.addEventListener("click", function(){
+      form = b.dataset.form;
+      Array.prototype.forEach.call(document.querySelectorAll("#counter [data-form]"), function(x){ x.setAttribute("aria-pressed", String(x === b)); });
+      render();
+    });
+  });
+  render();
+})();
+
+/* ---------- Передбач (усі результати звірені з python3) ---------- */
+var PRED = [
+  {c: "range(5)", o: ["[0, 1, 2, 3, 4]", "[1, 2, 3, 4, 5]", "[0, 1, 2, 3, 4, 5]"], a: 0, trap: true,
+   w: "Одне число — це stop: старт 0, крок 1, а сам stop не входить. Усього п'ять чисел, від 0 до 4."},
+  {c: "range(2, 10, 3)", o: ["[2, 5, 8]", "[2, 5, 8, 11]", "[3, 6, 9]"], a: 0,
+   w: "Починаємо з 2 і додаємо по 3: 2, 5, 8. Наступне число, 11, вже за межею stop = 10."},
+  {c: "range(10, 0, -3)", o: ["[10, 7, 4, 1]", "[10, 7, 4, 1, 0]", "[]"], a: 0, trap: true,
+   w: "Від'ємний крок іде вниз: 10, 7, 4, 1. Наступне число, −2, менше за stop = 0, тому ряд закінчується; саме 0 не потрапляє, бо stop не входить."},
+  {c: "range(5, 1)", o: ["[]", "[5, 4, 3, 2]", "[1, 2, 3, 4]"], a: 0, trap: true,
+   w: "Крок за замовчуванням +1, а 5 уже більше за 1, тому йти нікуди: послідовність порожня. Назад можна лише з від'ємним кроком: range(5, 1, -1)."},
+  {c: "range(-2, 2)", o: ["[-2, -1, 0, 1]", "[-2, -1, 0, 1, 2]", "[-1, 0, 1]"], a: 0,
+   w: "start = −2 входить, stop = 2 ні. Від'ємні числа працюють так само: −2, −1, 0, 1."},
+  {c: "range(1, 10, 4)", o: ["[1, 5, 9]", "[1, 5, 9, 13]", "[1, 5]"], a: 0,
+   w: "1, потім 5, потім 9. Наступне, 13, більше за stop = 10, тому не береться."}
+];
+var scoreP = Lesson.register(PRED.length);
+PRED.forEach(function(t, i){
+  var item = el("div", "pred-item card");
+  item.appendChild(el("div", null, "Вираз " + (i + 1)));
+  item.appendChild(el("div", "pred-code", t.c));
+  var row = el("div", "opts-row"), why = el("p", "why"), done = false;
+  function reveal(choice){
+    if (done) return; done = true;
+    var ok = choice === t.a;
+    if (ok) Lesson.addScore(scoreP);
+    Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+      b.disabled = true;
+      if (b.dataset.opt === String(t.a)) b.classList.add("right");
+      else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+    });
+    item.classList.add("done");
+    why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: «" + t.o[t.a] + "». ") + t.w;
+    if (t.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+  }
+  t.o.forEach(function(text, j){
+    var b = el("button", "opt", text);
+    b.type = "button"; b.dataset.opt = j;
+    if (j === t.a) b.setAttribute("data-right", "1");
+    b.addEventListener("click", function(){ reveal(j); });
+    row.appendChild(b);
+  });
+  var u = el("button", "opt skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ reveal(null); });
+  row.appendChild(u);
+  item.appendChild(row); item.appendChild(why);
+  $("#pred-list").appendChild(item);
+});
+
+/* ---------- Трасування (значення звірені з python3) ---------- */
+var TRACES = [
+  {root: "#trace1", cols: [{k: "i", t: "i"}, {k: "s", t: "s після s += i"}],
+   rows: [{i: "1", s: "1"}, {i: "2", s: "3"}, {i: "3", s: "6"}, {i: "4", s: "10"}],
+   hint: "s накопичує суму: до попереднього s додається поточне i."},
+  {root: "#trace2", cols: [{k: "i", t: "i"}, {k: "cond", t: "i % 2 == 0 ?", sel: ["Так", "Ні"]}, {k: "s", t: "s після проходу"}],
+   rows: [{i: "1", cond: "Ні", s: "0"}, {i: "2", cond: "Так", s: "2"}, {i: "3", cond: "Ні", s: "2"}, {i: "4", cond: "Так", s: "6"}, {i: "5", cond: "Ні", s: "6"}, {i: "6", cond: "Так", s: "12"}],
+   hint: "Якщо умова хибна, s не змінюється; якщо істинна, до s додається i."}
+];
+var scoreT = Lesson.register(TRACES.reduce(function(s, t){ return s + t.rows.length; }, 0));
+TRACES.forEach(function(T, ti){
+  var wrap = el("div", "tbl-wrap"), table = el("table", "trace-table");
+  var thead = el("thead"), hr = el("tr");
+  hr.appendChild(el("th", null, "Прохід"));
+  T.cols.forEach(function(c){ hr.appendChild(el("th", null, c.t)); });
+  hr.appendChild(el("th", null, "Перевірка"));
+  thead.appendChild(hr); table.appendChild(thead);
+  var tbody = el("tbody"), rowCtl = [];
+  T.rows.forEach(function(exp, ri){
+    var tr = el("tr", "trace-row"), done = false;
+    tr.appendChild(el("td", null, String(ri + 1)));
+    var fields = {};
+    T.cols.forEach(function(c){
+      var td = el("td"), f;
+      if (c.sel){
+        f = el("select"); f.setAttribute("aria-label", c.t + ", прохід " + (ri + 1));
+        ["", ].concat(c.sel).forEach(function(v){ var o = el("option", null, v || "—"); o.value = v; f.appendChild(o); });
+      } else {
+        f = el("input"); f.type = "text"; f.autocomplete = "off"; f.inputMode = "numeric"; f.setAttribute("aria-label", c.k + ", прохід " + (ri + 1));
+      }
+      f.dataset.col = c.k; fields[c.k] = f; td.appendChild(f); tr.appendChild(td);
+    });
+    var last = el("td"), btn = el("button", "btn", "Перевірити"), fb = el("span", "fb");
+    btn.type = "button"; btn.setAttribute("data-check", "");
+    last.appendChild(btn); last.appendChild(fb); tr.appendChild(last);
+    function lock(cls){
+      done = true; tr.classList.add(cls); btn.disabled = true;
+      Object.keys(fields).forEach(function(k){ fields[k].disabled = true; });
+    }
+    btn.addEventListener("click", function(){
+      if (done) return;
+      var bad = [], empty = false;
+      T.cols.forEach(function(c){
+        var v = fields[c.k].value.trim();
+        if (v === "") empty = true;
+        else if (v !== exp[c.k]) bad.push(c.k);
+      });
+      if (empty){ fb.textContent = "Заповни всі клітинки рядка."; return; }
+      if (bad.length){ fb.textContent = "Не збігається: перевір " + bad.join(" і ") + ". " + T.hint; return; }
+      Lesson.addScore(scoreT);
+      lock("ok");
+      fb.textContent = "Так.";
+    });
+    rowCtl.push({exp: exp, fields: fields, fb: fb, isDone: function(){ return done; }, lock: lock});
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody); wrap.appendChild(table);
+  $(T.root).appendChild(wrap);
+  var acts = el("div", "acts"), rv = el("button", "opt skip", "Показати відповіді");
+  rv.type = "button"; rv.setAttribute("data-reveal", "");
+  rv.addEventListener("click", function(){
+    rowCtl.forEach(function(r){
+      if (r.isDone()) return;
+      T.cols.forEach(function(c){ r.fields[c.k].value = r.exp[c.k]; });
+      r.lock("locked");
+      r.fb.textContent = "Відповідь показано: 0 балів.";
+    });
+    rv.disabled = true;
+  });
+  acts.appendChild(rv);
+  $(T.root).appendChild(acts);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Скільки разів виконається тіло циклу for i in range(3, 8)?", o: ["4", "5", "8"], a: 1, e: "range(3, 8) дає 3, 4, 5, 6, 7: п'ять чисел, бо 8 не входить."},
+  {q: "Яке останнє значення i у циклі for i in range(1, 5)?", o: ["5", "4", "1"], a: 1, e: "Числа 1, 2, 3, 4: stop = 5 не входить, тому останнє i дорівнює 4."},
+  {q: "Що дасть list(range(10, 0, -2))?", o: ["[10, 8, 6, 4, 2]", "[10, 8, 6, 4, 2, 0]", "[]"], a: 0, e: "Від'ємний крок іде вниз: 10, 8, 6, 4, 2. Число 0 не входить, бо це stop."},
+  {q: "Що станеться при range(1, 10, 0)?", o: ["Порожня послідовність", "Нескінченний цикл", "ValueError"], a: 2, e: "Крок 0 заборонений: Python одразу повідомляє ValueError."}
+]);
+})();
+</script>
+</body>
+</html>

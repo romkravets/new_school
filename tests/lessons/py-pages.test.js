@@ -13,7 +13,9 @@ const LESSONS = [
   { folder: "20-py-branch-tester", num: 20, topic: "branching", tabs: ["brief", "hunt", "fix", "final"] },
   { folder: "21-py-list-slices", num: 21, topic: "slices", tabs: ["theory", "train", "predict", "quiz-tab", "final"] },
   { folder: "22-py-slice-precise", num: 22, topic: "slices", tabs: ["warmup", "precise", "final"] },
-  { folder: "23-py-list-ops", num: 23, topic: "list-ops", tabs: ["theory", "predict", "alias", "quiz-tab", "final"] }
+  { folder: "23-py-list-ops", num: 23, topic: "list-ops", tabs: ["theory", "predict", "alias", "quiz-tab", "final"] },
+  { folder: "24-py-list-methods", num: 24, topic: "list-ops", tabs: ["theory", "robot", "quiz-tab", "final"] },
+  { folder: "25-py-for-range", num: 25, topic: "for-range", tabs: ["theory", "counter", "predict", "trace", "quiz-tab", "final"] }
 ];
 
 describe("уроки курсу «Інформатика, поглиблений рівень»: спільна структура", () => {
@@ -370,6 +372,181 @@ describe("урок 23 · Склад списків", () => {
   });
 });
 
+function setRange(window, input, v) {
+  input.value = String(v);
+  input.dispatchEvent(new window.Event("input", { bubbles: true }));
+}
+
+describe("урок 24 · Робот-комірник", () => {
+  it("theory: усі методи й що повертає", async () => {
+    const t = (await loadPage("24-py-list-methods")).document.querySelector("#theory").textContent;
+    for (const x of ["append", "insert", "remove", "pop", "sort", "reverse", "index", "count", "extend", "clear", "None"]) expect(t).toContain(x);
+  });
+  it("robot: 2–3 сценарії по 4–6 команд, 3 варіанти, перерва, наступний крок відкривається після відповіді", async () => {
+    const doc = (await loadPage("24-py-list-methods")).document;
+    expect(doc.querySelector('nav.tabs button[data-tab="robot"]').dataset.break).toBe("6");
+    const sc = [...doc.querySelectorAll("#robot .scenario")];
+    expect(sc.length).toBeGreaterThanOrEqual(2);
+    expect(sc.length).toBeLessThanOrEqual(3);
+    for (const s of sc) {
+      const steps = [...s.querySelectorAll(".step")];
+      expect(steps.length).toBeGreaterThanOrEqual(4);
+      expect(steps.length).toBeLessThanOrEqual(6);
+      for (const st of steps) {
+        expect(st.querySelectorAll("button.opt:not(.skip)").length).toBe(3);
+        expect(new Set([...st.querySelectorAll("button.opt:not(.skip)")].map(b => b.textContent)).size).toBe(3);
+        expect(st.querySelectorAll("button[data-right]").length).toBe(1);
+      }
+      expect(steps[0].hidden).toBe(false);
+      expect(steps[1].hidden).toBe(true);
+      steps[0].querySelector("button[data-right]").click();
+      expect(steps[1].hidden).toBe(false);
+    }
+  });
+  it("robot: бал за кожен правильний крок, «Не знаю» дає 0, повтор не фармиться", async () => {
+    const doc = (await loadPage("24-py-list-methods")).document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const s1 = doc.querySelectorAll("#robot .scenario")[0];
+    const st = [...s1.querySelectorAll(".step")];
+    expect(st[0].querySelector(".cmd").textContent).toContain("append");
+    st[0].querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+    st[0].querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+    const wrong = [...st[1].querySelectorAll("button.opt:not(.skip)")].find(b => !b.hasAttribute("data-right"));
+    wrong.click();
+    expect(score()).toBe(1);
+    expect(st[1].querySelector("button[data-right]").classList.contains("right")).toBe(true);
+    st[2].querySelector("button[data-unknown]").click();
+    expect(score()).toBe(1);
+    st[2].querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+    expect(st[2].querySelector(".why").textContent).toContain("повернув 'лампа'");
+  });
+  it("robot: пастки remove першого входження, pop() повертає, a = a.sort() дає None й кінець сценарію", async () => {
+    const doc = (await loadPage("24-py-list-methods")).document;
+    const steps = [...doc.querySelectorAll("#robot .step")];
+    const rm = doc.querySelectorAll("#robot .scenario")[1].querySelector(".step");
+    expect(rm.querySelector(".cmd").textContent).toContain("remove('диск')");
+    expect([...rm.closest(".scenario").querySelectorAll(".shelf .box")].map(b => b.textContent)).toEqual(["диск", "книга", "диск", "ручка"]);
+    expect(rm).toBeDefined();
+    expect(rm.querySelector("button[data-right]").textContent).toBe("['книга', 'диск', 'ручка']");
+    const trap = steps.find(s => s.querySelector(".cmd").textContent.includes("a = a.sort()"));
+    expect(trap).toBeDefined();
+    expect(trap.querySelector("button[data-right]").textContent).toBe("None");
+    const sc = trap.closest(".scenario");
+    expect(sc.querySelectorAll(".step")[sc.querySelectorAll(".step").length - 1]).toBe(trap);
+    trap.querySelector("button[data-right]").click();
+    expect(trap.querySelector(".why").textContent).toContain("AttributeError");
+    expect(trap.querySelector(".why").textContent).toContain("None");
+    expect(sc.querySelector(".shelf").textContent).toContain("None");
+  });
+  it("robot: поведінка анімації враховує prefers-reduced-motion", () => {
+    const html = fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "lessons/24-py-list-methods/index.html"), "utf8");
+    expect(html).toContain("prefers-reduced-motion");
+  });
+  it("final і quiz", async () => {
+    const doc = (await loadPage("24-py-list-methods")).document;
+    expect(doc.querySelectorAll("#quiz-tab .q").length).toBeGreaterThan(0);
+    const t = doc.querySelector("#final").textContent;
+    for (const id of ["remove-first", "sorted-desc", "queue-rotate"]) expect(t).toContain(id);
+    expect(doc.querySelector("footer").textContent).toContain("Тема_21");
+  });
+});
+
+describe("урок 25 · Лічильник range", () => {
+  it("theory: stop не входить, три форми, крок", async () => {
+    const t = (await loadPage("25-py-for-range")).document.querySelector("#theory").textContent;
+    for (const x of ["range(5)", "range(2, 10, 3)", "не входить", "for", "step"]) expect(t).toContain(x);
+  });
+  it("counter: повзунки, числа, форми, step 0 → ValueError", async () => {
+    const window = await loadPage("25-py-for-range");
+    const doc = window.document;
+    expect(doc.querySelector('nav.tabs button[data-tab="counter"]').dataset.break).toBe("5");
+    const start = doc.querySelector("#c-start"), stop = doc.querySelector("#c-stop"), step = doc.querySelector("#c-step");
+    expect(step.min).toBe("-5");
+    expect(step.max).toBe("5");
+    doc.querySelector('#counter [data-form="start-stop-step"]').click();
+    setRange(window, start, 2); setRange(window, stop, 10); setRange(window, step, 3);
+    expect(doc.querySelector("#c-code").textContent).toBe("range(2, 10, 3)");
+    expect(doc.querySelector("#c-values").textContent).toContain("2, 5, 8");
+    expect(doc.querySelector("#c-desc").textContent).toContain("від 2 до 10 (не включно) з кроком 3");
+    setRange(window, start, 10); setRange(window, stop, 0); setRange(window, step, -3);
+    expect(doc.querySelector("#c-values").textContent).toContain("10, 7, 4, 1");
+    setRange(window, step, 0);
+    expect(doc.querySelector("#c-error").textContent).toContain("ValueError");
+    expect(doc.querySelector("#c-values").textContent).not.toContain("10");
+    doc.querySelector('#counter [data-form="stop"]').click();
+    setRange(window, stop, 5);
+    expect(doc.querySelector("#c-code").textContent).toBe("range(5)");
+    expect(doc.querySelector("#c-values").textContent).toContain("0, 1, 2, 3, 4");
+    expect(doc.querySelector("#c-error").textContent).toBe("");
+    doc.querySelector('#counter [data-form="start-stop"]').click();
+    setRange(window, start, 5); setRange(window, stop, 1);
+    expect(doc.querySelector("#c-desc").textContent).toContain("порожня");
+    expect(Number(doc.querySelector("[data-score]").textContent)).toBe(0);
+  });
+  it("predict: обов'язкові range, «Не знаю» = 0, без фармінгу", async () => {
+    const doc = (await loadPage("25-py-for-range")).document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const items = [...doc.querySelectorAll("#predict .pred-item")];
+    expect(items.length).toBeGreaterThanOrEqual(5);
+    const by = t => items.find(i => i.querySelector(".pred-code").textContent.trim() === t);
+    const ans = { "range(5)": "[0, 1, 2, 3, 4]", "range(2, 10, 3)": "[2, 5, 8]", "range(10, 0, -3)": "[10, 7, 4, 1]", "range(5, 1)": "[]" };
+    for (const [c, a] of Object.entries(ans)) {
+      expect(by(c), c).toBeDefined();
+      expect(by(c).querySelector("button[data-right]").textContent).toBe(a);
+    }
+    by("range(5)").querySelector("button[data-right]").click();
+    by("range(5)").querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+    expect(by("range(5)").querySelector(".why").textContent.length).toBeGreaterThan(10);
+    by("range(5, 1)").querySelector("button[data-unknown]").click();
+    by("range(5, 1)").querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+  });
+  it("trace: пострічкова перевірка, бал за рядок, відповіді блокують без балів", async () => {
+    const doc = (await loadPage("25-py-for-range")).document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const tables = [...doc.querySelectorAll("#trace .trace-table")];
+    expect(tables.length).toBe(2);
+    expect(tables[0].closest(".card").textContent).toContain("range(1, 5)");
+    expect(tables[1].closest(".card").textContent).toContain("i % 2 == 0");
+    const rows = [...tables[0].querySelectorAll("tr.trace-row")];
+    expect(rows.length).toBe(4);
+    const fill = (row, vals) => { for (const [k, v] of Object.entries(vals)) row.querySelector('[data-col="' + k + '"]').value = v; row.querySelector("button[data-check]").click(); };
+    fill(rows[0], { i: "1", s: "2" });
+    expect(score()).toBe(0);
+    expect(rows[0].querySelector(".fb").textContent.length).toBeGreaterThan(3);
+    fill(rows[0], { i: "1", s: "1" });
+    expect(score()).toBe(1);
+    fill(rows[0], { i: "1", s: "1" });
+    expect(score()).toBe(1);
+    expect(rows[0].querySelector("input").disabled).toBe(true);
+    tables[0].closest(".card").querySelector("button[data-reveal]").click();
+    expect(rows[3].querySelector('[data-col="s"]').value).toBe("10");
+    expect(rows[3].querySelector("input").disabled).toBe(true);
+    expect(score()).toBe(1);
+    fill(rows[3], { i: "4", s: "10" });
+    expect(score()).toBe(1);
+    const rows2 = [...tables[1].querySelectorAll("tr.trace-row")];
+    expect(rows2.length).toBe(6);
+    fill(rows2[1], { i: "2", cond: "Так", s: "2" });
+    expect(score()).toBe(2);
+    fill(rows2[0], { i: "1", cond: "Так", s: "1" });
+    expect(score()).toBe(2);
+    fill(rows2[5], { i: "6", cond: "Так", s: "12" });
+    expect(score()).toBe(3);
+  });
+  it("final і quiz", async () => {
+    const doc = (await loadPage("25-py-for-range")).document;
+    expect(doc.querySelectorAll("#quiz-tab .q").length).toBeGreaterThan(0);
+    const t = doc.querySelector("#final").textContent;
+    for (const id of ["countdown", "points-sum", "range-line"]) expect(t).toContain(id);
+    expect(doc.querySelector("footer").textContent).toContain("Тема_22");
+  });
+});
+
 describe("реєстрація уроків inf10deep", () => {
   const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
   const window = new JSDOM("", { runScripts: "outside-only" }).window;
@@ -377,8 +554,8 @@ describe("реєстрація уроків inf10deep", () => {
   loadScript(window, "data/teacher-plans.js");
   const entries = window.LESSONS.filter(l => l.program === "inf10deep" && l.num >= 18);
 
-  it("є уроки 18–23", () => {
-    expect(entries.map(e => e.num)).toEqual(expect.arrayContaining([18, 19, 20, 21, 22, 23]));
+  it("є уроки 18–25", () => {
+    expect(entries.map(e => e.num)).toEqual(expect.arrayContaining([18, 19, 20, 21, 22, 23, 24, 25]));
   });
   for (const entry of entries) {
     it("урок " + entry.num + ": файли на диску й план на 45 хв", () => {

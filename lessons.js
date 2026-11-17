@@ -126,5 +126,21 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Python", "списки", "операції"]
+  },
+  {
+    folder: "24-py-list-methods",
+    program: "inf10deep",
+    num: 24,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "списки", "методи"]
+  },
+  {
+    folder: "25-py-for-range",
+    program: "inf10deep",
+    num: 25,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "цикл for", "range"]
   }
 ];
