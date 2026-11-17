@@ -78,5 +78,21 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Arduino", "RGB", "ШІМ"]
+  },
+  {
+    folder: "18-py-types",
+    program: "inf10deep",
+    num: 18,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "типи", "арифметика"]
+  },
+  {
+    folder: "19-py-branching",
+    program: "inf10deep",
+    num: 19,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "if", "логічні оператори"]
   }
 ];

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Митниця типів</title>
+<meta name="description" content="Поставай митником: на кожен вираз Python клади штамп типу результату чи «Помилка», дізнавайся значення й чому воно саме таке.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: митниця типів — кожен вираз приходить на пост як декларація, а ти ставиш штамп (int, float, str, bool або «Помилка»), перш ніж відкриють «вантаж» і покажуть значення */
+:root{--accent:var(--sky)}
+.cust-list{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:760px){.cust-list{grid-template-columns:1fr 1fr}}
+.cust-card{position:relative;background:var(--card);border:2px solid var(--ink);border-radius:14px;box-shadow:6px 6px 0 var(--line);padding:14px 14px 12px;overflow:hidden}
+.cust-card .no{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.cust-expr{display:block;font:700 20px/1.3 ui-monospace,Menlo,Consolas,monospace;margin:6px 0 10px;padding:8px 10px;background:var(--bg);border:1px dashed var(--muted);border-radius:10px;word-break:break-word}
+.stamps{display:flex;flex-wrap:wrap;gap:8px}
+.stamps button{font:700 15px ui-monospace,Menlo,Consolas,monospace;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.stamps button:hover:not(:disabled){background:var(--accent);color:#15171a}
+.stamps button:disabled{cursor:default}
+.stamps button.right{border-color:var(--ok);background:var(--okbg)}
+.stamps button.wrong{border-color:var(--bad);background:var(--badbg)}
+.stamps button.skip{border-style:dashed;color:var(--muted)}
+.verdict{display:none;margin-top:12px}
+.cust-card.done .verdict{display:block}
+.stamp{display:inline-block;border:3px solid var(--ok);color:var(--ok);border-radius:8px;padding:2px 12px;font:800 18px ui-monospace,Menlo,Consolas,monospace;transform:rotate(-6deg);animation:slam .35s ease-out}
+.cust-card.miss .stamp{border-color:var(--bad);color:var(--bad)}
+.stamp.err{letter-spacing:.02em}
+@keyframes slam{from{transform:rotate(-6deg) scale(2.2);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}}
+.val{margin:8px 0 0;font:700 16px ui-monospace,Menlo,Consolas,monospace}
+.why{margin:6px 0 0;font-size:15px}
+.trap{display:inline-block;margin-left:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800;vertical-align:middle}
+.pred-item{margin-bottom:16px}
+.pred-item .code{margin:8px 0}
+.pred-item .out{white-space:pre;font:14px ui-monospace,Menlo,Consolas,monospace;background:#15171a;color:#f2f2f2;border-radius:10px;padding:8px 10px;margin:8px 0 0}
+.pred-item .out:empty{display:none}
+.pred-item .why{display:none}
+.pred-item.done .why{display:block}
+.opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.opts-row .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.opts-row .opt.skip{border-style:dashed;color:var(--muted)}
+table.types{border-collapse:collapse;width:100%}
+table.types th,table.types td{border:1px solid var(--line);padding:6px 8px;text-align:left;font-size:15px}
+table.types td:first-child{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+@media(max-width:480px){.cust-expr{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 18 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Митниця типів</h1>
+    <p>Ти працюєш митником. Вираз прибуває як декларація, а ти ставиш штамп: який тип матиме результат, чи Python його взагалі пропустить. Потім «вантаж» відкривають, і видно справжнє значення.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Правила митниці</button>
+    <button data-tab="customs" data-break="6">2. Пост: штампи</button>
+    <button data-tab="predict">3. Передбач вивід</button>
+    <button data-tab="quiz-tab">4. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Чотири штампи</h2>
+        <table class="types"><tr><th>Тип</th><th>Приклад</th></tr>
+        <tr><td>int</td><td>42, -7, 0</td></tr>
+        <tr><td>float</td><td>3.5, 2.0, 1e3</td></tr>
+        <tr><td>str</td><td>"3", 'abc'</td></tr>
+        <tr><td>bool</td><td>True, False</td></tr></table>
+        <p>Є ще п'ятий штамп: <b>Помилка</b>. Python зупиняє програму, а не вгадує, що ти мав чи мала на увазі.</p></div>
+      <div class="card"><h2>Арифметика</h2>
+        <p><code>/</code> — звичайне ділення, <b>завжди float</b>: <code>7 / 2</code> дає <code>3.5</code>, а <code>10 / 5</code> дає <code>2.0</code>.</p>
+        <p><code>//</code> — ціле ділення (округлення <b>вниз</b>), <code>%</code> — остача, <code>**</code> — степінь.</p>
+        <p><code>7 // 2 = 3</code>, <code>7 % 3 = 1</code>, <code>2 ** 10 = 1024</code>.</p></div>
+      <div class="card"><h2>Перетворення</h2>
+        <p><code>int("42")</code>, <code>float("3.5")</code>, <code>str(42)</code>, <code>bool(x)</code>.</p>
+        <p><code>int(3.99)</code> відкидає дробову частину: <code>3</code>. Але <code>int("3.5")</code> — помилка: рядок має виглядати як ціле.</p>
+        <p><code>round(x)</code> округлює до найближчого цілого, а на «половинці» бере парне: <code>round(2.5) = 2</code>, <code>round(3.5) = 4</code>.</p></div>
+    </div>
+    <div class="card">
+      <h2>Де митник помиляється найчастіше</h2>
+      <div class="code">print("3" + "4")   # 34 — рядки склеюються
+print("3" * 3)     # 333 — рядок повторюється
+print(-7 // 2)     # -4 — округлення вниз, не до нуля
+print(-7 % 3)      # 2  — остача не буває від'ємною при додатному дільнику
+print(bool("False"))  # True — непорожній рядок завжди істинний
+print(0.1 + 0.2)   # 0.30000000000000004 — float зберігає наближення</div>
+      <div class="tip"><b>Пам'ятай:</b> спершу назви тип, потім рахуй значення. Більшість «дивних» результатів пояснює саме тип.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="customs">
+    <div class="card">
+      <h2>Пост: постав штамп</h2>
+      <p class="lead">Для кожного виразу обери тип результату або «Помилка». Не впевнений чи не впевнена? Тисни «Не знаю»: 0 балів, але без втрат, і митниця покаже відповідь.</p>
+      <div class="cust-list" id="cust-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="predict">
+    <div class="card">
+      <h2>Передбач вивід</h2>
+      <p class="lead">Що надрукує програма? Бал дає твоє передбачення. Кнопка «Перевірити запуском» (якщо Python у браузері доступний) лише показує справжній вивід.</p>
+      <div id="pred-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#types">До задачника: типи й арифметика →</a></div></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Який штамп ти поставив чи поставила хибно й чому?</li><li>Чому <code>7 / 2</code> дає <code>3.5</code>, а <code>7 // 2</code> дає <code>3</code>?</li><li>Що станеться з <code>round(2.5)</code> і чому це не «помилка Python»?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О.</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/errors.js"></script>
+<script src="../../assets/py/runner.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Митник найвищого розряду: типи й арифметика тебе не обдурять.";
+Lesson.messages.mid = "Старший інспектор: перечитай «чому» там, де штамп був хибним.";
+Lesson.messages.low = "Стажер митниці: поверни до «Правил митниці» й спробуй ще раз, тут нікого не штрафують.";
+
+/* ---------- Пост: штампи ---------- */
+var STAMPS = ["int", "float", "str", "bool", "Помилка"];
+var CARDS = [
+  {e: '"3" + 4', t: "Помилка", v: "TypeError", w: "TypeError: can only concatenate str (not \"int\") to str. Рядок і число самі не склеюються. Треба або str(4), тоді вийде '34', або int(\"3\"), тоді вийде 7."},
+  {e: "7 / 2", t: "float", v: "3.5", w: "Звичайне ділення завжди дає float, навіть коли ділиться націло: 10 / 5 дає 2.0."},
+  {e: "7 // 2", t: "int", v: "3", w: "Ціле ділення відкидає дробову частину: скільки разів 2 повністю вміщається в 7."},
+  {e: "-7 // 2", t: "int", v: "-4", trap: true, w: "Ціле ділення округлює вниз, до мінус нескінченності, а не до нуля. -3.5 округлюється до -4, не до -3."},
+  {e: "7 % 3", t: "int", v: "1", w: "Остача від ділення: 7 = 2 · 3 + 1."},
+  {e: 'int("3.5")', t: "Помилка", v: "ValueError", trap: true, w: "ValueError: invalid literal for int() with base 10: '3.5'. Рядок \"3.5\" не схожий на ціле число. Спершу float(\"3.5\"), тоді int(...) відкине дробову частину."},
+  {e: 'float("3.5")', t: "float", v: "3.5", w: "Рядок із десятковою крапкою добре перетворюється на float."},
+  {e: '"3" * 3', t: "str", v: "'333'", w: "Рядок, помножений на ціле, повторюється. Це не арифметика: 3 · 3 тут ні до чого."},
+  {e: "2 ** 10", t: "int", v: "1024", w: "** — степінь. Цілі в цілий степінь дають int, навіть дуже великий."},
+  {e: "round(2.5)", t: "int", v: "2", trap: true, w: "На «половинці» round бере найближче парне: round(2.5) дає 2, а round(3.5) дає 4. Результат round(x) без другого аргументу — int."},
+  {e: 'bool("False")', t: "bool", v: "True", trap: true, w: "Істинність рядка залежить лише від того, порожній він чи ні. Непорожній рядок \"False\" — це True."},
+  {e: "0.1 + 0.2 == 0.3", t: "bool", v: "False", trap: true, w: "У float 0.1 + 0.2 дає 0.30000000000000004. Порівнювати дробові числа через == ненадійно."}
+];
+var scoreC = Lesson.register(CARDS.length);
+var list = $("#cust-list");
+CARDS.forEach(function(c, i){
+  var card = el("div", "cust-card");
+  card.appendChild(el("div", "no", "Декларація " + (i + 1)));
+  card.appendChild(el("code", "cust-expr", c.e));
+  var row = el("div", "stamps");
+  row.setAttribute("role", "group");
+  row.setAttribute("aria-label", "Штамп для виразу " + c.e);
+  var verdict = el("div", "verdict");
+  verdict.setAttribute("aria-live", "polite");
+  var finished = false;
+  function finish(choice){
+    if (finished) return; finished = true;
+    var ok = choice === c.t;
+    if (ok) Lesson.addScore(scoreC);
+    Array.prototype.forEach.call(row.children, function(b){
+      b.disabled = true;
+      if (b.dataset.stamp === c.t) b.classList.add("right");
+      else if (b.dataset.stamp === choice) b.classList.add("wrong");
+    });
+    card.classList.add("done");
+    if (!ok) card.classList.add("miss");
+    var stamp = el("span", "stamp" + (c.t === "Помилка" ? " err" : ""), c.t);
+    verdict.appendChild(stamp);
+    if (c.trap) verdict.appendChild(el("span", "trap", "пастка"));
+    var head = choice === null ? "Не знаєш — не біда." : ok ? "Штамп вірний." : "Не той штамп.";
+    verdict.appendChild(el("p", "val", c.e + "  →  " + c.v));
+    verdict.appendChild(el("p", "why", head + " " + c.w));
+  }
+  STAMPS.forEach(function(s){
+    var b = el("button", null, s);
+    b.type = "button"; b.dataset.stamp = s;
+    b.addEventListener("click", function(){ finish(s); });
+    row.appendChild(b);
+  });
+  var u = el("button", "skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ finish(null); });
+  row.appendChild(u);
+  card.appendChild(row);
+  card.appendChild(verdict);
+  list.appendChild(card);
+});
+
+/* ---------- Передбач вивід ---------- */
+var PRED = [
+  {c: "x = 7\ny = 2\nprint(x // y, x % y)", o: ["3 1", "3.5 1", "3 1.0", "4 1"], a: 0, e: "// дає ціле 3, а % — остачу 1. Друкує обидва числа через пропуск."},
+  {c: "print(int(3.99), round(3.5))", o: ["4 4", "3 4", "3 3", "4 3"], a: 1, e: "int відкидає дробову частину, тож 3. round(3.5) бере парне: 4."},
+  {c: 'print(bool("False"), bool(""))', o: ["False False", "False True", "True False", "True True"], a: 2, e: "Непорожній рядок «False» істинний, а порожній рядок хибний."},
+  {c: 'a = "3"\nb = 4\nprint(a * b)', o: ["12", "3333", "7", "Помилка"], a: 1, e: "Рядок, помножений на ціле, повторюється: 3333 (рядок, не число)."},
+  {c: "print(7 / 2, 2 ** 10)", o: ["3 1024", "3.5 1024", "3.5 20", "3.5 100"], a: 1, e: "7 / 2 — це 3.5, а ** — степінь: 2 у десятому степені — 1024."}
+];
+var scoreP = Lesson.register(PRED.length);
+var plist = $("#pred-list");
+PRED.forEach(function(p, i){
+  var item = el("div", "pred-item card");
+  item.appendChild(el("div", null, "Фрагмент " + (i + 1)));
+  item.appendChild(el("div", "code", p.c));
+  var row = el("div", "opts-row");
+  var why = el("p", "why");
+  var out = el("pre", "out");
+  var done = false;
+  function reveal(choice){
+    if (done) return; done = true;
+    var ok = choice === p.a;
+    if (ok) Lesson.addScore(scoreP);
+    Array.prototype.forEach.call(row.querySelectorAll("button[data-opt],button[data-unknown]"), function(b){
+      b.disabled = true;
+      if (b.dataset.opt === String(p.a)) b.classList.add("right");
+      else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+    });
+    item.classList.add("done");
+    why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: " + p.o[p.a] + ". ") + p.e;
+  }
+  p.o.forEach(function(t, j){
+    var b = el("button", "opt", t);
+    b.type = "button"; b.dataset.opt = j;
+    b.addEventListener("click", function(){ reveal(j); });
+    row.appendChild(b);
+  });
+  var u = el("button", "opt skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ reveal(null); });
+  row.appendChild(u);
+  item.appendChild(row);
+  item.appendChild(why);
+  var canRun = false;
+  try { canRun = !!(window.Py && Py.runner && Py.runner.isAvailable()); } catch (e) {}
+  if (canRun){
+    var run = el("button", "btn ghost", "Перевірити запуском");
+    run.type = "button"; run.setAttribute("data-run", "");
+    run.style.marginTop = "8px";
+    run.addEventListener("click", function(){
+      out.textContent = "Запускаю…";
+      try {
+        Py.runner.run(p.c, {}).then(function(r){
+          out.textContent = r.timedOut ? "Програма працює надто довго." :
+            r.error ? (window.Py.errors ? Py.errors.hint(r.error).text : "Помилка") : r.stdout.replace(/\n$/, "");
+        }, function(){ out.textContent = "Python тут недоступний."; });
+      } catch (e) { out.textContent = "Python тут недоступний."; }
+    });
+    item.appendChild(run);
+  }
+  item.appendChild(out);
+  plist.appendChild(item);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Який тип має результат виразу 10 / 5?", o: ["int, бо ділиться націло", "float: 2.0", "str"], a: 1, e: "Звичайне ділення / завжди дає float, навіть якщо без остачі. Для int потрібне //."},
+  {q: 'Що дасть "5" + "5"?', o: ["10", "55", "Помилка"], a: 1, e: "Плюс для двох рядків — склеювання: '55'. Помилка була б для \"5\" + 5."},
+  {q: 'Як зробити з рядка "3.5" ціле число?', o: ['int("3.5")', 'int(float("3.5"))', 'str("3.5")'], a: 1, e: "int(\"3.5\") кидає ValueError, а float(\"3.5\") дає 3.5, і вже int(3.5) відкине дробову частину: 3."},
+  {q: "Чому дорівнює -7 % 3?", o: ["-1", "1", "2"], a: 2, e: "Остача при додатному дільнику не від'ємна: -7 = (-3) · 3 + 2. Узгоджено з тим, що -7 // 3 дорівнює -3."}
+]);
+})();
+</script>
+</body>
+</html>

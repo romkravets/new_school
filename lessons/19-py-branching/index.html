@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Диспетчерська розвилок</title>
+<meta name="description" content="Диспетчер розвилок: простеж, якою гілкою піде програма з if/elif/else, склади таблицю істинності для and, or, not і не переплутай = та ==.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: диспетчерська розвилок — програма як колія зі стрілками, значення змінних «подаються на пульт», а ти називаєш, який рядок надрукується, і бачиш, яким шляхом пройшов поїзд */
+:root{--accent:var(--sky)}
+.trace-item{margin-bottom:16px}
+.vars{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
+.vars span{background:var(--accent);color:#15171a;border:2px solid var(--ink);border-radius:8px;padding:2px 10px;font:700 14px ui-monospace,Menlo,Consolas,monospace}
+.listing{margin:8px 0;padding:6px 0;background:var(--bg);border:1px dashed var(--muted);border-radius:12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow-x:auto}
+.listing .ln{display:block;padding:0 12px;white-space:pre;border-left:4px solid transparent}
+.listing .ln.ran{background:var(--okbg);border-left-color:var(--ok);font-weight:700}
+.listing.checked .ln:not(.ran){opacity:.55}
+.listing .ln.ran::after{content:"  ◀ тут пройшла колія";color:var(--ok);font-weight:400;font-family:system-ui,sans-serif;font-size:12px}
+.trace-item .why{display:none;margin:8px 0 0;font-size:15px}
+.trace-item.done .why{display:block}
+.trace-item .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.trace-item .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.trace-item .opt.skip{border-style:dashed;color:var(--muted)}
+.trap{display:inline-block;margin-left:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.tt-wrap{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:760px){.tt-wrap{grid-template-columns:1fr 1fr}}
+table.tt{border-collapse:collapse;width:100%;background:var(--card)}
+table.tt th,table.tt td{border:2px solid var(--ink);padding:6px 8px;text-align:center;font:700 15px ui-monospace,Menlo,Consolas,monospace}
+table.tt th{background:var(--accent);color:#15171a}
+table.tt caption{font:800 17px ui-monospace,Menlo,Consolas,monospace;text-align:left;padding:0 0 6px}
+button.cell{width:100%;min-width:4.5em;font:700 15px ui-monospace,Menlo,Consolas,monospace;border:2px dashed var(--muted);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 4px;cursor:pointer}
+button.cell.set{border-style:solid;border-color:var(--ink)}
+button.cell.right{border-color:var(--ok);background:var(--okbg)}
+button.cell.wrong{border-color:var(--bad);background:var(--badbg)}
+button.cell:disabled{cursor:default}
+.tt-why{font-size:15px;margin:6px 0 0}
+@media(max-width:480px){table.tt th,table.tt td{padding:4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 19 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Диспетчерська розвилок</h1>
+    <p>Ти диспетчер: програма — колія зі стрілками. Дивись на значення змінних, веди поїзд по гілках і називай, який рядок надрукується. Потім збери таблицю істинності для <code>and</code>, <code>or</code> і <code>not</code>.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Колії й стрілки</button>
+    <button data-tab="trace" data-break="5">2. Трасування</button>
+    <button data-tab="truth">3. Таблиця істинності</button>
+    <button data-tab="quiz-tab">4. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Порівняння</h2><p><code>==</code> рівно, <code>!=</code> не рівно, <code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code>. Результат — <b>bool</b>: <code>True</code> або <code>False</code>.</p>
+        <p><b>Одне = присвоює</b>, подвійне <b>==</b> порівнює. <code>if x = 5:</code> — синтаксична помилка.</p>
+        <p>Python дозволяє ланцюжок: <code>1 &lt;= x &lt;= 10</code>.</p></div>
+      <div class="card"><h2>and, or, not</h2><p><code>A and B</code> істинне, коли <b>обидва</b> True. <code>A or B</code> — коли <b>хоч одне</b> True. <code>not A</code> міняє значення.</p>
+        <p>Пріоритет: спершу <code>not</code>, потім <code>and</code>, потім <code>or</code>. Тож <code>True and False or True</code> дає <code>True</code>. Не впевнений чи не впевнена — став дужки.</p></div>
+      <div class="card"><h2>Вкладеність</h2><p>Тіло гілки може містити свій <code>if</code>. Усе, що з відступом, виконується лише разом з тією гілкою, у якій воно лежить.</p>
+        <p>Окремі <code>if</code> один під одним перевіряються <b>всі</b>. Ланцюжок <code>if/elif/else</code> — лише <b>першу</b> вдалу гілку.</p></div>
+    </div>
+    <div class="card">
+      <h2>if / elif / else</h2>
+      <div class="code">grade = 8
+if grade >= 10:
+    print("Високий")
+elif grade >= 7:
+    print("Достатній")
+elif grade >= 4:
+    print("Середній")
+else:
+    print("Початковий")</div>
+      <p>Python йде зверху вниз, зупиняється на першій істинній умові й не дивиться далі. Тому <b>порядок гілок має значення</b>: починай з найвужчої (найвищої) умови.</p>
+      <div class="tip"><b>Пам'ятай:</b> <code>else</code> не має умови: він ловить усе, що не підійшло вище.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="trace">
+    <div class="card">
+      <h2>Трасування: який рядок надрукується?</h2>
+      <p class="lead">Над кодом — значення змінних. Обери, що з'явиться на екрані. Після відповіді підсвітиться шлях, яким пройшла програма. «Не знаю»: 0 балів і без втрат.</p>
+      <div id="trace-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="truth">
+    <div class="card">
+      <h2>Таблиця істинності</h2>
+      <p class="lead">Клацай клітинку: «—» → True → False → «—». Заповни всі, натисни «Перевірити». «Показати відповіді» відкриє таблицю без балів.</p>
+      <div class="tt-wrap" id="tt-wrap"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="button" data-check>Перевірити</button>
+        <button class="btn ghost" type="button" data-show>Показати відповіді</button>
+        <button class="btn ghost" type="button" data-reset>Спробувати ще раз</button>
+      </div>
+      <div class="fb" id="tt-fb" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#branching">До задачника: розгалуження →</a></div></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Чому <code>elif grade &gt;= 10</code> після <code>if grade &gt;= 7</code> ніколи не спрацює?</li><li>Коли замість <code>and</code> простіше записати ланцюжок <code>a &lt; x &lt; b</code>?</li><li>Що станеться, якщо в умові написати <code>=</code> замість <code>==</code>?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_18)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Диспетчер вищої категорії: жодна стрілка не збила тебе зі шляху.";
+Lesson.messages.mid = "Диспетчер зі стажем: переглянь «чому» там, де вибір був хибним.";
+Lesson.messages.low = "Диспетчер-стажер: повернись до «Колій і стрілок» і пройди трасування ще раз.";
+
+/* ---------- Трасування ---------- */
+/* path — номери рядків коду (з 1), які виконалися */
+var TRACE = [
+  {vars: "grade = 11", code: 'if grade >= 7:\n    print("Достатній")\nelif grade >= 10:\n    print("Високий")\nelse:\n    print("Низький")',
+   o: ["Достатній", "Високий", "Низький", "Нічого не надрукує"], a: 0, path: [1, 2], trap: true,
+   w: "Пастка порядку elif: 11 >= 7 істинне вже в першій умові, тож Python друкує «Достатній» і далі не дивиться. Гілка elif grade >= 10 недосяжна. Правильно ставити найвужчу умову першою."},
+  {vars: "grade = 4", code: 'if grade >= 10:\n    print("Високий")\nelif grade >= 7:\n    print("Достатній")\nelif grade >= 4:\n    print("Середній")\nelse:\n    print("Початковий")',
+   o: ["Початковий", "Середній", "Достатній", "Середній, потім Початковий"], a: 1, path: [1, 3, 5, 6],
+   w: "Перші дві умови хибні (4 < 10, 4 < 7), а 4 >= 4 істинне на межі. Гілка спрацьовує, else уже не перевіряється."},
+  {vars: "x = 15", code: 'if x % 2 == 0:\n    print("парне")\nif x % 3 == 0:\n    print("кратне 3")\nif x % 5 == 0:\n    print("кратне 5")',
+   o: ["кратне 3", "кратне 5", "кратне 3, потім кратне 5", "Нічого не надрукує"], a: 2, path: [1, 3, 4, 5, 6],
+   w: "Це три окремі if, а не ланцюжок elif. Кожен перевіряється сам по собі: 15 кратне і 3, і 5, тож надрукується обидва рядки."},
+  {vars: "age = 16\nhas_ticket = True", code: 'if age >= 18:\n    print("Дорослий")\nelse:\n    if has_ticket:\n        print("Лише з дорослими")\n    else:\n        print("Без квитка")',
+   o: ["Дорослий", "Лише з дорослими", "Без квитка", "Лише з дорослими, потім Без квитка"], a: 1, path: [1, 3, 4, 5],
+   w: "age >= 18 хибне, тож іде else. Усередині нього працює вкладений if: has_ticket істинне, і друкується перша гілка."},
+  {vars: "n = 0", code: 'if n > 0 or n < 0:\n    print("не нуль")\nelse:\n    print("нуль")',
+   o: ["не нуль", "нуль", "не нуль, потім нуль"], a: 1, path: [1, 3, 4],
+   w: "Для or потрібна хоч одна істинна частина. 0 > 0 хибне і 0 < 0 хибне, отже умова хибна, і працює else."},
+  {vars: 's = "False"', code: 'if s:\n    print("істина")\nelse:\n    print("хиба")',
+   o: ["істина", "хиба", "Помилка"], a: 0, path: [1, 2], trap: true,
+   w: "Пастка: в умові рядок. Будь-який непорожній рядок істинний, навіть \"False\" (як bool(\"False\") з минулого уроку). Порожній рядок був би хибним."},
+  {vars: "x = 7", code: 'if x > 0 and x % 2 == 0:\n    print("додатне парне")\nelif x > 0:\n    print("додатне непарне")\nelse:\n    print("не додатне")',
+   o: ["додатне парне", "додатне непарне", "не додатне"], a: 1, path: [1, 3, 4],
+   w: "Перша умова вимагає обох: x > 0 і парне. 7 непарне, тож and дає False. Друга умова x > 0 істинна, і друкується «додатне непарне»."}
+];
+var scoreT = Lesson.register(TRACE.length);
+var tlist = $("#trace-list");
+TRACE.forEach(function(t, i){
+  var item = el("div", "trace-item card");
+  item.appendChild(el("div", null, "Стрілка " + (i + 1)));
+  var vars = el("div", "vars");
+  t.vars.split("\n").forEach(function(v){ vars.appendChild(el("span", null, v)); });
+  item.appendChild(vars);
+  var listing = el("div", "listing");
+  listing.setAttribute("role", "img");
+  listing.setAttribute("aria-label", "Код програми: " + t.code.replace(/\n/g, "; "));
+  t.code.split("\n").forEach(function(line){
+    var s = el("span", "ln", line);
+    listing.appendChild(s);
+  });
+  item.appendChild(listing);
+  var row = el("div", "opts-row");
+  var why = el("p", "why");
+  var done = false;
+  function reveal(choice){
+    if (done) return; done = true;
+    var ok = choice === t.a;
+    if (ok) Lesson.addScore(scoreT);
+    Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+      b.disabled = true;
+      if (b.dataset.opt === String(t.a)) b.classList.add("right");
+      else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+    });
+    listing.classList.add("checked");
+    var lines = listing.querySelectorAll(".ln");
+    t.path.forEach(function(n){ if (lines[n - 1]) lines[n - 1].classList.add("ran"); });
+    item.classList.add("done");
+    why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: «" + t.o[t.a] + "». ") + t.w;
+    if (t.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+  }
+  t.o.forEach(function(text, j){
+    var b = el("button", "opt", text);
+    b.type = "button"; b.dataset.opt = j;
+    if (j === t.a) b.setAttribute("data-right", "1");
+    b.addEventListener("click", function(){ reveal(j); });
+    row.appendChild(b);
+  });
+  var u = el("button", "opt skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ reveal(null); });
+  row.appendChild(u);
+  item.appendChild(row);
+  item.appendChild(why);
+  tlist.appendChild(item);
+});
+
+/* ---------- Таблиця істинності ---------- */
+var TABLES = [
+  {title: "A and B", cols: ["A", "B", "A and B"], rows: [[true, true, true], [true, false, false], [false, true, false], [false, false, false]], why: "and істинне лише тоді, коли істинні обидві частини."},
+  {title: "A or B", cols: ["A", "B", "A or B"], rows: [[true, true, true], [true, false, true], [false, true, true], [false, false, false]], why: "or хибне лише тоді, коли хибні обидві частини."},
+  {title: "not A", cols: ["A", "not A"], rows: [[true, false], [false, true]], why: "not просто міняє значення на протилежне."}
+];
+var NAME = {"-": "—", "t": "True", "f": "False"};
+var CYCLE = ["-", "t", "f"];
+var scoreTT = Lesson.register(10);
+var wrap = $("#tt-wrap"), ttfb = $("#tt-fb");
+var cells = [];
+TABLES.forEach(function(tb){
+  var box = el("div");
+  var table = el("table", "tt");
+  table.appendChild(el("caption", null, tb.title));
+  var head = el("tr");
+  tb.cols.forEach(function(c){ head.appendChild(el("th", null, c)); });
+  table.appendChild(head);
+  tb.rows.forEach(function(r){
+    var tr = el("tr");
+    r.forEach(function(v, k){
+      var td = el("td");
+      if (k < r.length - 1) td.textContent = v ? "True" : "False";
+      else {
+        var b = el("button", "cell", "—");
+        b.type = "button";
+        b.setAttribute("data-cell", "");
+        b.dataset.answer = v ? "True" : "False";
+        b.dataset.state = "-";
+        b.setAttribute("aria-label", "Результат для рядка " + r.slice(0, -1).map(function(x){ return x ? "True" : "False"; }).join(", "));
+        b.addEventListener("click", function(){
+          var n = CYCLE[(CYCLE.indexOf(b.dataset.state) + 1) % CYCLE.length];
+          b.dataset.state = n; b.textContent = NAME[n];
+          b.classList.toggle("set", n !== "-");
+        });
+        cells.push(b);
+        td.appendChild(b);
+      }
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+  box.appendChild(table);
+  box.appendChild(el("p", "tt-why", tb.why));
+  wrap.appendChild(box);
+});
+function lockCells(){ cells.forEach(function(c){ c.disabled = true; }); }
+$("#truth [data-check]").addEventListener("click", function(){
+  if (cells.some(function(c){ return c.dataset.state === "-"; })){
+    ttfb.className = "fb show no"; ttfb.textContent = "Заповни всі клітинки, а потім перевір."; return;
+  }
+  var good = 0;
+  cells.forEach(function(c){
+    var ok = c.textContent === c.dataset.answer;
+    if (ok) good++;
+    c.classList.add(ok ? "right" : "wrong");
+    if (!ok) c.textContent = c.dataset.answer;
+  });
+  lockCells();
+  Lesson.setScore(scoreTT, good);
+  ttfb.className = "fb show " + (good === cells.length ? "ok" : "no");
+  ttfb.textContent = good === cells.length ? "Усі " + good + " вірно!" : "Вірно " + good + " з " + cells.length + ". Червоні клітинки виправлено: порівняй із поясненнями під таблицями.";
+});
+$("#truth [data-show]").addEventListener("click", function(){
+  cells.forEach(function(c){ c.textContent = c.dataset.answer; c.dataset.state = c.dataset.answer === "True" ? "t" : "f"; c.classList.add("set"); });
+  lockCells();
+  Lesson.setScore(scoreTT, 0);
+  ttfb.className = "fb show no"; ttfb.textContent = "Відповіді показано, 0 балів. Спробуй ще раз і заповни самостійно.";
+});
+$("#truth [data-reset]").addEventListener("click", function(){
+  cells.forEach(function(c){ c.disabled = false; c.textContent = "—"; c.dataset.state = "-"; c.className = "cell"; });
+  Lesson.setScore(scoreTT, 0);
+  ttfb.className = "fb";
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Що робить рядок x = 5, а що x == 5?", o: ["Обидва порівнюють x з 5", "x = 5 присвоює значення, x == 5 порівнює й дає True чи False", "x = 5 порівнює, x == 5 присвоює"], a: 1, e: "Одне = — присвоєння, подвійне == — порівняння. Тому в умові пишуть if x == 5:, а if x = 5: — синтаксична помилка."},
+  {q: "Чому дорівнює True and False or True?", o: ["False", "True", "Помилка"], a: 1, e: "and сильніший за or: спершу (True and False) → False, потім False or True → True."},
+  {q: "Чому дорівнює not 0?", o: ["True", "False", "0"], a: 0, e: "0 хибне, тож not 0 — True. Взагалі not повертає bool."},
+  {q: "Як записати «x від 1 до 10 включно» у Python?", o: ["1 <= x <= 10", "x = 1..10", "1 <= x or x <= 10"], a: 0, e: "Ланцюжок 1 <= x <= 10 читається як в математиці. Варіант з or був би істинним для будь-якого числа."}
+]);
+})();
+</script>
+</body>
+</html>
