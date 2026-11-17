@@ -209,7 +209,7 @@ var CYCLE = ["-", "t", "f"];
 var scoreTT = Lesson.register(10);
 var wrap = $("#tt-wrap"), ttfb = $("#tt-fb");
 var cells = [];
-var revealed = false;
+var revealed = false, practiceOnly = false; // practiceOnly: після «Показати відповіді» таблиця без балів до перезавантаження
 var checkBtn = $("#truth [data-check]");
 TABLES.forEach(function(tb){
   var box = el("div");
@@ -260,12 +260,13 @@ checkBtn.addEventListener("click", function(){
     if (!ok) c.textContent = c.dataset.answer;
   });
   lockCells();
-  Lesson.setScore(scoreTT, good);
+  if (!practiceOnly) Lesson.setScore(scoreTT, good);
   ttfb.className = "fb show " + (good === cells.length ? "ok" : "no");
-  ttfb.textContent = good === cells.length ? "Усі " + good + " вірно!" : "Вірно " + good + " з " + cells.length + ". Червоні клітинки виправлено: порівняй із поясненнями під таблицями.";
+  if (practiceOnly) ttfb.textContent = "Відповіді вже показано — це тренування без балів. Вірно " + good + " з " + cells.length + ".";
+  else ttfb.textContent = good === cells.length ? "Усі " + good + " вірно!" : "Вірно " + good + " з " + cells.length + ". Червоні клітинки виправлено: порівняй із поясненнями під таблицями.";
 });
 $("#truth [data-show]").addEventListener("click", function(){
-  revealed = true; checkBtn.disabled = true;
+  revealed = true; practiceOnly = true; checkBtn.disabled = true;
   cells.forEach(function(c){ c.textContent = c.dataset.answer; c.dataset.state = c.dataset.answer === "True" ? "t" : "f"; c.classList.add("set"); });
   lockCells();
   Lesson.setScore(scoreTT, 0);

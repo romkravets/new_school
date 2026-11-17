@@ -226,7 +226,7 @@ PROGRAMS.forEach(function(p){
     msg.textContent = "";
     var differs = show(vars);
     if (differs && Py.tester.breaks(p.id, vars)){
-      msg.textContent = "Знайдено! Програма й еталон розійшлися.";
+      msg.textContent = "Знайдено! Програма й еталон розійшлися." + (finished ? " (без балу)" : "");
       if (!finished){
         finished = true;
         Lesson.addScore(scoreH);

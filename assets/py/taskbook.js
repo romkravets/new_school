@@ -197,7 +197,7 @@ function viewTask(topic, taskId) {
   card.appendChild(renderText(task.text));
   if (task.source) {
     card.appendChild(el("p", { class: "source" }, [
-      "Задача: " + task.source.author + " (ноутбук «" + String(task.source.ref).split(" №")[0] + "», №" + (String(task.source.ref).split(" №")[1] || "?") + ") — ",
+      "Задача: " + task.source.author + " (ноутбук «" + String(task.source.ref) + "») — ",
       el("a", { href: DRIVE, target: "_blank", rel: "noopener", text: "папка з ноутбуками" })
     ]));
   }

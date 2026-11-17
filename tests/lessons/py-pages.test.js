@@ -82,6 +82,32 @@ describe("урок 18 · Митниця типів", () => {
   });
 });
 
+describe("урок 18 · «Перевірити запуском»", () => {
+  it("вимкнена, поки учень не дав відповідь; після відповіді активна", async () => {
+    const doc = (await loadPage("18-py-types")).document;
+    const item = doc.querySelector("#predict .pred-item");
+    const run = item.querySelector("button[data-run]");
+    expect(run).not.toBeNull();
+    expect(run.disabled).toBe(true);
+    expect(run.title).toBe("Спершу дай відповідь");
+    item.querySelector("button[data-unknown]").click();
+    expect(run.disabled).toBe(false);
+  });
+  it("коли Python недоступний, показує повідомлення runner без errors.hint", async () => {
+    const window = await loadPage("18-py-types");
+    const doc = window.document;
+    const msg = "Python не завантажився (net). Перевірте з'єднання.";
+    window.Py.runner.run = () => Promise.resolve({ stdout: "", error: msg, timedOut: false });
+    window.Py.runner.isAvailable = () => false;
+    const item = doc.querySelector("#predict .pred-item");
+    item.querySelector("button[data-unknown]").click();
+    item.querySelector("button[data-run]").click();
+    await new Promise(r => setTimeout(r, 0));
+    expect(item.textContent).toContain(msg);
+    expect(item.textContent).not.toContain("Сталася помилка");
+  });
+});
+
 describe("урок 19 · Диспетчерська розвилок", () => {
   it("трасування: вибір рядка, підсвітка шляху, пастка з порядком elif", async () => {
     const window = await loadPage("19-py-branching");

@@ -32,7 +32,7 @@ function hint(traceback) {
     if (t) { type = t[1].split(".").pop(); last = lines[i]; break; }
   }
   var make = TEXTS[type];
-  var text = make ? make(last) : "Сталася помилка " + type + ": прочитай повідомлення під кодом і перевір рядок, на який воно вказує.";
+  var text = type === "RuntimeError" && /input\(\)/.test(last) ? "Дані вже лежать у змінних із «Вхідних даних» — використай їх замість input()." : make ? make(last) : "Сталася помилка " + type + ": прочитай повідомлення під кодом і перевір рядок, на який воно вказує.";
   return { type: type, line: line, text: text };
 }
 

@@ -237,7 +237,7 @@ SCEN.forEach(function(sc){
       drawShelf(after, before);
       var msg = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: " + rightText + ". ") + st.w;
       var ret = pre[si].returned;
-      if (ret !== null) msg += " " + st.cmd.replace(/^a\./, "").replace(/\(.*$/, "()") + " повернув " + repr(ret) + (st.op.method === "pop" ? "" : "; полиця не змінилась") + ".";
+      if (ret !== null) msg += " " + st.cmd.replace(/^a\./, "") + " повернув " + repr(ret) + (st.op.method === "pop" ? "" : "; полиця не змінилась") + ".";
       why.textContent = msg;
       if (st.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
       if (stepEls[si + 1]) stepEls[si + 1].hidden = false;

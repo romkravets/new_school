@@ -124,6 +124,45 @@ describe("runner", () => {
     expect(f.workers[0].terminated).toBe(true);
   });
 
+  it("тайм-аут завантаження: наступний run робить одну нову спробу, друга невдача остаточна", async () => {
+    const f = fakeFactory((w, m) => { if (m.code) w.emit({ id: m.id, stdout: "ok", error: null }); });
+    R.configure({ createWorker: f.create, loadTimeoutMs: 30 });
+    const r1 = await R.run("1", {});
+    expect(r1.error).toContain("завантаження");
+    expect(R.isAvailable()).toBe(false);
+    expect(f.workers.length).toBe(1);
+    const p2 = R.run("1", {});
+    expect(R.isAvailable()).toBe(true);
+    expect(f.workers.length).toBe(2);
+    const r2 = await p2;
+    expect(r2.error).toContain("завантаження");
+    expect(R.isAvailable()).toBe(false);
+    const r3 = await R.run("1", {});
+    expect(r3.error).toContain("Python");
+    expect(f.workers.length).toBe(2);
+  });
+
+  it("тайм-аут завантаження: повторна спроба може вдатися", async () => {
+    const f = fakeFactory((w, m) => { if (m.code) w.emit({ id: m.id, stdout: "ok", error: null }); });
+    R.configure({ createWorker: f.create, loadTimeoutMs: 30 });
+    await R.run("1", {});
+    const p2 = R.run("1", {});
+    f.workers[1].emit({ type: "status", status: "ready" });
+    expect((await p2).stdout).toBe("ok");
+    expect(R.isAvailable()).toBe(true);
+  });
+
+  it("помилка importScripts (failed від worker) не повторюється", async () => {
+    const f = fakeFactory();
+    R.configure({ createWorker: f.create });
+    const p = R.run("1", {});
+    f.workers[0].emit({ type: "status", status: "failed", message: "net" });
+    await p;
+    await R.run("1", {});
+    expect(f.workers.length).toBe(1);
+    expect(R.isAvailable()).toBe(false);
+  });
+
   it("після тайм-ауту з порожньою чергою статус стає ready", async () => {
     const f = fakeFactory();
     R.configure({ createWorker: f.create, timeoutMs: 30 });

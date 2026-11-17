@@ -219,8 +219,10 @@ PRED.forEach(function(p, i){
       else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
     });
     item.classList.add("done");
+    if (runBtn){ runBtn.disabled = false; runBtn.title = ""; }
     why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: " + p.o[p.a] + ". ") + p.e;
   }
+  var runBtn = null;
   p.o.forEach(function(t, j){
     var b = el("button", "opt", t);
     b.type = "button"; b.dataset.opt = j;
@@ -239,12 +241,14 @@ PRED.forEach(function(p, i){
     var run = el("button", "btn ghost", "Перевірити запуском");
     run.type = "button"; run.setAttribute("data-run", "");
     run.style.marginTop = "8px";
+    run.disabled = true; run.title = "Спершу дай відповідь";
+    runBtn = run;
     run.addEventListener("click", function(){
       out.textContent = "Запускаю…";
       try {
         Py.runner.run(p.c, {}).then(function(r){
           out.textContent = r.timedOut ? "Програма працює надто довго." :
-            r.error ? (window.Py.errors ? Py.errors.hint(r.error).text : "Помилка") : r.stdout.replace(/\n$/, "");
+            r.error ? (/^Python не завантажився/.test(r.error) || !Py.runner.isAvailable() ? r.error : window.Py.errors ? Py.errors.hint(r.error).text : "Помилка") : r.stdout.replace(/\n$/, "");
         }, function(){ out.textContent = "Python тут недоступний."; });
       } catch (e) { out.textContent = "Python тут недоступний."; }
     });

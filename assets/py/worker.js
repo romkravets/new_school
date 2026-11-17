@@ -42,8 +42,9 @@ self.onmessage = function (ev) {
       jsvars = pyodide.toPy(m.vars || {});
       g.update(jsvars);
       g.set("__name__", "__main__");
+      var guardSrc = "def _input_blocked(*a, **k):\n    raise RuntimeError(" + JSON.stringify(INPUT_MSG) + ")\n";
       var guard = pyodide.runPython(
-        "def _input_blocked(*a, **k):\n    raise RuntimeError(" + JSON.stringify(INPUT_MSG) + ")\n_input_blocked",
+        "ns = {}\nexec(compile(" + JSON.stringify(guardSrc) + ", \"<guard>\", \"exec\"), ns)\nns[\"_input_blocked\"]",
         { globals: pyodide.globals.get("dict")() }
       );
       g.set("input", guard);

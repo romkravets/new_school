@@ -18,9 +18,10 @@ var SCRIPT_SRC = findScriptSrc();
 var WORKER_URL = SCRIPT_SRC ? SCRIPT_SRC.replace(/[?#].*$/, "").replace(/[^\/]*$/, "") + "worker.js" : "";
 if (!WORKER_URL && typeof console !== "undefined") console.error("Py.runner: не вдалося визначити адресу worker.js (немає document.currentScript і <script src=\".../runner.js\">).");
 
-var cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 30000 };
+var cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 120000 };
 var loadTimer = null;
 var worker = null, ready = false, failed = false, failMsg = "";
+var retryable = false, retried = false; // повторна спроба лише після тайм-ауту завантаження, один раз за сторінку
 var queue = [], current = null, nextId = 1;
 var listeners = [];
 
@@ -42,8 +43,8 @@ function makeWorker() {
   return new Worker(WORKER_URL);
 }
 
-function fail(message) {
-  failed = true; failMsg = message || ""; ready = false;
+function fail(message, canRetry) {
+  failed = true; retryable = !!canRetry && !retried; failMsg = message || ""; ready = false;
   clearTimeout(loadTimer);
   killWorker();
   emit("failed");
@@ -59,7 +60,7 @@ function ensureWorker() {
   try { w = makeWorker(); } catch (e) { fail(String(e && e.message || e)); return; }
   worker = w;
   clearTimeout(loadTimer);
-  loadTimer = setTimeout(function () { if (worker === w && !ready) fail("час очікування завантаження вичерпано"); }, cfg.loadTimeoutMs);
+  loadTimer = setTimeout(function () { if (worker === w && !ready) fail("час очікування завантаження вичерпано", true); }, cfg.loadTimeoutMs);
   w.onmessage = function (ev) { if (worker === w) onMessage(ev.data || {}); };
   w.onerror = function (ev) { if (worker === w) onMessage({ type: "status", status: "failed", message: ev && ev.message }); };
 }
@@ -106,6 +107,7 @@ function onTimeout(job) {
 }
 
 function run(code, vars) {
+  if (failed && retryable && !retried && !onFile()) { retried = true; retryable = false; failed = false; failMsg = ""; }
   if (!isAvailable()) return Promise.resolve(unavailable());
   return new Promise(function (resolve) {
     queue.push({ id: nextId++, code: String(code == null ? "" : code), vars: vars || {}, resolve: resolve, timer: null });
@@ -126,8 +128,8 @@ function configure(o) {
 function _reset() {
   killWorker();
   if (current) clearTimeout(current.timer);
-  current = null; queue = []; failed = false; failMsg = ""; listeners = [];
-  cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 30000 };
+  current = null; queue = []; failed = false; failMsg = ""; retryable = false; retried = false; listeners = [];
+  cfg = { createWorker: null, timeoutMs: 3000, loadTimeoutMs: 120000 };
 }
 
 window.Py = window.Py || {};

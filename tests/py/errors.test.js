@@ -42,6 +42,21 @@ describe("errors.hint", () => {
   });
 });
 
+describe("errors: input()", () => {
+  it("RuntimeError про input() дає спеціальну підказку", () => {
+    const h = E.hint('Traceback (most recent call last):\n  File "<exec>", line 3, in <module>\nRuntimeError: input() тут не працює: дані вже є у змінних\n');
+    expect(h.type).toBe("RuntimeError");
+    expect(h.line).toBe(3);
+    expect(h.text).toBe("Дані вже лежать у змінних із «Вхідних даних» — використай їх замість input().");
+  });
+  it("clean прибирає кадр <guard>", () => {
+    const tb = 'Traceback (most recent call last):\n  File "<exec>", line 3, in <module>\n    x = input()\n  File "<guard>", line 2, in _input_blocked\n    raise RuntimeError("m")\nRuntimeError: input() тут не працює\n';
+    const c = E.clean(tb);
+    expect(c).not.toContain("<guard>");
+    expect(c).toContain('line 3');
+  });
+});
+
 describe("errors.clean", () => {
   it("прибирає кадри Pyodide, лишає <exec> і фінальну помилку", () => {
     const tb = 'Traceback (most recent call last):\n  File "/lib/python312.zip/_pyodide/_base.py", line 523, in eval_code\n    .run(globals, locals)\n     ^^^^^^^^^^^^^^^^^^^^\n  File "/lib/python312.zip/_pyodide/_base.py", line 357, in run\n    coroutine = eval(self.code, globals, locals)\n  File "<exec>", line 3, in <module>\n    print(x)\n  File "<exec>", line 2, in f\n    return 1/0\nZeroDivisionError: division by zero\n';
