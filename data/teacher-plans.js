@@ -338,7 +338,7 @@ window.TEACHER_PLANS = {
       { min: 4, kind: "discuss", title: "Обговорення", text: "Де ви вгадали штамп, а де Python вас здивував? Чому int(\"3.5\") — помилка, а int(3.99) — ні?", link: "#quiz-tab" },
       { min: 3, kind: "wrap", title: "Підсумок і ДЗ", text: "Нагадайте: спершу тип, потім значення. Домашнє: 2 задачі з перетворенням типів і арифметикою." }
     ],
-    hook: "Покажіть на проєкторі 0.1 + 0.2 == 0.3 і запитайте, що надрукує Python. Більшість скаже True: це хороший вхід у розмову про те, що тип результату визначає все.",
+    hook: "Покажіть на проєкторі 0.1 + 0.2 == 0.3 і запитайте, що надрукує Python. Дехто скаже True: це хороший вхід у розмову про те, що тип результату визначає все.",
     resources: [
       { title: "Ноутбуки Крутяк Н. О. (папка на Google Drive)", url: "https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld", detail: "Для цього уроку окремого ноутбука немає: загляньте в папку по задачі на перетворення типів і арифметику.", verified: "2026-11-17" },
       { title: "ЄPython", url: "https://samel.ho.ua/", detail: "Онлайн-середовище Python для запуску прикладів із уроку без встановлення.", verified: "2026-11-17" },
@@ -416,7 +416,7 @@ window.TEACHER_PLANS = {
     ],
     hook: "Запитайте клас: 2000 рік високосний? Більшість міркує «ділиться на 100, отже ні». Python за правилом 400 скаже «так», і програма без цієї умови помилиться.",
     resources: [
-      { title: "Ноутбук Крутяк Н. О. «Тема_18» (папка на Google Drive)", url: "https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld", detail: "Задачі на розгалуження для практики та перевірки очікуваних результатів.", verified: "2026-11-17" },
+      { title: "Ноутбук Крутяк Н. О. «Тема_19» (папка на Google Drive)", url: "https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld", detail: "Практикум: 12 тематичних задач на розгалуження (Світлофор, Атракціон, Бій із драконом…).", verified: "2026-11-17" },
       { title: "ЄPython", url: "https://samel.ho.ua/", detail: "Онлайн-середовище Python, де учні можуть запустити програму з уроку на знайдених вхідних даних.", verified: "2026-11-17" },
       { title: "Задачник: розгалуження", url: "../../taskbook/index.html#branching", detail: "Тема з автоперевіркою на сайті, для практики наприкінці уроку." }
     ],
@@ -454,7 +454,7 @@ window.TEACHER_PLANS = {
     ],
     hook: "Покажіть a = [10, 20, 30, 40, 50, 60] і запитайте: скільки елементів у a[1:4], три чи чотири? Дайте проголосувати й тільки тоді розкрийте, що stop не входить.",
     resources: [
-      { title: "Ноутбуки Крутяк Н. О. (папка на Google Drive)", url: "https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld", detail: "Для цього уроку окремого ноутбука немає: загляньте в папку по задачі на списки та зрізи.", verified: "2026-11-17" },
+      { title: "Ноутбук Крутяк Н. О. «Тема_20» (папка на Google Drive)", url: "https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld", detail: "Ноутбук «Тема_20»: створення списків, індекси, від'ємні індекси й зрізи з прикладами коду.", verified: "2026-11-17" },
       { title: "ЄPython", url: "https://samel.ho.ua/", detail: "Онлайн-середовище Python для запуску зрізів із уроку.", verified: "2026-11-17" },
       { title: "Задачник: зрізи", url: "../../taskbook/index.html#slices", detail: "Тема з автоперевіркою на сайті, для практики наприкінці уроку." }
     ],
