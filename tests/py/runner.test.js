@@ -120,7 +120,8 @@ describe("runner", () => {
     const r = await R.run("1", {});
     expect(r.error).toContain("Python");
     expect(r.error).toContain("завантаження");
-    expect(R.isAvailable()).toBe(false);
+    // ще лишилась одна повторна спроба — сторінки мають дозволити наступний run()
+    expect(R.isAvailable()).toBe(true);
     expect(f.workers[0].terminated).toBe(true);
   });
 
@@ -129,7 +130,7 @@ describe("runner", () => {
     R.configure({ createWorker: f.create, loadTimeoutMs: 30 });
     const r1 = await R.run("1", {});
     expect(r1.error).toContain("завантаження");
-    expect(R.isAvailable()).toBe(false);
+    expect(R.isAvailable()).toBe(true); // повторна спроба ще доступна
     expect(f.workers.length).toBe(1);
     const p2 = R.run("1", {});
     expect(R.isAvailable()).toBe(true);

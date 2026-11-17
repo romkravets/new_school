@@ -31,7 +31,9 @@ function emit(status) {
 
 function onFile() { return window.location && window.location.protocol === "file:"; }
 
-function isAvailable() { return !failed && !onFile(); }
+// Доступний також тоді, коли завантаження вичерпало час і ще лишилась одна повторна спроба —
+// інакше сторінки, що перевіряють isAvailable() перед run(), ніколи б її не запустили.
+function isAvailable() { return (!failed || (retryable && !retried)) && !onFile(); }
 
 function unavailable() {
   return { stdout: "", error: "Python не завантажився" + (failMsg ? " (" + failMsg + ")" : "") + ". Перевірте з'єднання з інтернетом і відкривайте сторінку через http(s), а не з файлу.", timedOut: false };
