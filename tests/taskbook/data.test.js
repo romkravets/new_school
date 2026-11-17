@@ -41,7 +41,9 @@ for (const topic of index) {
           expect(typeof t[k], k).toBe("string");
           expect(t[k].length, k).toBeGreaterThan(0);
         }
-        expect(t.source === null || typeof t.source === "string").toBe(true);
+        const src = t.source;
+        const okSource = src === null || (typeof src === "object" && typeof src.author === "string" && src.author.trim() !== "" && typeof src.ref === "string" && src.ref.trim() !== "");
+        expect(okSource).toBe(true);
         expect(t.vars && typeof t.vars === "object").toBe(true);
         expect(t.tests.length).toBeGreaterThanOrEqual(3);
         expect(t.tests.length).toBeLessThanOrEqual(5);
