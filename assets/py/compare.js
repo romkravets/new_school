@@ -39,12 +39,13 @@ function compareOutput(expected, actual, tolerance) {
 }
 
 /* result: { stdout: string, error: string|null } — те, що повернув runner для цього тесту.
-   test — елемент task.tests; task.tests[0] — видимий приклад. */
+   test — елемент task.tests або його індекс; task.tests[0] — видимий приклад. */
 function explainMismatch(task, test, result) {
   var tests = (task && task.tests) || [];
-  var idx = tests.indexOf(test);
+  var idx = typeof test === "number" ? test : tests.indexOf(test);
   var stdout = result && result.stdout != null ? result.stdout : "";
-  if (idx > 0 && tests[0] && compareOutput(tests[0].out, stdout).ok) {
+  var crashed = !!(result && result.error);
+  if (idx > 0 && !crashed && tests[0] && compareOutput(tests[0].out, stdout, task.tolerance).ok) {
     return "Твоя програма друкує те саме, що й на прикладі. Можливо, ти задаєш дані вручну — не перезаписуй змінні з «Вхідних даних».";
   }
   return "Тест " + (idx >= 0 ? idx + 1 : "?") + " не пройдено: вивід не збігається з очікуваним.";

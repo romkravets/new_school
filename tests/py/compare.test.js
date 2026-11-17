@@ -65,3 +65,22 @@ describe("compare", () => {
     expect(ctx.window.Py.compare.compareOutput("a", "a").ok).toBe(true);
   });
 });
+
+describe("explainMismatch — індекс, допуск і помилка", () => {
+  let compare;
+  beforeAll(() => {
+    const { window } = new JSDOM("<!doctype html><html></html>", { runScripts: "outside-only" });
+    loadScript(window, "assets/py/compare.js");
+    compare = window.Py.compare;
+  });
+  const task = { tolerance: 1e-3, tests: [{ vars: { x: 1 }, out: "0.5" }, { vars: { x: 2 }, out: "1.0" }] };
+  it("приймає індекс тесту", () => {
+    expect(compare.explainMismatch(task, 1, { stdout: "0.5", error: null })).toContain("не перезаписуй");
+  });
+  it("враховує tolerance задачі", () => {
+    expect(compare.explainMismatch(task, 1, { stdout: "0.5000001", error: null })).toContain("не перезаписуй");
+  });
+  it("не радить про змінні, якщо програма впала", () => {
+    expect(compare.explainMismatch(task, 1, { stdout: "0.5", error: "Traceback" })).not.toContain("не перезаписуй");
+  });
+});
