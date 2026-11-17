@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Потяг-список</title>
+<meta name="description" content="Потяг-список: список як ряд вагонів з індексами 0, 1, 2… і -1, -2…; повзунки start, stop, step показують зріз, вираз a[start:stop:step] і результат.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: список — потяг з вагонів; під кожним вагоном два номери (з голови й з хвоста), а повзунки start/stop/step підсвічують вагони, які потрапляють у зріз, у порядку обходу */
+:root{--accent:var(--sky)}
+.train{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 12px;margin:8px 0}
+.wagon{flex:0 0 auto;min-width:86px;text-align:center}
+.wagon .body{position:relative;border:3px solid var(--ink);border-radius:10px;background:var(--card);padding:14px 6px 8px;font:700 14px ui-monospace,Menlo,Consolas,monospace;min-height:3em;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.wagon .body::after{content:"";position:absolute;bottom:-9px;left:12%;width:76%;height:6px;border-radius:3px;background:var(--ink);opacity:.25}
+.wagon.on .body{background:var(--accent);color:#15171a;box-shadow:0 0 0 3px var(--ok)}
+.wagon .ord{position:absolute;top:-10px;left:50%;transform:translateX(-50%);min-width:22px;border-radius:999px;background:var(--ok);color:#15171a;font:800 12px system-ui,sans-serif;padding:0 6px;display:none}
+.wagon.on .ord{display:block}
+.wagon .i{margin-top:10px;font:700 14px ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+.wagon .n{font:700 13px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.ctrl{display:grid;gap:10px;grid-template-columns:1fr;margin:8px 0}
+@media(min-width:700px){.ctrl{grid-template-columns:repeat(3,1fr)}}
+.slider{border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--card)}
+.slider label.name{display:block;font:800 15px ui-monospace,Menlo,Consolas,monospace}
+.slider input[type=range]{width:100%;margin:6px 0}
+.slider .val{font:700 15px ui-monospace,Menlo,Consolas,monospace}
+.slider .none{display:flex;align-items:center;gap:6px;font-size:14px}
+.slider.off input[type=range]{opacity:.35}
+.expr{font:800 22px ui-monospace,Menlo,Consolas,monospace;margin:8px 0;word-break:break-word}
+.result{font:700 16px ui-monospace,Menlo,Consolas,monospace;border:2px dashed var(--muted);border-radius:12px;padding:8px 12px;background:var(--bg);white-space:pre-wrap;word-break:break-word}
+.result.err{border-color:var(--bad);background:var(--badbg)}
+.dir{margin:4px 0;font-size:14px;color:var(--muted);min-height:1.4em}
+.pred-item{margin-bottom:16px}
+.pred-code{font:800 20px ui-monospace,Menlo,Consolas,monospace;margin:4px 0 8px}
+.pred-item .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.pred-item .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.pred-item .opt.skip{border-style:dashed;color:var(--muted);font-family:system-ui,sans-serif}
+.pred-item .why{display:none;margin:8px 0 0;font-size:15px}
+.pred-item.done .why{display:block}
+.trap{display:inline-block;margin-right:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.baselist{font:700 16px ui-monospace,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 21 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Потяг-список</h1>
+    <p>Список — це потяг: кожен вагон має номер з голови й номер з хвоста. Крути повзунки <code>start</code>, <code>stop</code>, <code>step</code>, бачи, які вагони потрапляють у зріз, і передбачай результат.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Вагони й номери</button>
+    <button data-tab="train" data-break="6">2. Потяг на проєкторі</button>
+    <button data-tab="predict">3. Передбач зріз</button>
+    <button data-tab="quiz-tab">4. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>Індекс</h2><p><code>a = ["локомотив", "пошта", "купе"]</code>. Нумерація з нуля: <code>a[0]</code> — локомотив, <code>a[2]</code> — купе.</p>
+        <p>Від'ємні індекси рахують з хвоста: <code>a[-1]</code> — останній вагон, <code>a[-2]</code> — передостанній.</p></div>
+      <div class="card"><h2>Зріз a[start:stop]</h2><p>Береться від <code>start</code> <b>включно</b> до <code>stop</code> <b>не включно</b>. Тож <code>a[1:3]</code> — вагони 1 і 2. Довжина зрізу — <code>stop - start</code>.</p>
+        <p>Пропущений <code>start</code> — з початку, пропущений <code>stop</code> — до кінця.</p></div>
+      <div class="card"><h2>Крок a[start:stop:step]</h2><p><code>a[::2]</code> — кожен другий вагон. Від'ємний крок іде з хвоста: <code>a[::-1]</code> — потяг задом наперед.</p>
+        <p>Крок <code>0</code> не має сенсу: <code>ValueError</code>.</p></div>
+    </div>
+    <div class="card">
+      <h2>Дві різні поведінки</h2>
+      <div class="code">a = [10, 20, 30, 40, 50, 60]
+a[10]      # IndexError: вагона з таким номером немає
+a[2:10]    # [30, 40, 50, 60]: зріз без помилки, межі «підрізаються»</div>
+      <div class="tip"><b>Пам'ятай:</b> одиночний індекс поза межами — помилка, а зріз ніколи не дає помилки індексу: він просто бере те, що є.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="train">
+    <div class="card">
+      <h2>Потяг на проєкторі</h2>
+      <p class="lead">Під кожним вагоном: додатний індекс і від'ємний. Крути повзунки або став позначку «порожньо» (це пропущена частина, <code>None</code>). Підсвічені вагони потрапляють у зріз, цифра на них — порядок обходу.</p>
+      <div class="train" id="wagons" role="group" aria-label="Список із шести вагонів"></div>
+      <div class="ctrl" id="ctrl"></div>
+      <div class="expr" id="expr" aria-live="polite"></div>
+      <div class="dir" id="dir"></div>
+      <div class="result" id="result" aria-live="polite"></div>
+      <div class="tip">Спробуй: <code>a[1:4]</code>, <code>a[-2:]</code>, <code>a[::-1]</code>, <code>a[4:1:-1]</code>, <code>a[5:1]</code> (порожній зріз) і крок 0.</div>
+    </div>
+  </section>
+
+  <section class="panel" id="predict">
+    <div class="card">
+      <h2>Передбач зріз</h2>
+      <p class="lead">Дано <span class="baselist">a = [10, 20, 30, 40, 50, 60]</span>. Що дасть вираз? «Не знаю»: 0 балів і без втрат.</p>
+      <div id="pred-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#slices">До задачника: зрізи →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Зрізи допомагають розв'язати задачі коротко, наприклад «Перші k», «Останні k», «Навпаки» та «Кожен другий».</p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Чому <code>a[1:4]</code> має три елементи, а не чотири?</li><li>Чим відрізняються <code>a[10]</code> і <code>a[2:10]</code>?</li><li>Який зріз розвертає список і не змінює сам список?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О.</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/slice.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Машиніст потяга: жоден вагон не загубився.";
+Lesson.messages.mid = "Помічник машиніста: переглянь «чому» там, де вагони розійшлися.";
+Lesson.messages.low = "Стажер на станції: повернись до «Вагонів і номерів» і прокрути повзунки ще раз.";
+
+/* ---------- Потяг ---------- */
+var CARS = ["локомотив", "пошта", "купе", "плацкарт", "ресторан", "вантаж"];
+var N = CARS.length;
+function repr(list){ return "[" + list.map(function(s){ return typeof s === "string" ? "'" + s + "'" : String(s); }).join(", ") + "]"; }
+var wagonsBox = $("#wagons"), wagons = [];
+CARS.forEach(function(name, i){
+  var w = el("div", "wagon");
+  var body = el("div", "body", name);
+  body.appendChild(el("span", "ord", ""));
+  w.appendChild(body);
+  w.appendChild(el("div", "i", "[" + i + "]"));
+  w.appendChild(el("div", "n", "[" + (i - N) + "]"));
+  wagonsBox.appendChild(w);
+  wagons.push(w);
+});
+var CFG = [
+  {key: "start", min: -(N + 2), max: N + 2, val: 1, none: false},
+  {key: "stop", min: -(N + 2), max: N + 2, val: 4, none: false},
+  {key: "step", min: -3, max: 3, val: 1, none: true}
+];
+var ctrl = $("#ctrl"), exprEl = $("#expr"), resEl = $("#result"), dirEl = $("#dir");
+var rangeIn = {}, noneIn = {}, valEl = {}, box = {};
+CFG.forEach(function(c){
+  var b = el("div", "slider");
+  var lab = el("label", "name", c.key);
+  var id = "r-" + c.key;
+  lab.htmlFor = id;
+  b.appendChild(lab);
+  var r = el("input"); r.type = "range"; r.id = id; r.min = c.min; r.max = c.max; r.step = 1; r.value = c.val;
+  r.dataset.r = c.key;
+  var v = el("div", "val");
+  var nl = el("label", "none");
+  var cb = el("input"); cb.type = "checkbox"; cb.checked = c.none; cb.dataset.none = c.key;
+  nl.appendChild(cb); nl.appendChild(document.createTextNode(" порожньо (None)"));
+  b.appendChild(r); b.appendChild(v); b.appendChild(nl);
+  ctrl.appendChild(b);
+  rangeIn[c.key] = r; noneIn[c.key] = cb; valEl[c.key] = v; box[c.key] = b;
+  r.addEventListener("input", draw);
+  cb.addEventListener("change", draw);
+});
+function draw(){
+  var sl = {};
+  CFG.forEach(function(c){
+    var none = noneIn[c.key].checked;
+    sl[c.key] = none ? null : parseInt(rangeIn[c.key].value, 10);
+    valEl[c.key].textContent = none ? "—  (порожньо)" : String(sl[c.key]);
+    box[c.key].classList.toggle("off", none);
+    rangeIn[c.key].disabled = none;
+  });
+  exprEl.textContent = Py.slice.toExpr(sl, "a");
+  var idx = [];
+  for (var k = 0; k < N; k++) idx.push(k);
+  var out = Py.slice.slice(idx, sl.start, sl.stop, sl.step);
+  wagons.forEach(function(w){ w.classList.remove("on"); w.querySelector(".ord").textContent = ""; });
+  if (out.error){
+    resEl.className = "result err";
+    resEl.textContent = "ValueError: slice step cannot be zero";
+    dirEl.textContent = "Крок 0 означав би «стояти на місці», тож Python відмовляє.";
+    return;
+  }
+  resEl.className = "result";
+  out.forEach(function(i, order){
+    wagons[i].classList.add("on");
+    wagons[i].querySelector(".ord").textContent = String(order + 1);
+  });
+  resEl.textContent = repr(out.map(function(i){ return CARS[i]; }));
+  dirEl.textContent = !out.length ? "Порожній зріз: жоден вагон не підійшов, і це не помилка." :
+    (sl.step !== null && sl.step < 0 ? "← Іде з хвоста до голови: цифри на вагонах показують порядок." : "→ Іде від голови до хвоста.");
+}
+draw();
+
+/* ---------- Передбач ---------- */
+var A = "a = [10, 20, 30, 40, 50, 60]";
+var PRED = [
+  {c: "a[1:4]", o: ["[20, 30, 40]", "[20, 30, 40, 50]", "[10, 20, 30, 40]"], a: 0, trap: true,
+   w: "start=1 входить, stop=4 не входить: індекси 1, 2, 3 → 20, 30, 40."},
+  {c: "a[-2:]", o: ["[50, 60]", "[40, 50]", "[60]"], a: 0,
+   w: "-2 — передостанній вагон (50), stop пропущено, тож іде до кінця: [50, 60]."},
+  {c: "a[::-1]", o: ["[60, 50, 40, 30, 20, 10]", "[10, 20, 30, 40, 50, 60]", "[]"], a: 0,
+   w: "Крок -1 іде з хвоста до голови, тому список розвертається. Сам a при цьому не змінюється."},
+  {c: "a[::2]", o: ["[10, 30, 50]", "[20, 40, 60]", "[10, 20]"], a: 0,
+   w: "Крок 2 бере індекси 0, 2, 4: 10, 30, 50."},
+  {c: "a[5:1]", o: ["[]", "[60, 50, 40, 30]", "IndexError"], a: 0, trap: true,
+   w: "Крок за замовчуванням +1, а від 5 до 1 вперед дійти неможливо, тож зріз порожній, без помилки. Щоб піти назад, потрібен крок: a[5:1:-1]."},
+  {c: "a[10]", o: ["IndexError", "60", "[]"], a: 0, trap: true,
+   w: "Одиночний індекс має існувати. Вагонів лише шість (індекси 0–5), тож a[10] дає IndexError: list index out of range."},
+  {c: "a[2:10]", o: ["[30, 40, 50, 60]", "IndexError", "[30, 40, 50, 60, None, None]"], a: 0, trap: true,
+   w: "Зріз без помилки: stop=10 підрізається до довжини списку (6). Результат [30, 40, 50, 60]."}
+];
+var scoreP = Lesson.register(PRED.length);
+var plist = $("#pred-list");
+PRED.forEach(function(t, i){
+  var item = el("div", "pred-item card");
+  item.appendChild(el("div", null, "Вираз " + (i + 1)));
+  item.appendChild(el("div", "pred-code", t.c));
+  var row = el("div", "opts-row");
+  var why = el("p", "why");
+  var done = false;
+  function reveal(choice){
+    if (done) return; done = true;
+    var ok = choice === t.a;
+    if (ok) Lesson.addScore(scoreP);
+    Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+      b.disabled = true;
+      if (b.dataset.opt === String(t.a)) b.classList.add("right");
+      else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+    });
+    item.classList.add("done");
+    var extra = t.c === "a[2:10]" ? " Це зріз без помилки, на відміну від a[10]. " : "";
+    why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: «" + t.o[t.a] + "». ") + t.w + extra;
+    if (t.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+  }
+  t.o.forEach(function(text, j){
+    var b = el("button", "opt", text);
+    b.type = "button"; b.dataset.opt = j;
+    if (j === t.a) b.setAttribute("data-right", "1");
+    b.addEventListener("click", function(){ reveal(j); });
+    row.appendChild(b);
+  });
+  var u = el("button", "opt skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ reveal(null); });
+  row.appendChild(u);
+  item.appendChild(row);
+  item.appendChild(why);
+  plist.appendChild(item);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Що таке a[-1]?", o: ["Помилка", "Останній елемент списку", "Перший елемент списку"], a: 1, e: "Від'ємні індекси рахують з кінця: -1 — останній, -2 — передостанній."},
+  {q: "Скільки елементів у a[2:5]?", o: ["2", "3", "4"], a: 1, e: "Індекси 2, 3, 4: stop не входить, тож 5 - 2 = 3 елементи."},
+  {q: "Який зріз повертає список у зворотному порядку?", o: ["a[-1:]", "a[::-1]", "a[::1]"], a: 1, e: "Крок -1 іде з хвоста до голови, і всі елементи йдуть задом наперед."},
+  {q: "Для a = [1, 2, 3] що відбудеться: a[5] і a[1:5]?", o: ["Обидва дадуть помилку", "a[5] — IndexError, a[1:5] — [2, 3]", "Обидва дадуть []"], a: 1, e: "Одиночний індекс поза межами — IndexError, а зріз підрізає межі й повертає [2, 3]."}
+]);
+})();
+</script>
+</body>
+</html>

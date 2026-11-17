@@ -94,5 +94,21 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Python", "if", "логічні оператори"]
+  },
+  {
+    folder: "20-py-branch-tester",
+    program: "inf10deep",
+    num: 20,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "тестування", "розгалуження"]
+  },
+  {
+    folder: "21-py-list-slices",
+    program: "inf10deep",
+    num: 21,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "списки", "зрізи"]
   }
 ];

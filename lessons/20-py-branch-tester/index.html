@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тестувальник</title>
+<meta name="description" content="Тестувальник: знайди вхідні дані, на яких майже правильна програма з розгалуженнями помиляється, а потім обери правильне виправлення рядка.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: тестувальник у лабораторії — перед тобою «майже правильні» програми; ти підбираєш вхід, на якому програма й еталон розходяться, і лампочка «баг знайдено» спалахує */
+:root{--accent:var(--sky)}
+.hunt-card,.fix-card{margin-bottom:16px}
+.hunt-card h3,.fix-card h3{margin:0 0 6px}
+.badge{display:inline-block;margin-left:8px;border-radius:999px;padding:0 10px;font-size:12px;font-weight:800;background:var(--card);border:2px solid var(--muted);color:var(--muted)}
+.hunt-card.found .badge{background:var(--okbg);border-color:var(--ok);color:var(--ink)}
+.hunt-card.gaveup .badge{background:var(--badbg);border-color:var(--bad);color:var(--ink)}
+pre.listing{margin:8px 0;padding:6px 0;background:var(--bg);border:1px dashed var(--muted);border-radius:12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;overflow-x:auto;color:var(--ink)}
+pre.listing .ln{display:block;padding:0 12px 0 0;white-space:pre;border-left:4px solid transparent}
+pre.listing .ln::before{content:attr(data-n);display:inline-block;width:2.2em;margin-right:8px;text-align:right;color:var(--muted)}
+pre.listing .ln.bug{background:var(--badbg);border-left-color:var(--bad);font-weight:700}
+.inputs{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0}
+.field{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.field label{font:700 14px ui-monospace,Menlo,Consolas,monospace}
+.field small{color:var(--muted)}
+.field input[type=number],.field input[type=text]{width:9em;border:2px solid var(--ink);border-radius:8px;padding:6px 8px;font:700 15px ui-monospace,Menlo,Consolas,monospace;background:var(--card);color:var(--ink)}
+.toggle{display:flex;gap:6px}
+.toggle button{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 14px;font:700 15px system-ui,sans-serif;cursor:pointer}
+.toggle button.on{background:var(--accent);color:#15171a}
+.outs{display:grid;gap:8px;grid-template-columns:1fr;margin:8px 0}
+@media(min-width:600px){.outs{grid-template-columns:1fr 1fr}}
+.out{border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--card);min-height:3em}
+.out b{display:block;font-size:13px;color:var(--muted)}
+.out span{font:700 15px ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+.hunt-card.diff .out-buggy{border-color:var(--bad);background:var(--badbg)}
+.hunt-card .why,.fix-card .why{margin:8px 0 0;font-size:15px}
+.hunt-card .why:empty{display:none}
+.msg{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.fix-opts{display:grid;gap:8px;margin:8px 0}
+button.fix-opt{display:block;width:100%;text-align:left}
+button.fix-opt pre{margin:0;font:700 14px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:inherit}
+.opt-why{display:none;margin:6px 0 0;font:14px/1.4 system-ui,sans-serif;font-weight:400}
+.fix-card.done .opt-why{display:block}
+.slot{margin:8px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 20 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Тестувальник</h1>
+    <p>Програма «майже правильна»: на звичайних даних усе гаразд, але є вхід, на якому вона помиляється. Підбери його, подивись, чому так, і обери рядок, який виправляє баг.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="brief">1. Як тестують</button>
+    <button data-tab="hunt" data-break="7">2. Полювання на баги</button>
+    <button data-tab="fix">3. Виправ рядок</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="brief">
+    <div class="grid g3">
+      <div class="card"><h2>Межі</h2><p>Помилки люблять <b>межі</b>: число, на якому умова змінює відповідь. Для <code>age &gt;= 65</code> перевір 64, 65 і 66.</p><p>Сумніваєшся між <code>&gt;</code> та <code>&gt;=</code> — тестуй саме граничне значення.</p></div>
+      <div class="card"><h2>Рівні значення</h2><p>Якщо в умові строгі нерівності, спробуй <b>однакові</b> числа: <code>5, 5, 1</code>. Тоді жодне «більше» не спрацює.</p></div>
+      <div class="card"><h2>Особливі випадки</h2><p>Нуль, від'ємні числа, число, що ділиться одразу на кілька дільників (15, 100, 400). Саме там ховаються пропущені гілки.</p></div>
+    </div>
+    <div class="card">
+      <h2>Тест = вхід + очікуваний вивід</h2>
+      <p>Тестувальник не читає код до кінця, а <b>порівнює</b>: що надрукувала програма і що мала б надрукувати. Якщо відповіді різні, знайдено баг. Далі шукають рядок, де помилка.</p>
+      <div class="tip"><b>Пам'ятай:</b> тест, на якому програма спрацювала правильно, нічого не доводить. Потрібен такий вхід, який її ламає.</div>
+    </div>
+    <div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div>
+  </section>
+
+  <section class="panel" id="hunt">
+    <div class="card"><h2>Знайди вхід, що ламає програму</h2>
+      <p class="lead">Введи значення й натисни «Запустити тест». Якщо відповіді «програми» й «еталона» різні, ти знайшов баг: +1 бал. Не виходить? «Здаюся» покаже вхід і пояснення, але без балу.</p></div>
+    <div id="hunt-list"></div>
+  </section>
+
+  <section class="panel" id="fix">
+    <div class="card"><h2>Який рядок виправляє баг?</h2>
+      <p class="lead">Червоний рядок у програмі — місце помилки. Обери, чим його замінити. Після вибору побачиш, чому працює правильний варіант, а чому ні кожен інший.</p></div>
+    <div id="fix-list"></div>
+  </section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#branching">До задачника: розгалуження →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Тепер застосуй тестувальний погляд до власних розв'язків. Три задачі, де легко помилитися на межі чи в порядку гілок:</p>
+      <ul class="tight"><li><b>leap-year</b> — «Високосний рік» (кратність 400)</li><li><b>max-of-three</b> — «Максимум із трьох» (рівні числа)</li><li><b>fizzbuzz</b> — «FizzBuzz» (порядок гілок)</li></ul></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Які значення ти перевіряв би першими для умови <code>x &gt;= 10</code>?</li><li>Чому недостатньо протестувати лише «звичайні» значення?</li><li>Як порядок гілок <code>elif</code> може зробити код недосяжним?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_18)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/tester.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Тестувальник найвищого класу: жоден баг не сховався.";
+Lesson.messages.mid = "Непоганий тестувальник: перечитай «чому» там, де баг лишився непоміченим.";
+Lesson.messages.low = "Тестувальник-стажер: повернись до «Як тестують» і спробуй ще раз.";
+var PROGRAMS = Py.tester.PROGRAMS;
+
+function listing(code){
+  var pre = el("pre", "listing");
+  code.split("\n").forEach(function(line, i){
+    var s = el("span", "ln", line);
+    s.dataset.n = i + 1;
+    pre.appendChild(s);
+  });
+  return pre;
+}
+
+/* Шукає вхід, на якому програма помиляється (для «Здаюся»). */
+var NUMS = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 15, 30, 64, 65, 66, 100, 400, 1900, 2000];
+function findBreaking(p){
+  var combo = {};
+  function rec(i){
+    if (i === p.vars.length) return Py.tester.breaks(p.id, combo);
+    var v = p.vars[i], pool = v.kind === "bool" ? [true, false] : v.kind === "str" ? ["", "a"] : NUMS;
+    for (var k = 0; k < pool.length; k++){
+      combo[v.name] = pool[k];
+      if (rec(i + 1)) return true;
+    }
+    return false;
+  }
+  return rec(0) ? JSON.parse(JSON.stringify(combo)) : null;
+}
+
+/* ---------- Полювання ---------- */
+var scoreH = Lesson.register(PROGRAMS.length);
+var hlist = $("#hunt-list");
+PROGRAMS.forEach(function(p){
+  var card = el("div", "hunt-card card");
+  card.dataset.id = p.id;
+  var h = el("h3", null, p.title);
+  var badge = el("span", "badge", "баг не знайдено");
+  h.appendChild(badge);
+  card.appendChild(h);
+  var pre = listing(p.code);
+  card.appendChild(pre);
+  var inputs = el("div", "inputs");
+  var getters = {}, setters = {};
+  p.vars.forEach(function(v){
+    var f = el("div", "field");
+    var lab = el("label", null, v.name);
+    f.appendChild(lab);
+    if (v.kind === "bool"){
+      var state = false;
+      var tg = el("div", "toggle");
+      tg.setAttribute("role", "group"); tg.setAttribute("aria-label", v.name);
+      var yes = el("button", null, "Так"), no = el("button", "on", "Ні");
+      yes.type = no.type = "button";
+      yes.dataset.val = "true"; no.dataset.val = "false";
+      var setB = function(x){ state = x; yes.classList.toggle("on", x); no.classList.toggle("on", !x); yes.setAttribute("aria-pressed", x); no.setAttribute("aria-pressed", !x); };
+      yes.addEventListener("click", function(){ setB(true); });
+      no.addEventListener("click", function(){ setB(false); });
+      setB(false);
+      tg.appendChild(yes); tg.appendChild(no);
+      f.appendChild(tg);
+      getters[v.name] = function(){ return state; };
+      setters[v.name] = setB;
+    } else {
+      var inp = el("input");
+      inp.type = v.kind === "int" ? "number" : "text";
+      if (v.kind === "int") inp.step = "1";
+      inp.id = "v-" + p.id + "-" + v.name;
+      lab.htmlFor = inp.id;
+      inp.dataset.var = v.name;
+      inp.value = v.kind === "int" ? "0" : "";
+      f.appendChild(inp);
+      getters[v.name] = function(){
+        if (v.kind === "int"){
+          if (!/^-?\d+$/.test(inp.value.trim())) return NaN;
+          return parseInt(inp.value, 10);
+        }
+        return inp.value;
+      };
+      setters[v.name] = function(x){ inp.value = x; };
+    }
+    f.appendChild(el("small", null, v.hint));
+    inputs.appendChild(f);
+  });
+  card.appendChild(inputs);
+  var row = el("div", "row");
+  var run = el("button", "btn", "Запустити тест"); run.type = "button"; run.setAttribute("data-run", "");
+  var give = el("button", "btn ghost", "Здаюся"); give.type = "button"; give.setAttribute("data-giveup", "");
+  row.appendChild(run); row.appendChild(give);
+  card.appendChild(row);
+  var msg = el("p", "msg"); msg.setAttribute("aria-live", "polite");
+  card.appendChild(msg);
+  var outs = el("div", "outs");
+  var ob = el("div", "out"); ob.appendChild(el("b", null, "Програма надрукувала:")); var obv = el("span", "out-buggy", "—"); ob.appendChild(obv);
+  var oc = el("div", "out"); oc.appendChild(el("b", null, "Мала б:")); var ocv = el("span", "out-correct", "—"); oc.appendChild(ocv);
+  outs.appendChild(ob); outs.appendChild(oc);
+  card.appendChild(outs);
+  var why = el("p", "why");
+  card.appendChild(why);
+  var finished = false;
+
+  function collect(){
+    var vars = {}, bad = false;
+    p.vars.forEach(function(v){ var x = getters[v.name](); if (typeof x === "number" && isNaN(x)) bad = true; vars[v.name] = x; });
+    return bad ? null : vars;
+  }
+  function show(vars){
+    var b = p.buggy(vars), c = p.correct(vars);
+    obv.textContent = b; ocv.textContent = c;
+    var differs = b !== c;
+    card.classList.toggle("diff", differs);
+    return differs;
+  }
+  function reveal(){
+    why.textContent = p.why;
+    var lines = pre.querySelectorAll(".ln");
+    if (lines[p.bugLine - 1]) lines[p.bugLine - 1].classList.add("bug");
+  }
+  run.addEventListener("click", function(){
+    var vars = collect();
+    if (!vars){ msg.textContent = "Введи ціле число в усі числові поля."; return; }
+    msg.textContent = "";
+    var differs = show(vars);
+    if (differs && Py.tester.breaks(p.id, vars)){
+      msg.textContent = "Знайдено! Програма й еталон розійшлися.";
+      if (!finished){
+        finished = true;
+        Lesson.addScore(scoreH);
+        card.classList.add("found");
+        badge.textContent = "баг знайдено";
+        reveal();
+      }
+    } else if (!differs){
+      msg.textContent = "Тут програма працює правильно. Спробуй інші значення: межу, рівні числа, кратні кількох дільників.";
+    }
+  });
+  give.addEventListener("click", function(){
+    var found = findBreaking(p);
+    if (found){
+      p.vars.forEach(function(v){ setters[v.name](found[v.name]); });
+      show(found);
+    }
+    msg.textContent = found ? "Ось вхід, що ламає програму. Балу немає, але тепер ти знаєш, де шукати." : "";
+    if (!finished){
+      finished = true;
+      card.classList.add("gaveup");
+      badge.textContent = "здався";
+      reveal();
+    }
+  });
+  hlist.appendChild(card);
+});
+
+/* ---------- Виправлення ---------- */
+var scoreF = Lesson.register(PROGRAMS.length);
+var flist = $("#fix-list");
+PROGRAMS.forEach(function(p, pi){
+  var card = el("div", "fix-card card");
+  card.dataset.id = p.id;
+  card.appendChild(el("h3", null, p.title));
+  var pre = listing(p.code);
+  pre.querySelectorAll(".ln")[p.bugLine - 1].classList.add("bug");
+  card.appendChild(pre);
+  card.appendChild(el("p", "slot", "Чим замінити червоний рядок " + p.bugLine + "?"));
+  var opts = el("div", "fix-opts");
+  var fixes = p.fixes.slice();
+  var rot = pi % fixes.length;
+  fixes = fixes.slice(rot).concat(fixes.slice(0, rot));
+  var done = false;
+  fixes.forEach(function(f){
+    var b = el("button", "opt fix-opt");
+    b.type = "button";
+    b.dataset.ok = f.ok ? "1" : "0";
+    b.appendChild(el("pre", null, f.line));
+    b.appendChild(el("span", "opt-why", (f.ok ? "Правильно. " : "Не те. ") + f.why));
+    b.addEventListener("click", function(){
+      if (done) return; done = true;
+      if (f.ok) Lesson.addScore(scoreF);
+      Array.prototype.forEach.call(opts.querySelectorAll("button"), function(x){
+        x.disabled = true;
+        if (x.dataset.ok === "1") x.classList.add("right");
+      });
+      if (!f.ok) b.classList.add("wrong");
+      card.classList.add("done");
+    });
+    opts.appendChild(b);
+  });
+  card.appendChild(opts);
+  flist.appendChild(card);
+});
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Для умови age >= 65 які значення перевірити першими?", o: ["Лише 100", "Межу: 64, 65, 66", "Лише 0"], a: 1, e: "Баги живуть на межі: > і >= відрізняються саме на числі 65."},
+  {q: "Програма знаходить максимум із трьох через a > b and a > c. Який тест її зламає?", o: ["1, 2, 3", "5, 5, 1", "9, 1, 5"], a: 1, e: "Для 5, 5, 1 жодна строга нерівність не спрацює, програма потрапить в else й надрукує c, тобто 1."},
+  {q: "Програма дала правильну відповідь на тесті. Що це доводить?", o: ["Програма правильна", "Лише те, що на цьому вході все гаразд", "Що тест був поганий"], a: 1, e: "Один успішний тест не доводить правильності. Шукай вхід, який її ламає: межі, рівні значення, особливі випадки."}
+]);
+})();
+</script>
+</body>
+</html>
