@@ -13,9 +13,12 @@ export function loadScript(window, relPath) {
 
 // Створює jsdom зі сторінки lessons/<folder>/index.html без мережі:
 // відносні <script src> підставляються вмістом файлів, type="module" пропускаються.
-export function loadPage(folder) {
-  const pageDir = path.join(ROOT, "lessons", folder);
-  let html = fs.readFileSync(path.join(pageDir, "index.html"), "utf8");
+// Аргумент, що закінчується на .html, — шлях сторінки від кореня (наприклад "taskbook/index.html").
+export function loadPage(pageOrFolder) {
+  const rel = /\.html$/i.test(pageOrFolder) ? pageOrFolder : "lessons/" + pageOrFolder + "/index.html";
+  const pageFile = path.join(ROOT, rel);
+  const pageDir = path.dirname(pageFile);
+  let html = fs.readFileSync(pageFile, "utf8");
   html = html.replace(/<script\b([^>]*)>\s*<\/script>/gi, (tag, attrs) => {
     const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(attrs);
     if (!src || /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(src[1])) return src ? "" : tag;
@@ -26,7 +29,7 @@ export function loadPage(folder) {
   return new Promise((resolve, reject) => {
     const virtualConsole = new VirtualConsole();
     virtualConsole.on("jsdomError", reject); // необроблена помилка у скрипті сторінки валить тест
-    const { window } = new JSDOM(html, { runScripts: "dangerously", virtualConsole, url: "http://localhost/lessons/" + folder + "/" });
+    const { window } = new JSDOM(html, { runScripts: "dangerously", virtualConsole, url: "http://localhost/" + (/\.html$/i.test(pageOrFolder) ? rel : "lessons/" + pageOrFolder + "/") });
     opened.push(window);
     if (window.document.readyState === "complete") return resolve(window);
     window.addEventListener("load", () => resolve(window));
