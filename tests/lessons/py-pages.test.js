@@ -574,4 +574,11 @@ describe("реєстрація уроків inf10deep", () => {
       }
     });
   }
+
+  it("TASKBOOK_INDEX: 5 тем із count > 0", () => {
+    loadScript(window, "data/taskbook/index.js");
+    const index = window.TASKBOOK_INDEX;
+    expect(index.map(t => t.id)).toEqual(["types", "branching", "slices", "list-ops", "for-range"]);
+    for (const t of index) expect(t.count, t.id).toBeGreaterThan(0);
+  });
 });

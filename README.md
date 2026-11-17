@@ -19,6 +19,11 @@ documents/                 вхідні календарні плани для �
 documents/rp/LAB_1, LAB_2  PDF лабораторних «Розумних плат» (латинські назви папок)
 assets/boards/             модулі логіки уроків 11–15 курсу «Розумні плати»
 tests/                     тести vitest + jsdom (npm test)
+taskbook/index.html        Задачник з автоперевіркою Python
+taskbook/solutions/        еталонні розв'язки <тема>/<id>.py
+data/taskbook/             теми й задачі Задачника
+assets/py/                 модулі Python-уроків і Задачника
+scripts/check-tasks.mjs    перевірка еталонів на локальному python3
 docs/style-guide-interactives.md  гід зі стилю інтерактивів
 scripts/import-mriya.mjs   імпорт XLSX у data/
 teacher/index.html         календарний план учителя
@@ -44,6 +49,52 @@ lessons/                    готові уроки та картки вчите
 - `rgb.js` (`Boards.rgb`) — RGB-світлодіод: `clamp`, `toCss`, `toSketch`, `matches`, `hint`, `dutyCycle`.
 
 Сцена `assets/scenes/rgb-cube.js` показує куб кольорів для уроку 15 (без WebGL лишається `rgb-cube.svg`).
+
+## Курс «Інформатика, поглиблений рівень» (inf10deep): уроки 18–25
+
+Уроки `lessons/18-py-types` … `lessons/25-py-for-range` — Python для 10 класу: типи, розгалуження, тестувальник, зрізи, списки, `for` і `range`. Кожен має картку вчителя (`teacher.html`) і план на 45 хв у `data/teacher-plans.js`. Інтерактиви дотримуються `docs/style-guide-interactives.md`. Задачі з ноутбуків Крутяк Н. О.: [папка на Google Drive](https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld).
+
+## Python у браузері
+
+Python виконує Pyodide 0.26.4 з jsdelivr. Він завантажується ліниво — лише коли учень уперше запускає код, — і працює у Web Worker, щоб сторінка не зависала. Ліміт виконання — 3 с (нескінченний цикл зупиняється), завантаження — 30 с. Працює лише через `http(s)` (не з `file://`). Якщо Pyodide недоступний, уроки продовжують працювати без нього, а Задачник показує статус «Python недоступний» і дає скопіювати умову й дані.
+
+## Модулі `assets/py/`
+
+Звичайні скрипти без збірки.
+
+- `compare.js` — порівняння виводу з очікуваним (з допуском для дробових) і пояснення розбіжностей.
+- `errors.js` — очищення трасування Python і підказки українською.
+- `runner.js` — запуск коду у воркері Pyodide, таймаути, доступність.
+- `worker.js` — Web Worker із Pyodide: підставляє змінні, збирає stdout.
+- `taskbook.js` — контролер сторінки Задачника: маршрути, редактор, перевірка, прогрес.
+- `slice.js` — логіка тренажерів зрізів.
+- `range.js` — логіка тренажера `range`.
+- `listsim.js` — симулятор списків і їх методів.
+- `tester.js` — логіка уроку «Тестувальник».
+
+## Задачник
+
+Сторінка `taskbook/index.html` — задачі з Python, які перевіряються автоматично в браузері. Прогрес зберігається в `localStorage` (ключ `taskbook-v1`).
+
+Дані: `data/taskbook/index.js` (`window.TASKBOOK_INDEX` — теми з `id`, `title`, `count`) і по файлу на тему (`types`, `branching`, `slices`, `list-ops`, `for-range`), що заповнюють `window.TASKBOOK.<тема>`. Еталони — `taskbook/solutions/<тема>/<id>.py`.
+
+Поля задачі: `id`, `title`, `emoji`, `source` (`null` або автор і ноутбук), `text`, `vars` (вхідні змінні), `starter`, `tests`, `hint`, за потреби `tolerance`. Кожен тест — `{ vars, out }`: код запускається зі змінними тесту, а його stdout порівнюється з `out`. Тести «приховані»: учень не бачить їх наперед, а після перевірки отримує лише перший невдалий (вхідні дані, очікуваний і отриманий вивід).
+
+Перевірка еталонів:
+
+```sh
+npm run check-tasks
+```
+
+Потрібен локальний `python3`: скрипт `scripts/check-tasks.mjs` запускає кожен еталон на всіх тестах задачі.
+
+Як додати тему:
+
+1. Створіть `data/taskbook/<тема>.js` із `window.TASKBOOK.<тема> = [ ... ]`.
+2. Додайте запис `{ id, title, count }` до `data/taskbook/index.js`.
+3. Покладіть еталони в `taskbook/solutions/<тема>/<id>.py`.
+4. Додайте `<script src="../data/taskbook/<тема>.js">` у `taskbook/index.html`. Головна `index.html` підключає лише `data/taskbook/index.js`.
+5. Запустіть `npm run check-tasks` і `npm test`.
 
 ## Тести
 
