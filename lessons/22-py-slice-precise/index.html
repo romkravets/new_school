@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Зріж точно</title>
+<meta name="description" content="Зріж точно: дано список і ціль, треба записати вираз зрізу, який дає саме її. Перевірка за семантикою Python, бонус «найкоротший», від'ємні індекси й крок.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: хірург-ювелір — дано список і «заготовку», учень пише вираз зрізу, а сайт виконує його й показує, що саме вийшло; бонусна зірка за запис не довший за еталонний */
+:root{--accent:var(--sky)}
+.pred-item{margin-bottom:16px}
+.pred-code{font:800 20px ui-monospace,Menlo,Consolas,monospace;margin:4px 0 8px}
+.pred-item .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.pred-item .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.pred-item .opt.skip{border-style:dashed;color:var(--muted);font-family:system-ui,sans-serif}
+.pred-item .why{display:none;margin:8px 0 0;font-size:15px}
+.pred-item.done .why{display:block}
+.trap{display:inline-block;margin-right:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.baselist{font:700 16px ui-monospace,Menlo,Consolas,monospace}
+.target-card{margin-bottom:16px}
+.target-card .row2{display:grid;gap:6px;margin:6px 0}
+.target-card .lab{font-size:13px;color:var(--muted);font-weight:700}
+.target-card .mono{font:700 17px ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+.target-card .goal{border:2px dashed var(--muted);border-radius:12px;padding:6px 12px;background:var(--bg)}
+.target-card .inrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.target-card input[type=text]{flex:1 1 180px;min-width:0;font:700 18px ui-monospace,Menlo,Consolas,monospace;padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.target-card .fb{min-height:1.4em;font-size:15px}
+.target-card .fb code{font-weight:700}
+.target-card.ok{border-color:var(--ok)}
+.target-card.locked{opacity:.92}
+.star{display:inline-block;margin-left:6px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 10px;font-size:13px;font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 22 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Зріж точно</h1>
+    <p>Тепер навпаки: дано список і те, що має вийти. Запиши зріз <code>a[start:stop:step]</code>, який дає саме цю ціль. Додатні й від'ємні індекси, крок, що розвертає: усе в ділі.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="warmup" data-break="5">1. Розминка</button>
+    <button data-tab="precise">2. Зріж точно</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="warmup">
+    <div class="card">
+      <h2>Пам'ятка</h2>
+      <p><code>a[start:stop:step]</code>: <code>start</code> включно, <code>stop</code> не включно, пропущена частина означає межу списку, від'ємний індекс рахується з хвоста, від'ємний крок іде назад. Якщо крок від'ємний і <code>start</code> пропущено, зріз починається з останнього елемента.</p>
+    </div>
+    <div class="card">
+      <h2>Який зріз дав це?</h2>
+      <p class="lead">Дано <span class="baselist">a = [10, 20, 30, 40, 50, 60]</span>. Обери зріз, що дає показаний результат. «Не знаю»: 0 балів і без втрат.</p>
+      <div id="warm-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="precise">
+    <div class="card">
+      <h2>Зріж точно</h2>
+      <p class="lead">У всіх цілях список називається <code>a</code>. Запиши вираз, наприклад <code>a[1:4]</code>. Одиночний індекс не підійде: ціль це список. Якщо твій запис не довший за еталонний, отримаєш ★ (бонус, без додаткових балів). «Показати відповідь» відкриває еталон, але ця ціль уже без балів.</p>
+      <div class="card"><b>a</b> = <span class="mono baselist" id="base"></span></div>
+      <div id="targets"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#slices">До задачника: зрізи →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Три задачі теми «Зрізи» для практики: <b>Середина</b> (<code>middle</code>), <b>Вікно</b> (<code>window</code>) і <b>Від'ємні індекси</b> (<code>negative-indices</code>).</p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Як отримати останні три елементи і чому тут зручний від'ємний індекс?</li><li>Коли потрібен від'ємний крок і що тоді означають <code>start</code> та <code>stop</code>?</li><li>Чим відрізняється <code>a[1:8:2]</code> від <code>a[1::2]</code>?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_20)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script src="../../assets/py/slice.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Ювелір зрізів: жодного зайвого символа.";
+Lesson.messages.mid = "Підмайстер: поглянь на «чому» там, де зріз вийшов іншим.";
+Lesson.messages.low = "Учень майстерні: повернись до пам'ятки й спробуй ще раз.";
+function repr(list){ return "[" + list.join(", ") + "]"; }
+
+/* ---------- Розминка ---------- */
+var W = [
+  {r: "[20, 30, 40]", o: ["a[1:4]", "a[1:3]", "a[2:4]"], a: 0, trap: true,
+   w: "Результат починається з 20 (індекс 1) і закінчується 40 (індекс 3). Оскільки stop не входить, пишемо a[1:4]."},
+  {r: "[10, 30, 50]", o: ["a[::2]", "a[1::2]", "a[:3]"], a: 0,
+   w: "Беремо кожен другий елемент з самого початку: індекси 0, 2, 4. a[1::2] дало б 20, 40, 60."},
+  {r: "[50, 40, 30]", o: ["a[4:1:-1]", "a[1:4:-1]", "a[4:1]"], a: 0, trap: true,
+   w: "Іти назад можна лише з від'ємним кроком, а start має бути правіше за stop. a[4:1:-1] бере індекси 4, 3, 2. a[1:4:-1] і a[4:1] дають порожній список."}
+];
+var scoreW = Lesson.register(W.length);
+var wl = $("#warm-list");
+W.forEach(function(t, i){
+  var item = el("div", "pred-item card");
+  item.appendChild(el("div", null, "Результат " + (i + 1)));
+  item.appendChild(el("div", "pred-code", t.r));
+  var row = el("div", "opts-row"), why = el("p", "why"), done = false;
+  function reveal(choice){
+    if (done) return; done = true;
+    var ok = choice === t.a;
+    if (ok) Lesson.addScore(scoreW);
+    Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+      b.disabled = true;
+      if (b.dataset.opt === String(t.a)) b.classList.add("right");
+      else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+    });
+    item.classList.add("done");
+    why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: «" + t.o[t.a] + "». ") + t.w;
+    if (t.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+  }
+  t.o.forEach(function(text, j){
+    var b = el("button", "opt", text);
+    b.type = "button"; b.dataset.opt = j;
+    if (j === t.a) b.setAttribute("data-right", "1");
+    b.addEventListener("click", function(){ reveal(j); });
+    row.appendChild(b);
+  });
+  var u = el("button", "opt skip", "Не знаю");
+  u.type = "button"; u.setAttribute("data-unknown", "");
+  u.addEventListener("click", function(){ reveal(null); });
+  row.appendChild(u);
+  item.appendChild(row); item.appendChild(why);
+  wl.appendChild(item);
+});
+
+/* ---------- Зріж точно ---------- */
+var A = [10, 20, 30, 40, 50, 60, 70, 80];
+$("#base").textContent = repr(A);
+/* ref — еталонний вираз; усі еталони звірені з python3 */
+var T = [
+  {ref: "a[:3]", note: "Перші три: start пропущено."},
+  {ref: "a[-2:]", note: "Останні два: від'ємний start, stop пропущено."},
+  {ref: "a[1::2]", note: "Кожен другий, починаючи з індексу 1."},
+  {ref: "a[2:6]", note: "Індекси 2, 3, 4, 5: stop не входить."},
+  {ref: "a[1:-1]", note: "Без першого й останнього: від'ємний stop."},
+  {ref: "a[5:2:-1]", note: "Назад: індекси 5, 4, 3. Інший запис: a[-3:-6:-1]."},
+  {ref: "a[::-2]", note: "З кінця через один: 80, 60, 40, 20."},
+  {ref: "a[::-1]", note: "Весь список задом наперед."}
+];
+var scoreT = Lesson.register(T.length);
+var box = $("#targets");
+function nospace(s){ return s.replace(/\s+/g, ""); }
+T.forEach(function(t, i){
+  var P = Py.slice.parse(t.ref);
+  var goalList = Py.slice.slice(A, P.start, P.stop, P.step);
+  var goal = repr(goalList);
+  var card = el("div", "target-card card");
+  card.appendChild(el("h3", null, "Ціль " + (i + 1)));
+  var r1 = el("div", "row2");
+  r1.appendChild(el("div", "lab", "Треба отримати"));
+  r1.appendChild(el("div", "mono goal", goal));
+  card.appendChild(r1);
+  var inrow = el("div", "inrow");
+  var inp = el("input"); inp.type = "text"; inp.placeholder = "a[…]"; inp.autocomplete = "off"; inp.spellcheck = false;
+  inp.setAttribute("aria-label", "Вираз зрізу для цілі " + (i + 1));
+  var bc = el("button", "btn", "Перевірити"); bc.type = "button"; bc.setAttribute("data-check", "");
+  var br = el("button", "opt skip", "Показати відповідь"); br.type = "button"; br.setAttribute("data-reveal", "");
+  inrow.appendChild(inp); inrow.appendChild(bc); inrow.appendChild(br);
+  card.appendChild(inrow);
+  var fb = el("div", "fb"); fb.setAttribute("aria-live", "polite");
+  card.appendChild(fb);
+  var done = false;
+  function lock(){ done = true; inp.disabled = true; bc.disabled = true; br.disabled = true; card.classList.add("locked"); }
+  function say(parts){
+    fb.textContent = "";
+    parts.forEach(function(p){ fb.appendChild(typeof p === "string" ? document.createTextNode(p) : p); });
+  }
+  function code(s){ return el("code", null, s); }
+  function check(){
+    if (done) return;
+    var raw = inp.value, p = Py.slice.parse(raw);
+    if (!p) { say(["Це не схоже на зріз. Потрібен запис виду ", code("a[start:stop:step]"), "."]); return; }
+    if (p.name !== "a") { say(["Список у цій задачі називається ", code("a"), ", а не ", code(p.name), "."]); return; }
+    if (p.kind === "index") { say(["Це індекс: він дає один елемент, а не список. Додай двокрапку, щоб вийшов зріз."]); return; }
+    var out = Py.slice.slice(A, p.start, p.stop, p.step);
+    if (out.error) { say([code(nospace(raw)), " дає ValueError: крок зрізу не може дорівнювати 0."]); return; }
+    var got = repr(out);
+    if (got !== goal) { say([code(nospace(raw)), " дає ", code(got), ". Це не те, що треба: ", out.length === 0 ? "зріз порожній, перевір напрямок і межі." : "порівняй із ціллю."]); return; }
+    lock();
+    card.classList.add("ok");
+    Lesson.addScore(scoreT);
+    var short = nospace(raw).length <= nospace(t.ref).length;
+    say(["Так, ", code(nospace(raw)), " дає ", code(got), ". "]);
+    if (short){ var s = el("span", "star", "★ найкоротший"); s.title = "Не довший за еталон " + t.ref; fb.appendChild(s); }
+    else fb.appendChild(document.createTextNode("Еталон коротший: " + t.ref + ". " + t.note));
+  }
+  bc.addEventListener("click", check);
+  inp.addEventListener("keydown", function(e){ if (e.key === "Enter") check(); });
+  br.addEventListener("click", function(){
+    if (done) return;
+    lock();
+    say(["Еталон: ", code(t.ref), ". " + t.note + " Ця ціль без балів."]);
+  });
+  box.appendChild(card);
+});
+})();
+</script>
+</body>
+</html>

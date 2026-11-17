@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Склад списків</title>
+<meta name="description" content="Склад списків: оператори +, *, in, функції len, min, max, sum, порівняння списків і пастка b = a, коли два імені вказують на один список.">
+<link rel="stylesheet" href="../../assets/lesson.css">
+<style>
+/* Ідея: склад (комора) списків — з'єднуємо, повторюємо, шукаємо; а в пастці «b = a» бачимо, чи на комору вказують два ярлики, чи у кожного ярлика своя */
+:root{--accent:var(--sky)}
+.pred-item{margin-bottom:16px}
+.pred-code{font:800 20px ui-monospace,Menlo,Consolas,monospace;margin:4px 0 8px;white-space:pre-wrap;word-break:break-word}
+.pred-item .opts-row{display:flex;flex-wrap:wrap;gap:8px}
+.pred-item .opt{font-family:ui-monospace,Menlo,Consolas,monospace}
+.pred-item .opt.skip{border-style:dashed;color:var(--muted);font-family:system-ui,sans-serif}
+.pred-item .why{display:none;margin:8px 0 0;font-size:15px}
+.pred-item.done .why{display:block}
+.trap{display:inline-block;margin-right:8px;background:var(--orange);color:#15171a;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.alias-vis{border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--card)}
+.alias-vis .modes{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.alias-vis .modes button[aria-pressed=true]{background:var(--accent);color:#15171a;border-color:var(--ink)}
+.alias-vis .scene{display:flex;flex-wrap:wrap;gap:16px;align-items:center;min-height:90px}
+.alias-vis .tags{display:grid;gap:8px}
+.alias-vis .tag{border-radius:999px;border:2px solid var(--ink);padding:2px 14px;font:800 16px ui-monospace,Menlo,Consolas,monospace;background:var(--bg)}
+.alias-vis .arrow{font:800 22px system-ui,sans-serif;color:var(--muted)}
+.alias-vis .lists{display:grid;gap:8px}
+.alias-vis .lst{border:3px solid var(--ink);border-radius:10px;padding:8px 14px;font:700 16px ui-monospace,Menlo,Consolas,monospace;background:var(--accent);color:#15171a;word-break:break-word}
+.alias-vis .lst.changed{box-shadow:0 0 0 3px var(--orange)}
+.alias-vis .code{margin:8px 0}
+.alias-vis .sum{font-size:15px;min-height:1.4em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../../index.html#inf10deep">← До курсу «Інформатика. Поглиблений рівень»</a>
+  <header class="hero">
+    <small>Заняття 23 · Інформатика, поглиблений рівень · 10 клас</small>
+    <h1>Склад списків</h1>
+    <p>Списки можна склеювати, повторювати, шукати в них і порівнювати. А ще є підступна пастка: <code>b = a</code> не робить копії. Передбачай, перевіряй і дивись, на що вказують імена.</p>
+    <div class="score" aria-live="polite">Бали: <span data-score>0</span> / <span data-max>0</span></div>
+  </header>
+  <nav class="tabs" aria-label="Розділи">
+    <button data-tab="theory">1. Операції зі списками</button>
+    <button data-tab="predict" data-break="6">2. Передбач результат</button>
+    <button data-tab="alias">3. Пастка b = a</button>
+    <button data-tab="quiz-tab">4. Перевір себе</button>
+    <button data-tab="final">Підсумок</button>
+  </nav>
+
+  <section class="panel" id="theory">
+    <div class="grid g3">
+      <div class="card"><h2>+ та *</h2><p><code>[1, 2] + [3]</code> дає <code>[1, 2, 3]</code>: новий список, склеєний з двох.</p>
+        <p><code>[1, 2] * 3</code> дає <code>[1, 2, 1, 2, 1, 2]</code>. А <code>[0] * 0</code> дає <code>[]</code>.</p></div>
+      <div class="card"><h2>in та len</h2><p><code>3 in [1, 2, 3]</code> — <code>True</code>: перевіряється наявність <b>елемента</b>. Якщо елемент у списку складніший (скажімо, рядок), <code>in</code> порівнює його цілком: <code>"a" in ["abc"]</code> — <code>False</code>.</p>
+        <p><code>len(a)</code> — кількість елементів верхнього рівня: <code>len([[1, 2], [3]])</code> дорівнює 2.</p></div>
+      <div class="card"><h2>min, max, sum</h2><p><code>min([4, 2, 8])</code> — 2, <code>max</code> — 8, <code>sum</code> — сума чисел.</p>
+        <p><code>sum([])</code> дорівнює 0, а <code>min([])</code> і <code>max([])</code> дають <code>ValueError</code>. Рядки порівнюються за символами: <code>max(["10", "9"])</code> — <code>"9"</code>.</p></div>
+    </div>
+    <div class="card">
+      <h2>Порівняння списків</h2>
+      <p>Списки порівнюються поелементно зліва направо, як слова в словнику: перша відмінність вирішує.</p>
+      <div class="code">[1, 2] < [1, 3]      # True: 1 == 1, а 2 < 3
+[1, 2, 3] < [1, 2]   # False: довший список «більший», якщо початок збігається
+[1, 2] == [2, 1]     # False: порядок має значення</div>
+      <div class="tip"><b>Пам'ятай:</b> <code>+</code> і <code>*</code> створюють нові списки, а ось <code>b = a</code> нічого не створює: це друге ім'я для того самого списку (вкладка «Пастка b = a»).</div>
+    </div>
+  </section>
+
+  <section class="panel" id="predict">
+    <div class="card">
+      <h2>Передбач результат</h2>
+      <p class="lead">Що виведе вираз? «Не знаю»: 0 балів і без втрат. Обов'язково прочитай «чому».</p>
+      <div id="pred-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="alias">
+    <div class="card">
+      <h2>Пастка: b = a</h2>
+      <p class="lead">Спершу подивись на схему: натискай режими й дізнавайся, скільки списків насправді існує. Потім дай відповіді нижче.</p>
+      <div class="alias-vis" id="vis">
+        <div class="modes" role="group" aria-label="Режим копіювання">
+          <button type="button" class="opt" data-mode="same" aria-pressed="true">b = a</button>
+          <button type="button" class="opt" data-mode="copy" aria-pressed="false">b = a[:]   (або a.copy())</button>
+        </div>
+        <div class="code" id="vis-code"></div>
+        <div class="scene" id="scene" aria-live="polite"></div>
+        <button type="button" class="btn" id="vis-push">b.append(3)</button>
+        <button type="button" class="opt skip" id="vis-reset">Скинути</button>
+        <div class="sum" id="vis-sum"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Що в a?</h2>
+      <div id="alias-list"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz-tab"><div class="card"><h2>Перевір себе</h2><div id="quiz"></div></div></section>
+
+  <section class="panel" id="final">
+    <div class="card final"><h2>Твій результат</h2><div class="big"><span data-score>0</span> / <span data-max>0</span></div><p class="lead" data-final-msg></p>
+      <div class="row"><a class="btn" href="../../taskbook/index.html#list-ops">До задачника: операції зі списками →</a></div></div>
+    <div class="card"><h3>Спробуй у задачнику</h3><p>Три задачі теми «Списки: операції»: <b>Склеїти й повторити</b> (<code>concat-repeat</code>), <b>Чи є в списку</b> (<code>in-list</code>) і <b>Найкращий результат</b> (<code>best-result</code>).</p></div>
+    <div class="card"><h3>Рефлексія</h3><ul class="tight"><li>Чим <code>b = a</code> відрізняється від <code>b = a[:]</code>?</li><li>Чому <code>sum([])</code> дорівнює 0, а <code>max([])</code> — помилка?</li><li>Що вирішує порівняння <code>[1, 2] &lt; [1, 3]</code>?</li></ul></div>
+  </section>
+
+  <footer>Інтерактив · <a href="teacher.html">План уроку для вчителя</a> · <a href="https://drive.google.com/drive/folders/1qpZHOUMd7iV9WaODVtEMTdoILfQ0aWld" target="_blank" rel="noopener">Ноутбуки Крутяк Н. О. (Тема_21)</a></footer>
+</div>
+<script src="../../assets/lesson.js"></script>
+<script>
+(function(){
+function $(s, r){ return (r || document).querySelector(s); }
+function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+Lesson.messages.high = "Комірник складу: жоден список не перемішався.";
+Lesson.messages.mid = "Помічник комірника: перечитай «чому» там, де вийшло інакше.";
+Lesson.messages.low = "Новачок на складі: повернись до теорії й до схеми b = a.";
+
+/* Спільний рендер карток «варіанти + Не знаю + чому» */
+function buildItems(root, data, score, label){
+  data.forEach(function(t, i){
+    var item = el("div", "pred-item card");
+    item.appendChild(el("div", null, label + " " + (i + 1)));
+    item.appendChild(el("div", "pred-code", t.c));
+    var row = el("div", "opts-row"), why = el("p", "why"), done = false;
+    function reveal(choice){
+      if (done) return; done = true;
+      var ok = choice === t.a;
+      if (ok) Lesson.addScore(score);
+      Array.prototype.forEach.call(row.querySelectorAll("button"), function(b){
+        b.disabled = true;
+        if (b.dataset.opt === String(t.a)) b.classList.add("right");
+        else if (b.dataset.opt === String(choice)) b.classList.add("wrong");
+      });
+      item.classList.add("done");
+      why.textContent = (choice === null ? "Не знаєш — не біда. " : ok ? "Так. " : "Правильно: «" + t.o[t.a] + "». ") + t.w;
+      if (t.trap) why.insertBefore(el("span", "trap", "пастка"), why.firstChild);
+    }
+    t.o.forEach(function(text, j){
+      var b = el("button", "opt", text);
+      b.type = "button"; b.dataset.opt = j;
+      if (j === t.a) b.setAttribute("data-right", "1");
+      b.addEventListener("click", function(){ reveal(j); });
+      row.appendChild(b);
+    });
+    var u = el("button", "opt skip", "Не знаю");
+    u.type = "button"; u.setAttribute("data-unknown", "");
+    u.addEventListener("click", function(){ reveal(null); });
+    row.appendChild(u);
+    item.appendChild(row); item.appendChild(why);
+    root.appendChild(item);
+  });
+}
+
+/* ---------- Передбач (усі результати звірені з python3) ---------- */
+var PRED = [
+  {c: "[1, 2] * 3", o: ["[1, 2, 1, 2, 1, 2]", "[3, 6]", "[1, 2, 3]"], a: 0,
+   w: "Повторення списку: елементи йдуть по колу тричі, а не множаться на 3."},
+  {c: "3 in [1, 2, 3]", o: ["True", "False", "2"], a: 0,
+   w: "in питає: чи є елемент серед елементів списку. 3 там є, відповідь — булеве значення True."},
+  {c: "[1, 2] < [1, 3]", o: ["True", "False", "Помилка"], a: 0,
+   w: "Порівняння поелементно: перші елементи рівні (1 == 1), другі вирішують: 2 < 3."},
+  {c: "sum([])", o: ["0", "[]", "ValueError"], a: 0, trap: true,
+   w: "Сума порожнього списку дорівнює 0. А ось min([]) і max([]) дали б ValueError."},
+  {c: "[0] * 0", o: ["[]", "[0]", "0"], a: 0,
+   w: "Нуль повторів дає порожній список. Це не 0 і не [0]."},
+  {c: "len([[1, 2], [3]])", o: ["2", "3", "1"], a: 0, trap: true,
+   w: "У списку два елементи: [1, 2] і [3]. len рахує елементи верхнього рівня, а числа всередині вкладених списків не враховуються."},
+  {c: 'max(["10", "9"])', o: ["'9'", "'10'", "10"], a: 0, trap: true,
+   w: "Це рядки, а рядки порівнюються за символами: '9' > '1', тому '9' більший за '10'."},
+  {c: '"a" in ["abc"]', o: ["False", "True", "Помилка"], a: 0, trap: true,
+   w: "in шукає елемент, рівний рядку 'a'. У списку лише один елемент, 'abc', і він не дорівнює 'a'. Для тексту in працював би інакше: 'a' in 'abc' — True."}
+];
+var scoreP = Lesson.register(PRED.length);
+buildItems($("#pred-list"), PRED, scoreP, "Вираз");
+
+/* ---------- Пастка ---------- */
+var ALIAS = [
+  {c: "a = [1, 2]\nb = a\nb.append(3)\nprint(a)", o: ["[1, 2, 3]", "[1, 2]", "[3]"], a: 0, trap: true,
+   w: "b = a не копіює список: це два імені на один і той самий список. append змінює цей список, і a теж його бачить."},
+  {c: "a = [1, 2]\nb = a[:]\nb.append(3)\nprint(a)", o: ["[1, 2]", "[1, 2, 3]", "[3]"], a: 0,
+   w: "Зріз a[:] створює новий список-копію (так само a.copy()). Зміна b до a вже не стосується."},
+  {c: "a = [1, 2]\nb = a\nb = b + [3]\nprint(a)", o: ["[1, 2]", "[1, 2, 3]", "Помилка"], a: 0, trap: true,
+   w: "b + [3] створює новий список, і ім'я b тепер вказує на нього. Список, на який вказує a, не змінився."}
+];
+var scoreA = Lesson.register(ALIAS.length);
+buildItems($("#alias-list"), ALIAS, scoreA, "Фрагмент");
+
+/* Схема: ярлики a, b і списки, на які вони вказують */
+(function(){
+  var mode = "same", pushed = false;
+  var scene = $("#scene"), sum = $("#vis-sum"), codeEl = $("#vis-code");
+  function render(){
+    scene.textContent = "";
+    var tags = el("div", "tags");
+    tags.appendChild(el("div", "tag", "a"));
+    tags.appendChild(el("div", "tag", "b"));
+    var lists = el("div", "lists");
+    var base = "[1, 2]", grown = "[1, 2, 3]";
+    if (mode === "same"){
+      scene.appendChild(tags);
+      scene.appendChild(el("div", "arrow", "→"));
+      var l = el("div", "lst" + (pushed ? " changed" : ""), pushed ? grown : base);
+      lists.appendChild(l);
+      scene.appendChild(lists);
+      codeEl.textContent = "a = [1, 2]\nb = a" + (pushed ? "\nb.append(3)" : "");
+      sum.textContent = pushed ? "Список один, тож зміна через b видна і через a: a → [1, 2, 3]." : "Два імені, один список. a is b — True.";
+    } else {
+      var l1 = el("div", "lst", base), l2 = el("div", "lst" + (pushed ? " changed" : ""), pushed ? grown : base);
+      lists.appendChild(l1); lists.appendChild(l2);
+      var at = el("div", "tags"); at.appendChild(el("div", "tag", "a"));
+      var bt = el("div", "tags"); bt.appendChild(el("div", "tag", "b"));
+      var left = el("div", "tags"); left.appendChild(at); left.appendChild(bt);
+      scene.appendChild(left);
+      scene.appendChild(el("div", "arrow", "→"));
+      scene.appendChild(lists);
+      codeEl.textContent = "a = [1, 2]\nb = a[:]" + (pushed ? "\nb.append(3)" : "");
+      sum.textContent = pushed ? "Списки різні: a → [1, 2] не змінився, b → [1, 2, 3]." : "Два імені, два списки. a is b — False.";
+    }
+  }
+  function setMode(m){
+    mode = m; pushed = false;
+    Array.prototype.forEach.call(document.querySelectorAll("#vis [data-mode]"), function(b){ b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
+    render();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#vis [data-mode]"), function(b){ b.addEventListener("click", function(){ setMode(b.dataset.mode); }); });
+  $("#vis-push").addEventListener("click", function(){ pushed = true; render(); });
+  $("#vis-reset").addEventListener("click", function(){ pushed = false; render(); });
+  render();
+})();
+
+/* ---------- Вікторина ---------- */
+Lesson.quiz("#quiz", [
+  {q: "Що дасть [1, 2] + [3]?", o: ["[1, 2, 3]", "[4, 5]", "[[1, 2], [3]]"], a: 0, e: "Оператор + склеює списки в новий список: [1, 2, 3]."},
+  {q: "Що повертає len([[1, 2], [3]])?", o: ["3", "2", "1"], a: 1, e: "Рахуються елементи верхнього рівня: [1, 2] і [3]."},
+  {q: "Після a = [1]; b = a; b.append(2) що таке a?", o: ["[1]", "[2]", "[1, 2]"], a: 2, e: "b = a — це друге ім'я того самого списку, тож append через b змінює й a."},
+  {q: "Як зробити незалежну копію списку a?", o: ["b = a", "b = a[:]", "b = len(a)"], a: 1, e: "Зріз a[:] (або a.copy()) створює новий список. Присвоєння b = a новий список не створює."}
+]);
+})();
+</script>
+</body>
+</html>

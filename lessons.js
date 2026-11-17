@@ -110,5 +110,21 @@ window.LESSONS = [
     status: "ready",
     teacher: true,
     tags: ["Python", "списки", "зрізи"]
+  },
+  {
+    folder: "22-py-slice-precise",
+    program: "inf10deep",
+    num: 22,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "списки", "зрізи"]
+  },
+  {
+    folder: "23-py-list-ops",
+    program: "inf10deep",
+    num: 23,
+    status: "ready",
+    teacher: true,
+    tags: ["Python", "списки", "операції"]
   }
 ];

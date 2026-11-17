@@ -11,7 +11,9 @@ const LESSONS = [
   { folder: "18-py-types", num: 18, topic: "types", tabs: ["theory", "customs", "predict", "quiz-tab", "final"] },
   { folder: "19-py-branching", num: 19, topic: "branching", tabs: ["theory", "trace", "truth", "quiz-tab", "final"] },
   { folder: "20-py-branch-tester", num: 20, topic: "branching", tabs: ["brief", "hunt", "fix", "final"] },
-  { folder: "21-py-list-slices", num: 21, topic: "slices", tabs: ["theory", "train", "predict", "quiz-tab", "final"] }
+  { folder: "21-py-list-slices", num: 21, topic: "slices", tabs: ["theory", "train", "predict", "quiz-tab", "final"] },
+  { folder: "22-py-slice-precise", num: 22, topic: "slices", tabs: ["warmup", "precise", "final"] },
+  { folder: "23-py-list-ops", num: 23, topic: "list-ops", tabs: ["theory", "predict", "alias", "quiz-tab", "final"] }
 ];
 
 describe("уроки курсу «Інформатика, поглиблений рівень»: спільна структура", () => {
@@ -222,6 +224,152 @@ describe("урок 21 · Потяг-список", () => {
   });
 });
 
+describe("урок 22 · Зріж точно", () => {
+  const setVal = (window, input, v) => { input.value = String(v); input.dispatchEvent(new window.Event("input", { bubbles: true })); };
+  const check = (window, card, expr) => {
+    const inp = card.querySelector("input[type=text]");
+    setVal(window, inp, expr);
+    card.querySelector("button[data-check]").click();
+  };
+  it("warmup: три швидкі питання з «чому», «Не знаю» = 0, повторний клік не фармить", async () => {
+    const doc = (await loadPage("22-py-slice-precise")).document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    expect(doc.querySelector('nav.tabs button[data-tab="warmup"]').dataset.break).toBe("5");
+    const items = [...doc.querySelectorAll("#warmup .pred-item")];
+    expect(items.length).toBe(3);
+    const right = items[0].querySelector("button[data-right]");
+    right.click(); right.click();
+    expect(score()).toBe(1);
+    expect(items[0].querySelector(".why").textContent.length).toBeGreaterThan(10);
+    items[1].querySelector("button[data-unknown]").click();
+    expect(score()).toBe(1);
+    items[1].querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+  });
+  it("precise: 6–8 цілей, вираз перевіряється семантикою, ★ без додаткових балів", async () => {
+    const window = await loadPage("22-py-slice-precise");
+    const doc = window.document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const cards = [...doc.querySelectorAll("#precise .target-card")];
+    expect(cards.length).toBeGreaterThanOrEqual(6);
+    expect(cards.length).toBeLessThanOrEqual(8);
+    for (const c of cards) expect(c.querySelector("input[type=text]")).not.toBeNull();
+    const before = score();
+    const [c0, c1, c2] = cards;
+    expect(c0.textContent).toContain("[10, 20, 30]");
+    check(window, c0, "a[:3]");
+    expect(score()).toBe(before + 1);
+    expect(c0.querySelector(".star")).not.toBeNull();
+    check(window, c0, "a[:3]");
+    expect(score()).toBe(before + 1);
+    check(window, c1, "a[0]");
+    expect(score()).toBe(before + 1);
+    expect(c1.querySelector(".fb").textContent).toMatch(/індекс/);
+    check(window, c1, "b[-2:]");
+    expect(c1.querySelector(".fb").textContent).toContain("a");
+    check(window, c1, "a[-2:-1]");
+    expect(score()).toBe(before + 1);
+    expect(c1.querySelector(".fb").textContent).toContain("[70]");
+    check(window, c1, " a[ -2 : ] ");
+    expect(score()).toBe(before + 2);
+    expect(c1.querySelector(".star")).not.toBeNull();
+    check(window, c2, "a[1:8:2]");
+    expect(score()).toBe(before + 3);
+    expect(c2.querySelector(".star")).toBeNull();
+  });
+  it("precise: є цілі з від'ємним кроком і від'ємними індексами; крок 0 дає ValueError", async () => {
+    const window = await loadPage("22-py-slice-precise");
+    const doc = window.document;
+    const cards = [...doc.querySelectorAll("#precise .target-card")];
+    const t = cards.find(c => c.textContent.includes("[60, 50, 40]"));
+    expect(t).toBeDefined();
+    check(window, t, "a[::0]");
+    expect(t.querySelector(".fb").textContent).toContain("ValueError");
+    check(window, t, "a[5:2:-1]");
+    expect(Number(doc.querySelector("[data-score]").textContent)).toBe(1);
+    expect(cards.some(c => c.textContent.includes("[20, 30, 40, 50, 60, 70]"))).toBe(true);
+  });
+  it("precise: «Показати відповідь» блокує ціль із 0 балів і не дає добити", async () => {
+    const window = await loadPage("22-py-slice-precise");
+    const doc = window.document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const card = doc.querySelectorAll("#precise .target-card")[3];
+    expect(card.textContent).toContain("[30, 40, 50, 60]");
+    card.querySelector("button[data-reveal]").click();
+    expect(card.textContent).toContain("a[2:6]");
+    expect(score()).toBe(0);
+    check(window, card, "a[2:6]");
+    expect(score()).toBe(0);
+    expect(card.querySelector("input[type=text]").disabled).toBe(true);
+    expect(card.querySelector("button[data-check]").disabled).toBe(true);
+  });
+  it("final: підказки задач із задачника", async () => {
+    const doc = (await loadPage("22-py-slice-precise")).document;
+    const t = doc.querySelector("#final").textContent;
+    for (const id of ["middle", "window", "negative-indices"]) expect(t).toContain(id);
+  });
+});
+
+describe("урок 23 · Склад списків", () => {
+  it("theory: +, *, in, len, min/max/sum, порівняння", async () => {
+    const t = (await loadPage("23-py-list-ops")).document.querySelector("#theory").textContent;
+    for (const x of ["+", "*", "in", "len", "min", "max", "sum", "<"]) expect(t).toContain(x);
+  });
+  it("predict: обов'язкові фрагменти, «чому», «Не знаю» = 0, без фармінгу", async () => {
+    const doc = (await loadPage("23-py-list-ops")).document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    expect(doc.querySelector('nav.tabs button[data-tab="predict"]').dataset.break).toBe("6");
+    const items = [...doc.querySelectorAll("#predict .pred-item")];
+    expect(items.length).toBeGreaterThanOrEqual(6);
+    expect(items.length).toBeLessThanOrEqual(8);
+    const by = t => items.find(i => i.querySelector(".pred-code").textContent.trim() === t);
+    for (const c of ["[1, 2] * 3", "3 in [1, 2, 3]", "[1, 2] < [1, 3]", "sum([])", "[0] * 0", "len([[1, 2], [3]])"]) {
+      expect(by(c), c).toBeDefined();
+    }
+    expect(by("[1, 2] * 3").querySelector("button[data-right]").textContent).toBe("[1, 2, 1, 2, 1, 2]");
+    expect(by("sum([])").querySelector("button[data-right]").textContent).toBe("0");
+    expect(by("len([[1, 2], [3]])").querySelector("button[data-right]").textContent).toBe("2");
+    const r = by("3 in [1, 2, 3]").querySelector("button[data-right]");
+    r.click(); r.click();
+    expect(score()).toBe(1);
+    expect(by("3 in [1, 2, 3]").querySelector(".why").textContent.length).toBeGreaterThan(10);
+    by("sum([])").querySelector("button[data-unknown]").click();
+    expect(score()).toBe(1);
+    by("sum([])").querySelector("button[data-right]").click();
+    expect(score()).toBe(1);
+  });
+  it("alias: b = a змінює a, b = a[:] — ні; візуалізація", async () => {
+    const window = await loadPage("23-py-list-ops");
+    const doc = window.document;
+    const score = () => Number(doc.querySelector("[data-score]").textContent);
+    const items = [...doc.querySelectorAll("#alias .pred-item")];
+    expect(items.length).toBeGreaterThanOrEqual(3);
+    const q1 = items.find(i => i.textContent.includes("b = a") && !i.textContent.includes("b = a["));
+    expect(q1.querySelector("button[data-right]").textContent).toBe("[1, 2, 3]");
+    const before = score();
+    q1.querySelector("button[data-right]").click();
+    expect(score()).toBe(before + 1);
+    expect(q1.querySelector(".why").textContent).toContain("один і той самий");
+    const q2 = items.find(i => i.textContent.includes("b = a[:]"));
+    expect(q2.querySelector("button[data-right]").textContent).toBe("[1, 2]");
+    q2.querySelector("button[data-unknown]").click();
+    expect(score()).toBe(before + 1);
+    const vis = doc.querySelector("#alias .alias-vis");
+    expect(vis).not.toBeNull();
+    doc.querySelector('#alias button[data-mode="same"]').click();
+    expect(vis.querySelectorAll(".lst").length).toBe(1);
+    doc.querySelector('#alias button[data-mode="copy"]').click();
+    expect(vis.querySelectorAll(".lst").length).toBe(2);
+    expect(score()).toBe(before + 1);
+  });
+  it("final і quiz", async () => {
+    const doc = (await loadPage("23-py-list-ops")).document;
+    expect(doc.querySelector("#quiz-tab .q").textContent.length).toBeGreaterThan(5);
+    const t = doc.querySelector("#final").textContent;
+    for (const id of ["concat-repeat", "in-list", "best-result"]) expect(t).toContain(id);
+  });
+});
+
 describe("реєстрація уроків inf10deep", () => {
   const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
   const window = new JSDOM("", { runScripts: "outside-only" }).window;
@@ -229,8 +377,8 @@ describe("реєстрація уроків inf10deep", () => {
   loadScript(window, "data/teacher-plans.js");
   const entries = window.LESSONS.filter(l => l.program === "inf10deep" && l.num >= 18);
 
-  it("є уроки 18–21", () => {
-    expect(entries.map(e => e.num)).toEqual(expect.arrayContaining([18, 19, 20, 21]));
+  it("є уроки 18–23", () => {
+    expect(entries.map(e => e.num)).toEqual(expect.arrayContaining([18, 19, 20, 21, 22, 23]));
   });
   for (const entry of entries) {
     it("урок " + entry.num + ": файли на диску й план на 45 хв", () => {
