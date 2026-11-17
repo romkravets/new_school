@@ -3,7 +3,8 @@
   "type": "commonjs",
   "scripts": {
     "test": "vitest run",
-    "import": "node scripts/import-mriya.mjs"
+    "import": "node scripts/import-mriya.mjs",
+    "check-tasks": "node scripts/check-tasks.mjs"
   },
   "devDependencies": {
     "vitest": "5.0.5",
